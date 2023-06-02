@@ -1,37 +1,21 @@
 version: "3.9"
 services:
   postgres:
-    container_name: postgres_container
-    image: postgres:13.3
+    container_name: ${PG_CONTAINER_NAME}
+    image: postgres:latest
     environment:
-      POSTGRES_DB: "ft_tr"
-      POSTGRES_USER: "ft_tr_user"
-      POSTGRES_PASSWORD: "1234"
-      PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./PostgeSQL:/docker-entrypoint-initdb.d
-      - ./PostgeSQL/var:/var/lib/postgresql/data
+      - ./PostgeSQL/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
     networks:
-      - ft_tr
-
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4:7.1
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "kakushkin.mansur@gmail.com"
-      PGADMIN_DEFAULT_PASSWORD: "1234"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - ./PGadmin:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    restart: unless-stopped
-    networks:
-      - ft_tr
+      - ft_transcendence
 
 networks:
-  ft_tr:
+  ft_transcendence:
     driver: bridge
