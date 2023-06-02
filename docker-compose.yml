@@ -8,8 +8,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./PostgeSQL/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./PostgeSQL/data:/var/lib/postgresql/data
+      - ./PostgeSQL/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
+      - ./PostgeSQL/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+      #- ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
