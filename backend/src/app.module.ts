@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { type_chat_modul } from './type_chat/type_chat.module';
+import { PlayerModule } from './player/player.module';
 
 @Module({
   imports: [
@@ -32,7 +33,9 @@ import { type_chat_modul } from './type_chat/type_chat.module';
 			}),
     }),
     type_chat_modul,
+    PlayerModule,
     ],
   providers: [],
+  controllers: [],
 })
 export class AppModule {}

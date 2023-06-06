@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS player (
 	name_42 VARCHAR ( 100 ),
 	password VARCHAR ( 100 ) NOT NULL,
 	image BYTEA,
-	admin BOOLEAN
+	online BOOLEAN DEFAULT FALSE,
+	admin BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS achievement (
@@ -48,7 +49,7 @@ CREATE TABLE IF NOT EXISTS type_chat (
 CREATE TABLE IF NOT EXISTS chat (
 	id SERIAL NOT NULL PRIMARY KEY,
 	type_id SERIAL NOT NULL,
-	have_password BOOLEAN,
+	have_password BOOLEAN DEFAULT FALSE,
 	password VARCHAR(100),
 	FOREIGN KEY (type_id)
 		REFERENCES type_chat (id)
@@ -69,8 +70,8 @@ CREATE TABLE IF NOT EXISTS message (
 CREATE TABLE IF NOT EXISTS players_chat (
 	player_id SERIAL NOT NULL,
 	chat_id SERIAL NOT NULL,
-	owner BOOLEAN,
-	blocked BOOLEAN,
+	owner BOOLEAN DEFAULT FALSE,
+	blocked BOOLEAN DEFAULT FALSE,
 	blocked_time TIMESTAMP,
 	PRIMARY KEY (player_id, chat_id),
 	FOREIGN KEY (player_id)
