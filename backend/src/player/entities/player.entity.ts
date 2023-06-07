@@ -8,18 +8,12 @@ export class Player_entitiy {
 	@Column("varchar", {length: 100, nullable: false} )
 	name: string
 
-	@Column("varchar", {length: 100, nullable: false} )
-	name_42: string
-
-	@Column("varchar", {length: 100, nullable: false} )
-	password: string
-
 	@Column({type: "bytea", nullable: true })
 	image?: Buffer
 
-	@Column("boolean")
+	@Column("boolean", {default: false})
 	online: boolean
 
-	@Column("boolean")
+	@Column("boolean", {default: false})
 	admin: boolean
 }
