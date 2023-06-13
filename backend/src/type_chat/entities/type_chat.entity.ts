@@ -1,1 +1,4 @@
-export class TypeChat {}
+export class TypeChat {
+    id: number;
+    name: string;
+}

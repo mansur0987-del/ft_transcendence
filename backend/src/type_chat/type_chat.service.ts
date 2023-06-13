@@ -4,12 +4,13 @@ import { UpdateTypeChatDto } from './dto/update-type_chat.dto';
 
 @Injectable()
 export class TypeChatService {
+  [x: string]: any;
   create(createTypeChatDto: CreateTypeChatDto) {
     return 'This action adds a new typeChat';
   }
 
-  findAll() {
-    return `This action returns all typeChat`;
+  findAll() : string {
+    return this.typeChatService.findAll();
   }
 
   findOne(id: number) {

@@ -4,6 +4,6 @@ import { TypeChatController } from './type_chat.controller';
 
 @Module({
   controllers: [TypeChatController],
-  providers: [TypeChatService]
+  providers: [TypeChatService],
 })
 export class TypeChatModule {}

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { Chat } from './entities/chat.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -13,8 +14,8 @@ export class ChatController {
   }
 
   @Get()
-  findAll() {
-    return this.chatService.findAll();
+  async findAll(){
+    return await this.chatService.findAll();
   }
 
   @Get(':id')

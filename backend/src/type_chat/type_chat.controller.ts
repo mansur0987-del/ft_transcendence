@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { TypeChatService } from './type_chat.service';
 import { CreateTypeChatDto } from './dto/create-type_chat.dto';
 import { UpdateTypeChatDto } from './dto/update-type_chat.dto';
@@ -23,7 +31,10 @@ export class TypeChatController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTypeChatDto: UpdateTypeChatDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateTypeChatDto: UpdateTypeChatDto,
+  ) {
     return this.typeChatService.update(+id, updateTypeChatDto);
   }
 
