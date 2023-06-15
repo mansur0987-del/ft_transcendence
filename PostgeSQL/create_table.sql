@@ -1,9 +1,15 @@
 CREATE TABLE IF NOT EXISTS player (
 	id SERIAL NOT NULL PRIMARY KEY,
 	name VARCHAR ( 100 ) UNIQUE NOT NULL,
+	name42 VARCHAR ( 100 ) UNIQUE NOT NULL,
 	image BYTEA,
-	online BOOLEAN DEFAULT FALSE,
-	admin BOOLEAN DEFAULT FALSE
+	isLogin BOOLEAN DEFAULT FALSE,
+	twoFactorAuthenticationSecret VARCHAR ( 100 ),
+	isTwoFactorAuthenticationEnabled BOOLEAN DEFAULT FALSE,
+	isLoginFactorAuthentication BOOLEAN DEFAULT FALSE,
+	create_at TIMESTAMP,
+	update_at TIMESTAMP,
+	delete_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS achievement (

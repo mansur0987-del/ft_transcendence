@@ -1,19 +1,37 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('player')
-export class Player_entitiy {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class PlayerEntity {
+	@PrimaryGeneratedColumn()
+	id: number;
 
-  @Column('varchar', { length: 100, nullable: false })
-  name: string;
+	@Column('varchar', { length: 100, nullable: false })
+	name: string;
 
-  @Column({ type: 'bytea', nullable: true })
-  image?: Buffer;
+	@Column('varchar', { length: 100, nullable: false })
+	name42: string;
 
-  @Column('boolean', { default: false })
-  online: boolean;
+	@Column({ type: 'bytea', nullable: true })
+	image?: Buffer;
 
-  @Column('boolean', { default: false })
-  admin: boolean;
+	@Column({default: false})
+	isLogin: boolean
+
+	@Column('varchar', { length: 100, nullable: true})
+	twoFactorAuthenticationSecret: string
+
+	@Column({default: false})
+	isTwoFactorAuthenticationEnabled: boolean;
+
+	@Column({default: false})
+	isLoginFactorAuthentication: boolean;
+
+	@CreateDateColumn()
+	create_at: Date
+
+	@UpdateDateColumn()
+	update_at: Date
+
+	@DeleteDateColumn()
+	delete_at: Date
 }
