@@ -31,20 +31,10 @@ export class ControllerController {
         return ({result: false, msg: 'Wrong body'})
     }
     if (body.method == 'update'){
-      if (!body.updateData)
-        return ({result: false, msg: 'Wrong body'})
-
-      if (body.playerName){
-        const player = await this.player_service.GetPlayerByName(body.name)
-        return ({result: true, data: await this.player_service.update(player, body.updateData)})
-      }
-      else if (body.playerId){
-        const player = await this.player_service.GetPlayerById(body.playerId)
-        return ({result: true, data: await this.player_service.update(player, body.updateData)})
-      }
-      else{
+      if (!body.updateData){
         return ({result: false, msg: 'Wrong body'})
       }
+      return ({result: true, data: await this.player_service.update(req.user, body.updateData)})
     }
     return ({result: false, msg: 'Wrong body'})
   }
