@@ -38,8 +38,17 @@ export class ControllerController {
     }
     return ({result: false, msg: 'Wrong body'})
   }
-  //@Post()
-  //async GetPlayerById(@Body() body: any): Promise<PlayerEntity> {
-  //  return await this.player_service.GetPlayerById(Number(id_str));
-  //}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('rename')
+  async PostPlayerRename(@Request() req: any, @Body() body: any): Promise<any> {
+    if (!body.newName){
+      return ({result: false, msg: 'Wrong body'})
+    }
+    if (await this.player_service.GetPlayerByName(body.newName)){
+      return ({result: false, msg: 'There is already a player with that name'})
+    }
+
+    return ({result: true, data: await this.player_service.update(req.user, {name: body.newName})})
+  }
 }
