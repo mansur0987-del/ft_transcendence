@@ -27,19 +27,10 @@ export class PlayerService {
 
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
 		const { name } = playerDto;
-
-		console.log('name')
-		console.log(name)
-		console.log('playerDto')
-		console.log(playerDto)
-		const count = await this.player_repository.count()
-		await this.player_repository.createQueryBuilder().insert().into(
-			PlayerEntity).values({
-				id: count,
-				name: name,
-        		name42: name,
-			}).execute()
-
+		await this.player_repository.save({
+			name: name,
+        	name42: name,
+		})
 		return await this.GetPlayerByName(name);
 	}
 

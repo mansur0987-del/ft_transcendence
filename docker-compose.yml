@@ -1,12 +1,14 @@
-version: "3.9"
+version: "3.8"
 services:
   db:
     container_name: ${TYPEORM_CONNECTION}
-    image: postgres:latest
+    image: postgres:alpine
     environment:
       POSTGRES_DB: ${TYPEORM_DATABASE}
       POSTGRES_USER: ${TYPEORM_USERNAME}
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      TZ: GMT-4
+      PGTZ: GMT-4
     volumes:
       - ./PostgeSQL/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
       - ./PostgeSQL/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql

@@ -15,4 +15,10 @@ export class UpdatePlayerDto extends PartialType(CreatePlayerDto) {
 
 	@IsNotEmpty()
 	isLoginFactorAuthentication?: boolean;
+
+	@IsNotEmpty()
+	isFirstGame?: boolean;
+
+	@IsNotEmpty()
+	isFirstWin?: boolean;
 }

@@ -1,18 +1,55 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { PlayerService } from '../service/player.service';
 import { PlayerEntity } from '../entities/player.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('player')
 export class ControllerController {
   constructor(private readonly player_service: PlayerService) {}
 
-  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('list')
   async GetALL(): Promise<PlayerEntity[]> {
     return await this.player_service.GetALL();
   }
 
-  @Get(':id')
-  async GetPlayerById(@Param('id') id_str: string): Promise<PlayerEntity> {
-    return await this.player_service.GetPlayerById(Number(id_str));
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async GetPlayerInfo(@Request() req): Promise<PlayerEntity> {
+    return req.user;
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post()
+  async PostPlayerInfo(@Request() req: any, @Body() body: any): Promise<any> {
+    if (body.method == 'get'){
+      if (body.playerName)
+        return {result: true, data: await this.player_service.GetPlayerByName(body.name)}
+      else if (body.playerId)
+        return {result: true, data: await this.player_service.GetPlayerById(body.playerId)}
+      else
+        return ({result: false, msg: 'Wrong body'})
+    }
+    if (body.method == 'update'){
+      if (!body.updateData)
+        return ({result: false, msg: 'Wrong body'})
+
+      if (body.playerName){
+        const player = await this.player_service.GetPlayerByName(body.name)
+        return ({result: true, data: await this.player_service.update(player, body.updateData)})
+      }
+      else if (body.playerId){
+        const player = await this.player_service.GetPlayerById(body.playerId)
+        return ({result: true, data: await this.player_service.update(player, body.updateData)})
+      }
+      else{
+        return ({result: false, msg: 'Wrong body'})
+      }
+    }
+    return ({result: false, msg: 'Wrong body'})
+  }
+  //@Post()
+  //async GetPlayerById(@Body() body: any): Promise<PlayerEntity> {
+  //  return await this.player_service.GetPlayerById(Number(id_str));
+  //}
 }

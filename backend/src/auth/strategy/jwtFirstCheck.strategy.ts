@@ -7,9 +7,9 @@ import { Payload } from '../entities/payload.entity';
 
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(
+export class jwtFirstCheck extends PassportStrategy(
   Strategy,
-  "jwt"
+  "jwtFirstCheck"
   ) {
     constructor(
       private readonly playerService: PlayerService
@@ -24,17 +24,7 @@ export class JwtStrategy extends PassportStrategy(
     const player = await this.playerService.GetPlayerByName(payload.name);
 
     if (player.isLogin){
-      if (player.isTwoFactorAuthenticationEnabled == false){
-        return player;
-      }
-
-      else if (player.isLoginFactorAuthentication){
-        return player;
-      }
-
-      else if (payload.twoFactorAuthenticatedCode) {
-        return player;
-      }
+      return player;
     }
   }
 }

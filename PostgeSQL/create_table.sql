@@ -7,24 +7,11 @@ CREATE TABLE IF NOT EXISTS player (
 	twoFactorAuthenticationSecret VARCHAR ( 100 ),
 	isTwoFactorAuthenticationEnabled BOOLEAN DEFAULT FALSE,
 	isLoginFactorAuthentication BOOLEAN DEFAULT FALSE,
+	isFirstGame BOOLEAN DEFAULT FALSE,
+	isFirstWin BOOLEAN DEFAULT FALSE,
 	create_at TIMESTAMP,
 	update_at TIMESTAMP,
 	delete_at TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS achievement (
-	id SERIAL NOT NULL PRIMARY KEY,
-	name VARCHAR ( 100 ) UNIQUE NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS players_achiev (
-	player_id SERIAL NOT NULL,
-	achievement_id SERIAL NOT NULL,
-	PRIMARY KEY (player_id, achievement_id),
-	FOREIGN KEY (player_id)
-		REFERENCES player (id),
-	FOREIGN KEY (achievement_id)
-		REFERENCES achievement (id)
 );
 
 CREATE TABLE IF NOT EXISTS game (

@@ -1,32 +1,20 @@
-INSERT INTO type_chat (id, name)
-VALUES (0, 'direct_chat');
-INSERT INTO type_chat (id, name)
-VALUES (1, 'public');
-INSERT INTO type_chat (id, name)
-VALUES (2, 'private');
-
-INSERT INTO achievement (id, name)
-VALUES (0, 'First game');
-
-INSERT INTO achievement (name)
-VALUES ('First win');
+INSERT INTO type_chat (name)
+VALUES ('direct_chat');
+INSERT INTO type_chat (name)
+VALUES ('public');
+INSERT INTO type_chat (name)
+VALUES ('private');
 
 -- test values
 
-INSERT INTO player (id, name, online, admin)
-VALUES (0 ,'test_user_0', FALSE, TRUE);
+INSERT INTO player (name, name42, create_at, update_at)
+VALUES ('test_user_0', 'test_user42_0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO player (name, online, admin)
-VALUES ('test_user_1', TRUE, TRUE);
+INSERT INTO player (name, name42, create_at, update_at)
+VALUES ('test_user_1', 'test_user42_1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO player (name, online, admin)
-VALUES ('test_user_2', FALSE, FALSE);
-
-INSERT INTO players_achiev (player_id, achievement_id)
-VALUES (0, 0);
-
-INSERT INTO players_achiev (player_id, achievement_id)
-VALUES (0, 1);
+INSERT INTO player (name, name42, create_at, update_at)
+VALUES ('test_user_2', 'test_user42_2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO game (id, win_player_id, date)
 VALUES (0, 0, CURRENT_TIMESTAMP);

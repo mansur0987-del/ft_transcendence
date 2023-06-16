@@ -1,7 +1,9 @@
 export class Payload {
 	id?: number
 
-	username: string
+	name: string
+
+	twoFactorAuthenticatedCode?: string;
 
 	isTwoFactorAuthenticated?: boolean;
 

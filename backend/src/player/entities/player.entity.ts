@@ -26,6 +26,12 @@ export class PlayerEntity {
 	@Column({default: false})
 	isLoginFactorAuthentication: boolean;
 
+	@Column({default: false})
+	isFirstGame: boolean;
+
+	@Column({default: false})
+	isFirstWin: boolean;
+
 	@CreateDateColumn()
 	create_at: Date
 

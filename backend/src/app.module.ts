@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlayerModule } from './player/player.module';
 import { AuthModule } from './auth/auth.module';
-import { AchievementModule } from './achievement/achievement.module';
 
 @Module({
   imports: [
@@ -26,7 +25,6 @@ import { AchievementModule } from './achievement/achievement.module';
     }),
     PlayerModule,
     AuthModule,
-    AchievementModule,
   ],
   providers: [],
   controllers: [],
