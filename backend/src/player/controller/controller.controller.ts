@@ -24,7 +24,7 @@ export class ControllerController {
   async PostPlayerInfo(@Request() req: any, @Body() body: any): Promise<any> {
     if (body.method == 'get'){
       if (body.playerName)
-        return {result: true, data: await this.player_service.GetPlayerByName(body.name)}
+        return {result: true, data: await this.player_service.GetPlayerByName(body.playerName)}
       else if (body.playerId)
         return {result: true, data: await this.player_service.GetPlayerById(body.playerId)}
       else
