@@ -1,8 +1,14 @@
+CREATE TABLE IF NOT EXISTS avatar (
+	id SERIAL NOT NULL PRIMARY KEY,
+	filename VARCHAR ( 100 ) NOT NULL,
+	data BYTEA NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS player (
 	id SERIAL NOT NULL PRIMARY KEY,
 	name VARCHAR ( 100 ) UNIQUE NOT NULL,
 	name42 VARCHAR ( 100 ) UNIQUE NOT NULL,
-	image BYTEA,
+	avatarId SERIAL UNIQUE,
 	isLogin BOOLEAN DEFAULT FALSE,
 	twoFactorAuthenticationSecret VARCHAR ( 100 ),
 	isTwoFactorAuthenticationEnabled BOOLEAN DEFAULT FALSE,
@@ -11,7 +17,9 @@ CREATE TABLE IF NOT EXISTS player (
 	isFirstWin BOOLEAN DEFAULT FALSE,
 	create_at TIMESTAMP,
 	update_at TIMESTAMP,
-	delete_at TIMESTAMP
+	delete_at TIMESTAMP,
+	FOREIGN KEY (avatarId)
+		REFERENCES avatar (id)
 );
 
 CREATE TABLE IF NOT EXISTS game (

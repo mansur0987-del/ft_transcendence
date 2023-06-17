@@ -21,10 +21,9 @@ export class AuthService {
 		private readonly httpService: HttpService,
 	) {}
 
-	async getAccessToken(playerId: number, name: string): Promise<string>{
+	async getAccessToken(playerId: number): Promise<string>{
 		const accessToken = this.jwtService.signAsync({
-			id: playerId,
-			name,
+			id: playerId
 		},
         {
           secret: this.configService.get<string>('JWT_ACCESS_KEY'),
@@ -34,7 +33,7 @@ export class AuthService {
 	}
 
 	async CreatePlayer(createPlayerDto: CreatePlayerDto): Promise<PlayerEntity> {
-		const playerInDb = await this.playerService.GetPlayerByName(createPlayerDto.name);
+		const playerInDb = await this.playerService.GetPlayerById(createPlayerDto.id);
 		if (playerInDb)
 			return playerInDb
 
@@ -73,9 +72,10 @@ export class AuthService {
 		const lastValuePlayerInfo = await lastValueFrom(GetPlayerInfo)
 
 		const playerInDB = await this.CreatePlayer({name: lastValuePlayerInfo.data.login});
-		const accessToken = await this.getAccessToken(playerInDB.id, playerInDB.name);
+		const accessToken = await this.getAccessToken(playerInDB.id);
 
-		const update_player = await this.playerService.update(playerInDB, {isLogin : true})
+		await this.playerService.update(playerInDB, {isLogin : true})
+		const update_player = await this.playerService.GetPlayerById(playerInDB.id)
 
 		const status: ReturnStatus = {
 				success: true,
@@ -88,7 +88,7 @@ export class AuthService {
 	}
 
 	async signIn(player: PlayerEntity, data: LoginPlayerDto) {
-		const playerInDb = await this.playerService.GetPlayerByName(player.name);
+		const playerInDb = await this.playerService.GetPlayerById(player.id);
 		if (playerInDb.isTwoFactorAuthenticationEnabled){
 			if (!data.twoFactorAuthenticationCode){
 				const status: ReturnStatus = {
@@ -114,7 +114,8 @@ export class AuthService {
 			await this.playerService.update(playerInDb, {isLoginFactorAuthentication : true})
 		}
 
-		const update_player = await this.playerService.update(playerInDb, {isLogin : true})
+		await this.playerService.update(playerInDb, {isLogin : true})
+		const update_player = await this.playerService.GetPlayerById(playerInDb.id)
 
 		const status: ReturnStatus = {
 			success: true,
@@ -126,10 +127,11 @@ export class AuthService {
 	}
 
 	async logout(player : PlayerEntity) : Promise<ReturnStatus> {
-		const update_player = await this.playerService.update(player, {
+		await this.playerService.update(player, {
 			isLogin : false,
 			isLoginFactorAuthentication : false
 		})
+		const update_player = await this.playerService.GetPlayerById(player.id)
 
 		const status: ReturnStatus = {
 			success: true,
@@ -227,10 +229,12 @@ export class AuthService {
 			return status;
 		}
 
-		const update_player = await this.playerService.update(
+		await this.playerService.update(
 			player,
 			{isTwoFactorAuthenticationEnabled: true, isLoginFactorAuthentication: false}
-			)
+		)
+		const update_player = await this.playerService.GetPlayerById(player.id)
+
 		const status: ReturnStatus = {
 			success: true,
 			statusCode: 200,

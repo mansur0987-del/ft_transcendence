@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import Avatar from './avatar.entity';
 
 @Entity('player')
 export class PlayerEntity {
@@ -11,8 +12,17 @@ export class PlayerEntity {
 	@Column('varchar', { length: 100, nullable: false })
 	name42: string;
 
-	@Column({ type: 'bytea', nullable: true })
-	image?: Buffer;
+	@JoinColumn({ name: 'avatarId' })
+	@OneToOne(
+		() => Avatar,
+		{
+			nullable: true
+		}
+	)
+	public avatar?: Avatar;
+
+	@Column({ nullable: true })
+	public avatarId?: number;
 
 	@Column({default: false})
 	isLogin: boolean

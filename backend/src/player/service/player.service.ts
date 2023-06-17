@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import { CreatePlayerDto } from '../dto/creatPlayer.dto';
 import { UpdatePlayerDto } from '../dto/updatePlayer.dto';
 import { PlayerEntity } from '../entities/player.entity';
+import AvatarService from './avatar.service';
 
 @Injectable()
 export class PlayerService {
 	constructor (
 		@InjectRepository(PlayerEntity)
-	private readonly player_repository: Repository<PlayerEntity>
+	private readonly player_repository: Repository<PlayerEntity>,
+	private readonly avatarService: AvatarService,
 	) {}
 
 	async GetALL(): Promise<PlayerEntity[]>{
@@ -21,17 +23,14 @@ export class PlayerService {
 	}
 
 	async GetPlayerByName(name: string): Promise<PlayerEntity>{
-		const PlayerInDb = await this.player_repository.findOneBy({name: name})
-		return PlayerInDb
+		return await this.player_repository.findOneBy({name: name})
 	}
 
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
-		const { name } = playerDto;
-		await this.player_repository.save({
-			name: name,
-        	name42: name,
+		return await this.player_repository.save({
+			name: playerDto.name,
+        	name42: playerDto.name,
 		})
-		return await this.GetPlayerByName(name);
 	}
 
 	async update(
@@ -40,8 +39,7 @@ export class PlayerService {
 	  ): Promise<PlayerEntity> {
 		try {
 			updatePlayerDto.id = player.id;
-			await this.player_repository.save(updatePlayerDto);
-			return await this.GetPlayerById(updatePlayerDto.id);
+			return await this.player_repository.save(updatePlayerDto);
 		}
 		catch (ex) {
 			throw new Error(`Update error: ${ex.message}.`);
@@ -57,4 +55,17 @@ export class PlayerService {
 		return true;
 	}
 
+	async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+		const avatar = await this.avatarService.uploadDatabaseFile(imageBuffer, filename);
+		await this.player_repository.update(userId, {
+		  avatarId: avatar.id
+		});
+		return avatar;
+	  }
+
+	async getAvatar(userId: number){
+		const player = await this.GetPlayerById(userId);
+		const avatar = await this.avatarService.getFileById(player.avatarId)
+		return avatar
+	}
 }
