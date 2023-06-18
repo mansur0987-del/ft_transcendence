@@ -5,6 +5,8 @@ import { CreatePlayerDto } from '../dto/creatPlayer.dto';
 import { UpdatePlayerDto } from '../dto/updatePlayer.dto';
 import { PlayerEntity } from '../entities/player.entity';
 import AvatarService from './avatar.service';
+import fs = require('fs');
+import path = require('path');
 
 @Injectable()
 export class PlayerService {
@@ -27,9 +29,16 @@ export class PlayerService {
 	}
 
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
+		const file: Buffer = await fs.readFileSync(
+			path.resolve(
+				'../user.png',
+			),
+		)
+		const avatar = await this.avatarService.uploadDatabaseFile(file, 'default')
 		return await this.player_repository.save({
 			name: playerDto.name,
         	name42: playerDto.name,
+			avatarId: avatar.id
 		})
 	}
 
