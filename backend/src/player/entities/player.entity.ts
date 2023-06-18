@@ -36,6 +36,9 @@ export class PlayerEntity {
 	@Column({default: false})
 	isLoginFactorAuthentication: boolean;
 
+	@Column({ nullable: false, default: 0 })
+	status: number;
+
 	@Column({default: false})
 	isFirstGame: boolean;
 

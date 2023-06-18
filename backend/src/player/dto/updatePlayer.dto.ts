@@ -21,4 +21,7 @@ export class UpdatePlayerDto extends PartialType(CreatePlayerDto) {
 
 	@IsNotEmpty()
 	isFirstWin?: boolean;
+
+	@IsNotEmpty()
+	status?: number;
 }

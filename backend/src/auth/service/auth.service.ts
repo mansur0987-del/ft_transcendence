@@ -9,7 +9,8 @@ import { authenticator } from "otplib";
 import { toDataURL } from 'qrcode';
 import { LoginPlayerDto } from "src/player/dto/loginPlayer.dto";
 import { HttpService } from '@nestjs/axios';
-import { catchError, lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
+import { PlayerStatus } from "src/player/enums/playerStatus.enum";
 
 
 @Injectable()
@@ -74,7 +75,7 @@ export class AuthService {
 		const playerInDB = await this.CreatePlayer({name: lastValuePlayerInfo.data.login});
 		const accessToken = await this.getAccessToken(playerInDB.id);
 
-		await this.playerService.update(playerInDB, {isLogin : true})
+		await this.playerService.update(playerInDB, {isLogin : true, status: PlayerStatus.ONLINE})
 		const update_player = await this.playerService.GetPlayerById(playerInDB.id)
 
 		const status: ReturnStatus = {
@@ -114,7 +115,7 @@ export class AuthService {
 			await this.playerService.update(playerInDb, {isLoginFactorAuthentication : true})
 		}
 
-		await this.playerService.update(playerInDb, {isLogin : true})
+		await this.playerService.update(playerInDb, {isLogin : true, status: PlayerStatus.ONLINE})
 		const update_player = await this.playerService.GetPlayerById(playerInDb.id)
 
 		const status: ReturnStatus = {
@@ -129,7 +130,8 @@ export class AuthService {
 	async logout(player : PlayerEntity) : Promise<ReturnStatus> {
 		await this.playerService.update(player, {
 			isLogin : false,
-			isLoginFactorAuthentication : false
+			isLoginFactorAuthentication : false,
+			status: PlayerStatus.OFFLINE
 		})
 		const update_player = await this.playerService.GetPlayerById(player.id)
 

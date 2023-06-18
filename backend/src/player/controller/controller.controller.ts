@@ -39,13 +39,13 @@ export class ControllerController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/profile/:id')
-  async GetPlayerInfoById(@Param('id', ParseIntPipe) id: number): Promise<any> {
+  async GetPlayerInfoById(@Param('id', ParseIntPipe) id: number): Promise<PlayerEntity> {
     return await this.player_service.GetPlayerById(id)
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/profile')
-  async UpdatePlayerInfo(@Request() req: any, @Body() body: any): Promise<any> {
+  async UpdatePlayerInfo(@Request() req: any, @Body() body: any): Promise<PlayerEntity> {
     if (!body.updateData){
       throw new BadRequestException('Validation failed');
     }
@@ -55,7 +55,7 @@ export class ControllerController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/profile/rename')
-  async PostPlayerRename(@Request() req: any, @Body() body: any): Promise<any> {
+  async PostPlayerRename(@Request() req: any, @Body() body: any): Promise<PlayerEntity> {
     if (!body.newName){
       throw new BadRequestException('Validation failed');
     }

@@ -7,6 +7,7 @@ import { PlayerEntity } from '../entities/player.entity';
 import AvatarService from './avatar.service';
 import fs = require('fs');
 import path = require('path');
+import { PlayerStatus } from '../enums/playerStatus.enum';
 
 @Injectable()
 export class PlayerService {
@@ -38,7 +39,8 @@ export class PlayerService {
 		return await this.player_repository.save({
 			name: playerDto.name,
         	name42: playerDto.name,
-			avatarId: avatar.id
+			avatarId: avatar.id,
+			status: PlayerStatus.ONLINE
 		})
 	}
 
@@ -76,5 +78,10 @@ export class PlayerService {
 		const player = await this.GetPlayerById(userId);
 		const avatar = await this.avatarService.getFileById(player.avatarId)
 		return avatar
+	}
+
+	async setPlayerStatus(PlayerId : number, status : PlayerStatus){
+		const player = await this.GetPlayerById(PlayerId)
+		await this.update(player, {status: status})
 	}
 }
