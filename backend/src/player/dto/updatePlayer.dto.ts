@@ -1,6 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreatePlayerDto } from './creatPlayer.dto';
 import { IsNotEmpty } from 'class-validator';
+import { PlayerEntity } from '../entities/player.entity';
 
 
 export class UpdatePlayerDto extends PartialType(CreatePlayerDto) {
@@ -24,4 +25,7 @@ export class UpdatePlayerDto extends PartialType(CreatePlayerDto) {
 
 	@IsNotEmpty()
 	status?: number;
+
+	@IsNotEmpty()
+	myFriends?: PlayerEntity[]
 }

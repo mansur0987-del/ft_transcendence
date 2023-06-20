@@ -5,13 +5,16 @@ import { ControllerController } from './controller/controller.controller';
 import { PlayerEntity } from './entities/player.entity';
 import AvatarEntity from './entities/avatar.entity';
 import AvatarService from './service/avatar.service';
+import { PlayerApplicationEntity } from './entities/playerApplication.entity';
+import PlayerApplcationService from './service/playerApplication.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([
     PlayerEntity,
-    AvatarEntity
+    AvatarEntity,
+    PlayerApplicationEntity
   ])],
-  providers: [PlayerService, AvatarService],
+  providers: [PlayerService, AvatarService, PlayerApplcationService],
   controllers: [ControllerController],
   exports: [PlayerService],
 })

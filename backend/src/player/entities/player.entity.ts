@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import Avatar from './avatar.entity';
+import { PlayerApplicationEntity } from './playerApplication.entity';
 
 @Entity('player')
 export class PlayerEntity {
@@ -19,10 +20,10 @@ export class PlayerEntity {
 			nullable: true
 		}
 	)
-	public avatar?: Avatar;
+	avatar?: Avatar;
 
 	@Column({ nullable: true })
-	public avatarId?: number;
+	avatarId?: number;
 
 	@Column({default: false})
 	isLogin: boolean
@@ -53,4 +54,12 @@ export class PlayerEntity {
 
 	@DeleteDateColumn()
 	delete_at: Date
+
+	@OneToMany(() => PlayerApplicationEntity, (application) => application.sendPlayerId)
+	@JoinColumn({name: "sendPlayerId"})
+    sendApplication: PlayerApplicationEntity
+
+	@OneToMany(() => PlayerApplicationEntity, (application) => application.getPlayerId)
+	@JoinColumn({name: "getPlayerId"})
+    getApplication: PlayerApplicationEntity
 }

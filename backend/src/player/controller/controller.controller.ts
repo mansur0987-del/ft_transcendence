@@ -20,6 +20,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { Readable } from 'stream';
+import { PlayerApplicationEntity } from '../entities/playerApplication.entity';
 
 @Controller('player')
 export class ControllerController {
@@ -122,6 +123,62 @@ export class ControllerController {
 
     return new StreamableFile(stream);
   }
+
+  @Get('/sendapplycation/')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyPlayerSendApplication(@Request() req: any) {
+    return await this.player_service.getSendPlayerApplication(req.user.id)
+  }
+
+  @Get('/:id/sendapplycation/')
+  async getPlayerSendApplication(@Param('id', ParseIntPipe) id: number){
+    return await this.player_service.getSendPlayerApplication(id)
+  }
+
+  @Get('/getapplycation/')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyPlayerGetApplication(@Request() req: any) {
+    return await this.player_service.getGetPlayerApplication(req.user.id)
+  }
+
+  @Get('/:id/getapplycation/')
+  async getPlayerGetApplication(@Param('id', ParseIntPipe) id: number){
+    return await this.player_service.getGetPlayerApplication(id)
+  }
+
+  @Post('/sendapplycation/')
+  @UseGuards(AuthGuard('jwt'))
+  async setMyPlayerSendApplication(@Request() req: any, @Body() body: any) {
+    return await this.player_service.setApplication(req.user.id, body.id)
+  }
+
+  @Post('/:id/sendapplycation/')
+  async setPlayerSendApplication(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
+    return await this.player_service.setApplication(id, body.id)
+  }
+
+  @Get('/friends/')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyFriends(@Request() req: any) {
+    return await this.player_service.getFriends(req.user.id)
+  }
+
+  @Get('/:id/friends/')
+  async getFriends(@Param('id', ParseIntPipe) id: number){
+    return await this.player_service.getFriends(id)
+  }
+
+  @Post('/removeapplycation/')
+  @UseGuards(AuthGuard('jwt'))
+  async removeMyPlayerSendApplication(@Request() req: any, @Body() body: any) {
+    return await this.player_service.removeApplication(req.user.id, body.id)
+  }
+
+  @Post('/:id/removeapplycation/')
+  async removePlayerSendApplication(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
+    return await this.player_service.removeApplication(id, body.id)
+  }
+
 
   //@Get('photo')
   //async GetPhoto(): Promise<any> {

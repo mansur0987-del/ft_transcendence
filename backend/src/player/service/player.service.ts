@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreatePlayerDto } from '../dto/creatPlayer.dto';
 import { UpdatePlayerDto } from '../dto/updatePlayer.dto';
 import { PlayerEntity } from '../entities/player.entity';
@@ -8,6 +8,7 @@ import AvatarService from './avatar.service';
 import fs = require('fs');
 import path = require('path');
 import { PlayerStatus } from '../enums/playerStatus.enum';
+import PlayerApplcationService from './playerApplication.service';
 
 @Injectable()
 export class PlayerService {
@@ -15,6 +16,7 @@ export class PlayerService {
 		@InjectRepository(PlayerEntity)
 	private readonly player_repository: Repository<PlayerEntity>,
 	private readonly avatarService: AvatarService,
+	private readonly playerApplication: PlayerApplcationService
 	) {}
 
 	async GetALL(): Promise<PlayerEntity[]>{
@@ -80,8 +82,69 @@ export class PlayerService {
 		return avatar
 	}
 
-	async setPlayerStatus(PlayerId : number, status : PlayerStatus){
-		const player = await this.GetPlayerById(PlayerId)
+	async setPlayerStatus(playerId : number, status : PlayerStatus){
+		const player = await this.GetPlayerById(playerId)
 		await this.update(player, {status: status})
+	}
+
+	async getSendPlayerApplication(sendPlayerId : number){
+		const player = await this.GetPlayerById(sendPlayerId)
+		const playerSendApplication = await this.playerApplication.getSendPlayerApplication(sendPlayerId)
+		const result = {player, playerSendApplication}
+		return result
+	}
+
+	async getGetPlayerApplication(getPlayerId : number){
+		const player = await this.GetPlayerById(getPlayerId)
+		const playerGetApplication = await this.playerApplication.getGetPlayerApplication(getPlayerId)
+		return {player, playerGetApplication}
+	}
+
+	async setApplication(sendPlayerId : number, getPlayerId: number): Promise<boolean> {
+		if (sendPlayerId == getPlayerId){
+			throw new HttpException('player who send application and player who get application are the same', HttpStatus.BAD_REQUEST);
+		}
+		if (!(await this.GetPlayerById(sendPlayerId))){
+			throw new HttpException('player who send application not found', HttpStatus.BAD_REQUEST);
+		}
+		if (!(await this.GetPlayerById(getPlayerId))){
+			throw new HttpException('player who get application not found', HttpStatus.BAD_REQUEST);
+		}
+		const application = await this.playerApplication.getGetAndSendPlayerApplication(getPlayerId, sendPlayerId)
+		if (application){
+			await this.playerApplication.setFriendStatus(getPlayerId, sendPlayerId)
+		}
+		else {
+			await this.playerApplication.setSendPlayerApplication(sendPlayerId, getPlayerId)
+		}
+		return true
+	}
+
+	async removeApplication(sendPlayerId : number, getPlayerId: number): Promise<boolean>{
+		if (sendPlayerId == getPlayerId){
+			throw new HttpException('player who send application and player who get application are the same', HttpStatus.BAD_REQUEST);
+		}
+		if (!(await this.GetPlayerById(sendPlayerId))){
+			throw new HttpException('player who send application not found', HttpStatus.BAD_REQUEST);
+		}
+		if (!(await this.GetPlayerById(getPlayerId))){
+			throw new HttpException('player who get application not found', HttpStatus.BAD_REQUEST);
+		}
+		await this.playerApplication.deleteGetAndSendPlayerApplication(sendPlayerId, getPlayerId)
+		return true
+	}
+
+	async getFriends(playerId: number){
+		const player = await this.GetPlayerById(playerId)
+		const friendsId = await this.playerApplication.getFriendsId(playerId)
+		if (!friendsId){
+			const friends = {}
+			return ({player, friends})
+		}
+		const friends = await this.player_repository.findBy({
+			id: In(friendsId)
+		})
+
+		return {player, friends}
 	}
 }
