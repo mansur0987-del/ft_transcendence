@@ -1,25 +1,31 @@
-CREATE TABLE IF NOT EXISTS avatar (
+CREATE TABLE IF NOT EXISTS user (
 	id SERIAL NOT NULL PRIMARY KEY,
-	filename VARCHAR ( 100 ) NOT NULL,
-	data BYTEA NOT NULL
+	username VARCHAR ( 100 ) UNIQUE NOT NULL,
+	intraId VARCHAR ( 100 ) UNIQUE NOT NULL,
+	password VARCHAR ( 100 ) NOT NULL,
+	avatar BYTEA, -- image
+	isTwoFactorEnabled BOOLEAN DEFAULT FALSE,
+	twoFactorSecret VARCHAR ( 100 ),
+	createdAt TIMESTAMP,
+	updatedAt TIMESTAMP,
+	win INTEGER DEFAULT 0,
+	loses INTEGER DEFAULT 0,
+	status VARCHAR ( 100 ) DEFAULT 'offline'
 );
 
-CREATE TABLE IF NOT EXISTS player (
+CREATE TABLE IF NOT EXISTS achievement (
 	id SERIAL NOT NULL PRIMARY KEY,
-	name VARCHAR ( 100 ) UNIQUE NOT NULL,
-	name42 VARCHAR ( 100 ) UNIQUE NOT NULL,
-	avatarId SERIAL UNIQUE,
-	isLogin BOOLEAN DEFAULT FALSE,
-	twoFactorAuthenticationSecret VARCHAR ( 100 ),
-	isTwoFactorAuthenticationEnabled BOOLEAN DEFAULT FALSE,
-	isLoginFactorAuthentication BOOLEAN DEFAULT FALSE,
-	isFirstGame BOOLEAN DEFAULT FALSE,
-	isFirstWin BOOLEAN DEFAULT FALSE,
-	create_at TIMESTAMP,
-	update_at TIMESTAMP,
-	delete_at TIMESTAMP,
-	FOREIGN KEY (avatarId)
-		REFERENCES avatar (id)
+	name VARCHAR ( 100 ) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS players_achiev (
+	player_id SERIAL NOT NULL,
+	achievement_id SERIAL NOT NULL,
+	PRIMARY KEY (player_id, achievement_id),
+	FOREIGN KEY (player_id)
+		REFERENCES player (id),
+	FOREIGN KEY (achievement_id)
+		REFERENCES achievement (id)
 );
 
 CREATE TABLE IF NOT EXISTS game (
