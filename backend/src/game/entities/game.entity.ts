@@ -14,11 +14,11 @@ export class Game {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => PlayerEntity, user => user.games)
-  player1: PlayerEntity;
+  //@ManyToOne(() => PlayerEntity, user => user.games)
+  //player1: PlayerEntity;
 
-  @ManyToOne(() => PlayerEntity, user => user.games)
-  player2: PlayerEntity;
+  //@ManyToOne(() => PlayerEntity, user => user.games)
+  //player2: PlayerEntity;
 
   @Column({ nullable: true })
   score1: number;
@@ -44,5 +44,5 @@ export class Game {
   updated_at: Date;
 
   @Column()
-  finished_at: Date;  
+  finished_at: Date;
 }
