@@ -1,0 +1,7 @@
+{
+	"editor.defaultFormatter": "Vue.volar",
+	"editor.formatOnPaste": true,
+	"editor.formatOnSave": true,
+	"javascript.preferences.quoteStyle": "double",
+	"typescript.preferences.quoteStyle": "double"
+}

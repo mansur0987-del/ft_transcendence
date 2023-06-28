@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, UseGuards, Request, HttpCode, Response, Redirect, ForbiddenException } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Request, HttpCode, Res, Redirect, ForbiddenException } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { LoginPlayerDto } from 'src/player/dto/loginPlayer.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ReturnStatus } from '../interfaces/return.interface';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -11,13 +12,17 @@ export class AuthController {
 		) {}
 
 	@Get('login')
-	public async login(@Response() res){
-		await this.authService.login(res);
+	public async login(){
+		return await this.authService.login();
 	}
 
 	@Get('callback')
-	public async callback(@Request() req){
-		return await this.authService.callback(req.query.code)
+	public async callback(@Request() req, @Res() res: Response){
+		const result = await this.authService.callback(req.query.code)
+		const data : any = result.data
+
+		const url = process.env.FRONT_URL + '/login' + '?code=' + data.accessToken
+		res.status(302).redirect(url)
 	}
 
 	@UseGuards(AuthGuard('jwtFirstCheck'))
@@ -40,7 +45,7 @@ export class AuthController {
 
 	@Post('2fa/generate')
 	@UseGuards(AuthGuard('jwt'))
-	async register(@Request() req, @Response() res): Promise<ReturnStatus> {
+	async register(@Request() req, @Res() res: Response): Promise<ReturnStatus> {
 		return await this.authService.register(req.player, res)
 	}
 

@@ -11,6 +11,7 @@ import { LoginPlayerDto } from "src/player/dto/loginPlayer.dto";
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { PlayerStatus } from "src/player/enums/playerStatus.enum";
+import { Response } from "express";
 
 
 @Injectable()
@@ -42,14 +43,22 @@ export class AuthService {
 		return newPlayer;
 	}
 
-	async login(res: any){
+	async login(){
 		const api_42 = 'https://api.intra.42.fr/oauth/authorize';
 		const client_id = 'client_id=' + process.env.UID_42;
 		const redirect_uri = 'redirect_uri=' + process.env.REDIRECT_URI;
 		const response_type = 'response_type=code';
 		const scope = 'scope=public'
 		const redirect = api_42 + '?' + client_id + '&' + scope +  '&' + redirect_uri + '&' + response_type
-		res.redirect(redirect)
+		return redirect
+		//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080')
+		////res.header('Access-Control-Allow-Origin:','http://localhost:8080')
+		////res.header()
+		////res.header(
+		////	,
+		////	'
+		////)
+		//res.redirect(redirect)
 	}
 
 	async callback(code : string){
