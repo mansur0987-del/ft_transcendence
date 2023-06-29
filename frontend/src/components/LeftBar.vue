@@ -39,20 +39,6 @@ async function GetChat() {
 			Chat
 		</button>
 	</div>
-	<!--<div class="bar" style="position:absolute; left: 10px; top: 5px;">
-		<div class="Player" style="margin-top: 20px;">
-			<h1>Player</h1>
-		</div>
-		<div class=" Settings" style="margin-top: 20px;">
-			<h1>Settings</h1>
-		</div>
-		<div class="Game" style="margin-top: 20px;">
-			<h1>Game</h1>
-		</div>
-		<div class="Chat" style="margin-top: 20px;">
-			<h1>Chat</h1>
-		</div>
-	</div>-->
 </template>
 
 <style scoped>
