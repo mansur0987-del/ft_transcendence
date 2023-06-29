@@ -8,6 +8,10 @@ async function GetSettings() {
 	window.location.href = 'Settings'
 }
 
+async function GetPlayers() {
+	window.location.href = 'Players'
+}
+
 async function GetGame() {
 	window.location.href = 'Game'
 }
@@ -27,6 +31,11 @@ async function GetChat() {
 	<div class="button-Settings">
 		<button @click="GetSettings()">
 			Settings
+		</button>
+	</div>
+	<div class="button-Players">
+		<button @click="GetPlayers()">
+			Players
 		</button>
 	</div>
 	<div class="button-Game">
@@ -110,10 +119,44 @@ async function GetChat() {
 	transform: scale(1.1) translateY(-5px);
 }
 
-.button-Game {
+.button-Players {
 	position: absolute;
 	left: 10px;
 	top: 125px;
+	border: none;
+	color: rgb(60, 2, 55);
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+}
+
+.button-Players button {
+	background-color: #000000;
+	width: 100px;
+	margin-left: auto;
+	margin-right: auto;
+	border: none;
+	color: white;
+	padding: 20px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	transition: transform 500ms ease;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+.button-Players button:hover {
+	transform: scale(1.1) translateY(-5px);
+}
+
+.button-Game {
+	position: absolute;
+	left: 10px;
+	top: 185px;
 	border: none;
 	color: rgb(60, 2, 55);
 	padding: 15px 32px;
@@ -147,7 +190,7 @@ async function GetChat() {
 .button-Chat {
 	position: absolute;
 	left: 10px;
-	top: 185px;
+	top: 245px;
 	border: none;
 	color: rgb(60, 2, 55);
 	padding: 15px 32px;

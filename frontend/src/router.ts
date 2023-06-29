@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Player from './components/Player.vue'
 import Login from './components/Login.vue'
 import Settings from './components/Settings.vue'
+import Players from './components/Players.vue'
 import Chat from './components/Chat.vue'
 import Game from './components/Game.vue'
 import axios from "axios";
@@ -11,6 +12,7 @@ const router = createRouter({
 		{ path: '/', component: Player, name: 'Player'},
 		{ path: '/login', component: Login, name: 'Login'},
 		{ path: '/settings', component: Settings, name: 'Settings' },
+		{ path: '/players', component: Players, name: 'Players' },
 		{ path: '/chat', component: Chat, name: 'Chat' },
 		{ path: '/game', component: Game, name: 'Game' },
 		{ path: '/player', redirect: '/' }
