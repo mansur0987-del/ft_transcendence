@@ -18,10 +18,7 @@ async function GetUser() {
 	const data = (await axios.get('player/avatar', { responseType: 'arraybuffer' })).data
 	avatar.value = "data:image/*" + ";base64," + Buffer.from(data).toString('base64');
 
-
 	console.log(res)
-	//id.value = res.data["result"]
-
 }
 
 window.onload = GetUser

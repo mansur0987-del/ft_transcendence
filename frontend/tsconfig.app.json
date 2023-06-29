@@ -9,5 +9,6 @@
       "@/*": ["./src/*"]
     },
     "strict": true,
+    "types": ["vue/ref-macros"]
   }
 }
