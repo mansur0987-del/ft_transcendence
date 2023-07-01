@@ -9,6 +9,7 @@ import fs = require('fs');
 import path = require('path');
 import { PlayerStatus } from '../enums/playerStatus.enum';
 import PlayerApplcationService from './playerApplication.service';
+import QrCodeService from "./qrcode.service";
 
 @Injectable()
 export class PlayerService {
@@ -16,7 +17,8 @@ export class PlayerService {
 		@InjectRepository(PlayerEntity)
 	private readonly player_repository: Repository<PlayerEntity>,
 	private readonly avatarService: AvatarService,
-	private readonly playerApplication: PlayerApplcationService
+	private readonly playerApplication: PlayerApplcationService,
+	private readonly qrCodeServise: QrCodeService
 	) {}
 
 	async GetALL(): Promise<PlayerEntity[]>{
@@ -31,6 +33,10 @@ export class PlayerService {
 		return await this.player_repository.findOneBy({name: name})
 	}
 
+	async GetPlayerByName42(name42: string): Promise<PlayerEntity>{
+		return await this.player_repository.findOneBy({name42: name42})
+	}
+
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
 		const file: Buffer = await fs.readFileSync(
 			path.resolve(
@@ -39,8 +45,8 @@ export class PlayerService {
 		)
 		const avatar = await this.avatarService.uploadDatabaseFile(file, 'default')
 		return await this.player_repository.save({
-			name: playerDto.name,
-        	name42: playerDto.name,
+			name: playerDto.name42,
+        	name42: playerDto.name42,
 			avatarId: avatar.id,
 			status: PlayerStatus.ONLINE
 		})
@@ -80,6 +86,20 @@ export class PlayerService {
 		const player = await this.GetPlayerById(userId);
 		const avatar = await this.avatarService.getFileById(player.avatarId)
 		return avatar
+	}
+
+	async addQrCode(userId: number, imageBuffer: Buffer, filename: string) {
+		const QrCode = await this.qrCodeServise.uploadDatabaseFile(imageBuffer, filename);
+		await this.player_repository.update(userId, {
+		  qrcodeId: QrCode.id
+		});
+		return QrCode;
+	  }
+
+	async getQrCode(userId: number){
+		const player = await this.GetPlayerById(userId);
+		const QrCode = await this.qrCodeServise.getFileById(player.qrcodeId)
+		return QrCode
 	}
 
 	async setPlayerStatus(playerId : number, status : PlayerStatus){

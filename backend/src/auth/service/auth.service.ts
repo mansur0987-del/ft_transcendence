@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { CreatePlayerDto } from "src/player/dto/creatPlayer.dto";
@@ -12,6 +12,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { PlayerStatus } from "src/player/enums/playerStatus.enum";
 import { Response } from "express";
+import QrCode from "src/player/entities/qrcode.entity";
 
 
 @Injectable()
@@ -23,9 +24,9 @@ export class AuthService {
 		private readonly httpService: HttpService,
 	) {}
 
-	async getAccessToken(playerId: number): Promise<string>{
+	async getAccessToken(name42: string): Promise<string>{
 		const accessToken = this.jwtService.signAsync({
-			id: playerId
+			name42: name42
 		},
         {
           secret: this.configService.get<string>('JWT_ACCESS_KEY'),
@@ -35,7 +36,7 @@ export class AuthService {
 	}
 
 	async CreatePlayer(createPlayerDto: CreatePlayerDto): Promise<PlayerEntity> {
-		const playerInDb = await this.playerService.GetPlayerById(createPlayerDto.id);
+		const playerInDb = await this.playerService.GetPlayerByName42(createPlayerDto.name42);
 		if (playerInDb)
 			return playerInDb
 
@@ -51,14 +52,6 @@ export class AuthService {
 		const scope = 'scope=public'
 		const redirect = api_42 + '?' + client_id + '&' + scope +  '&' + redirect_uri + '&' + response_type
 		return redirect
-		//res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080')
-		////res.header('Access-Control-Allow-Origin:','http://localhost:8080')
-		////res.header()
-		////res.header(
-		////	,
-		////	'
-		////)
-		//res.redirect(redirect)
 	}
 
 	async callback(code : string){
@@ -81,8 +74,8 @@ export class AuthService {
 		const GetPlayerInfo = await this.httpService.get('https://api.intra.42.fr/v2/me', {headers: header})
 		const lastValuePlayerInfo = await lastValueFrom(GetPlayerInfo)
 
-		const playerInDB = await this.CreatePlayer({name: lastValuePlayerInfo.data.login});
-		const accessToken = await this.getAccessToken(playerInDB.id);
+		const playerInDB = await this.CreatePlayer({name42: lastValuePlayerInfo.data.login});
+		const accessToken = await this.getAccessToken(playerInDB.name42);
 
 		await this.playerService.update(playerInDB, {isLogin : true, status: PlayerStatus.ONLINE})
 		const update_player = await this.playerService.GetPlayerById(playerInDB.id)
@@ -101,12 +94,7 @@ export class AuthService {
 		const playerInDb = await this.playerService.GetPlayerById(player.id);
 		if (playerInDb.isTwoFactorAuthenticationEnabled){
 			if (!data.twoFactorAuthenticationCode){
-				const status: ReturnStatus = {
-					success: false,
-					statusCode: 401,
-					message: 'code 2fa is null',
-				};
-				return status;
+				throw new BadRequestException('code 2fa is null');
 			}
 
 			const isCodeValid = authenticator.verify({
@@ -114,12 +102,7 @@ export class AuthService {
 				secret: playerInDb.twoFactorAuthenticationSecret,
 			});
 			if (!isCodeValid) {
-				const status: ReturnStatus = {
-					success: false,
-					statusCode: 401,
-					message: 'Wrong authentication code 2fa',
-				};
-				return status;
+				throw new BadRequestException('Wrong authentication code 2fa');
 			}
 			await this.playerService.update(playerInDb, {isLoginFactorAuthentication : true})
 		}
@@ -154,13 +137,8 @@ export class AuthService {
 	}
 
 	async turn_off (player: PlayerEntity, twoFactorAuthenticationCode: string) : Promise<ReturnStatus> {
-		if (twoFactorAuthenticationCode == null || player.twoFactorAuthenticationSecret == null){
-			const status: ReturnStatus = {
-				success: false,
-				statusCode: 401,
-				message: 'twoFactorAuthenticationCode or player.twoFactorAuthenticationSecret is null',
-			};
-			return status;
+		if (twoFactorAuthenticationCode == null){
+			throw new BadRequestException('twoFactorAuthenticationCode is null');
 		}
 
 		const isCodeValid = authenticator.verify({
@@ -168,16 +146,10 @@ export class AuthService {
 			secret: player.twoFactorAuthenticationSecret,
 		});
 		if (!isCodeValid) {
-			const status: ReturnStatus = {
-				success: false,
-				statusCode: 401,
-				message: 'Wrong authentication code',
-			};
-			return status;
+			throw new BadRequestException('Wrong authentication code');
 		}
 
 		const new_player = await this.playerService.update(player, {
-			twoFactorAuthenticationSecret: null,
 			isTwoFactorAuthenticationEnabled: false,
 			isLoginFactorAuthentication: false,
 			})
@@ -191,14 +163,20 @@ export class AuthService {
 		return status;
 	}
 
-	async register(player: PlayerEntity, res: any) : Promise<ReturnStatus> {
+	async register(player: PlayerEntity) : Promise<QrCode> {
+		const qrCode = await this.playerService.getQrCode(player.id)
+		if (qrCode){
+			return qrCode
+		}
 		const { secret, otpAuthUrl } = await this.generateTwoFactorAuthenticationSecret(player);
 		await this.playerService.update(
 			player,
 			{twoFactorAuthenticationSecret: secret}
 		)
+		const newQrCodeData = await toDataURL(otpAuthUrl)
+		const newQrCode = await this.playerService.addQrCode(player.id, newQrCodeData, "file")
 
-		return res.json(await toDataURL(otpAuthUrl))
+		return newQrCode
 	}
 
 	async generateTwoFactorAuthenticationSecret(player: PlayerEntity) {
@@ -217,13 +195,8 @@ export class AuthService {
 	  }
 
 	async authenticate(player: PlayerEntity, twoFactorAuthenticationCode: string) : Promise<ReturnStatus> {
-		if (twoFactorAuthenticationCode == null || player.twoFactorAuthenticationSecret == null){
-			const status: ReturnStatus = {
-				success: false,
-				statusCode: 401,
-				message: 'twoFactorAuthenticationCode or player.twoFactorAuthenticationSecret is null',
-			};
-			return status;
+		if (twoFactorAuthenticationCode == null){
+			throw new BadRequestException('twoFactorAuthenticationCode is null');
 		}
 
 		const isCodeValid = authenticator.verify({
@@ -232,12 +205,7 @@ export class AuthService {
 		});
 
 		if (!isCodeValid) {
-			const status: ReturnStatus = {
-				success: false,
-				statusCode: 401,
-				message: 'Wrong authentication code',
-			};
-			return status;
+			throw new BadRequestException('Wrong authentication code');
 		}
 
 		await this.playerService.update(

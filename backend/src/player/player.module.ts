@@ -7,14 +7,17 @@ import AvatarEntity from './entities/avatar.entity';
 import AvatarService from './service/avatar.service';
 import { PlayerApplicationEntity } from './entities/playerApplication.entity';
 import PlayerApplcationService from './service/playerApplication.service';
+import QrCodeService from "./service/qrcode.service";
+import QrCode from "./entities/qrcode.entity";
 
 @Module({
   imports: [TypeOrmModule.forFeature([
     PlayerEntity,
     AvatarEntity,
-    PlayerApplicationEntity
+    PlayerApplicationEntity,
+    QrCode
   ])],
-  providers: [PlayerService, AvatarService, PlayerApplcationService],
+  providers: [PlayerService, AvatarService, PlayerApplcationService, QrCodeService],
   controllers: [ControllerController],
   exports: [PlayerService],
 })

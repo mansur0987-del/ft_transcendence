@@ -3,6 +3,8 @@ export class Payload {
 
 	name: string
 
+	name42: string
+
 	twoFactorAuthenticatedCode?: string;
 
 	isTwoFactorAuthenticated?: boolean;

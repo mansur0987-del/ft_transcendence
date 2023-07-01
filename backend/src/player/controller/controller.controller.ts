@@ -82,7 +82,6 @@ export class ControllerController {
   @UseGuards(AuthGuard('jwt'))
   async getAvatar(@Request() req: any, @Res({ passthrough: true }) res: Response): Promise<StreamableFile>{
     const avatar = await this.player_service.getAvatar(req.user.id)
-
     const stream = Readable.from(avatar.data);
 
     res.set({
@@ -178,28 +177,4 @@ export class ControllerController {
   async removePlayerSendApplication(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     return await this.player_service.removeApplication(id, body.id)
   }
-
-
-  //@Get('photo')
-  //async GetPhoto(): Promise<any> {
-  //  const player = await this.player_service.GetPlayerById(1)
-  //  return player.image
-  //}
-
-  //@Post('photo')
-  //@UseInterceptors(FileInterceptor('file'))
-  //async PostPhoto(
-  //  @UploadedFile(new ParseFilePipeBuilder()
-  //  .addFileTypeValidator({fileType: '.(png|jpeg|jpg)',})
-  //  .addMaxSizeValidator({maxSize: 1024 * 1024 * 4})
-  //  .build({errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY}),
-  //  ) file: Express.Multer.File,
-  //  @Res() res : Response) : Promise<any> {
-  //    res.set()
-  //    console.log('file')
-  //    console.log(file)
-  //    return {
-  //      file: file.buffer.toString(),
-  //    }
-  //  }
 }

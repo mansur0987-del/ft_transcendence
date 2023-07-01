@@ -11,14 +11,15 @@ const name42 = ref<string>()
 const avatar = ref<any>()
 
 async function GetUser() {
-	const res: any = (await axios.get('player/profile')).data
-	id.value = res.id
-	name.value = res.name
-	name42.value = res.name42
-	const data = (await axios.get('player/avatar', { responseType: 'arraybuffer' })).data
-	avatar.value = "data:image/*" + ";base64," + Buffer.from(data).toString('base64');
+	await axios.get('player/profile').then((res) => {
+		id.value = res.data.id
+		name.value = res.data.name
+		name42.value = res.data.name42
+	})
 
-	console.log(res)
+	await axios.get('player/avatar', { responseType: 'arraybuffer' }).then((res) => {
+		avatar.value = "data:image/*" + ";base64," + Buffer.from(res.data).toString('base64');
+	})
 }
 
 window.onload = GetUser

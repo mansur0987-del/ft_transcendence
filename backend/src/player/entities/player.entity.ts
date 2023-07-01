@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import Avatar from './avatar.entity';
 import { PlayerApplicationEntity } from './playerApplication.entity';
+import QrCode from "./qrcode.entity";
 
 @Entity('player')
 export class PlayerEntity {
@@ -24,6 +25,18 @@ export class PlayerEntity {
 
 	@Column({ nullable: true })
 	avatarId?: number;
+
+	@JoinColumn({ name: 'qrcodeId' })
+	@OneToOne(
+		() => QrCode,
+		{
+			nullable: true
+		}
+	)
+	qrcode?: QrCode;
+
+	@Column({ nullable: true })
+	qrcodeId?: number;
 
 	@Column({default: false})
 	isLogin: boolean

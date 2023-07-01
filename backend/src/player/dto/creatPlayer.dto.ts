@@ -5,5 +5,8 @@ export class CreatePlayerDto {
 	id?: number
 
 	@IsNotEmpty()
-	name: string;
+	name?: string;
+
+	@IsNotEmpty()
+	name42?: string;
 }
