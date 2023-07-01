@@ -2,17 +2,61 @@
 import axios from "axios";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
-const players = ref([])
-
-async function GetUsers() {
-	const res: any = (await axios.get('player/')).data
-	players.value = res;
-
+interface PlayersShows {
+	id: number,
+	name: string,
+	status: boolean,
+	needButton: boolean
 }
 
-window.onload = GetUsers
+const players = ref<any>()
+
+async function GetUsers() {
+	let deleteIdPlayer: number[] = [];
+	const data: any = (await axios.get('player/sendapplycation')).data
+	deleteIdPlayer.push(data.player.id)
+	const SendApplycation: any = data.players
+	for (let i = 0; SendApplycation[i]; i++) {
+		deleteIdPlayer.push(SendApplycation[i].id);
+	}
+	const Friends: any = (await axios.get('player/friends')).data.friends
+	for (let i = 0; Friends[i]; i++) {
+		deleteIdPlayer.push(Friends[i].id);
+	}
+	let validatePlayer: PlayersShows[] = []
+	const allPlayers = (await axios.get('player/')).data
+	for (let i = 0; allPlayers[i]; i++) {
+		let needButton = true
+		const tmpPlayer = deleteIdPlayer.find(id => id === allPlayers[i].id)
+		console.log('tmpPlayer')
+		console.log(tmpPlayer)
+		if (tmpPlayer) {
+			needButton = false
+		}
+		const newPlayer = {
+			id: allPlayers[i].id,
+			name: allPlayers[i].name,
+			status: allPlayers[i].status,
+			needButton: needButton
+		}
+		validatePlayer.push(newPlayer);
+	}
+	players.value = validatePlayer
+	console.log('players.value')
+	console.log(players.value)
+}
+
+onMounted(() => {
+	GetUsers()
+})
+
+async function PostApplication(player: any) {
+	player.needButton = false
+	await axios.post('player/sendapplycation', { 'id': player.id })
+}
+
 
 </script>
 
@@ -20,10 +64,13 @@ window.onload = GetUsers
 	<LeftBar />
 	<Logout />
 	<div class="Players">
-		<h1>Players</h1>
-		<li v-for="player in players">
-			{{ player.name }} {{ player.status ? 'Online' : 'Offline' }}
-		</li>
+		<h1>Players:
+			<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square">
+				{{ player.name }} {{ player.status ? 'Online' : 'Offline' }}
+				<button v-if="player.needButton" @click="PostApplication(player)">Add
+					friend</button>
+			</div>
+		</h1>
 	</div>
 </template>
 

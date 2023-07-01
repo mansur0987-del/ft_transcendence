@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
@@ -64,7 +64,9 @@ async function GetQrCode() {
 	qrCodeImg.value = (await tmp_instance.get(tmp_url_qrcode)).data
 }
 
-window.onload = checkTwoFa
+onMounted(() => {
+	checkTwoFa()
+})
 
 const errorInputQrCode = ref<string>()
 const QrCodeCode = ref<string>()

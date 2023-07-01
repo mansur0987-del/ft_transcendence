@@ -110,14 +110,23 @@ export class PlayerService {
 	async getSendPlayerApplication(sendPlayerId : number){
 		const player = await this.GetPlayerById(sendPlayerId)
 		const playerSendApplication = await this.playerApplication.getSendPlayerApplication(sendPlayerId)
-		const result = {player, playerSendApplication}
-		return result
+		let players: PlayerEntity[] = []
+		for (let i = 0; playerSendApplication[i]; i++) {
+			const tmp_player = await this.GetPlayerById(playerSendApplication[i].getPlayerId)
+			players.push(tmp_player)
+		}
+		return {player, players}
 	}
 
 	async getGetPlayerApplication(getPlayerId : number){
 		const player = await this.GetPlayerById(getPlayerId)
 		const playerGetApplication = await this.playerApplication.getGetPlayerApplication(getPlayerId)
-		return {player, playerGetApplication}
+		let players: PlayerEntity[] = []
+		for (let i = 0; playerGetApplication[i]; i++) {
+			const tmp_player = await this.GetPlayerById(playerGetApplication[i].sendPlayerId)
+			players.push(tmp_player)
+		}
+		return {player, players}
 	}
 
 	async setApplication(sendPlayerId : number, getPlayerId: number): Promise<boolean> {
