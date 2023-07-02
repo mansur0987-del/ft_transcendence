@@ -1,34 +1,88 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
-import { GameService } from './game.service';
-import { CreateGameDto } from './dto/create-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
+import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway()
-export class GameGateway {
-  constructor(private readonly gameService: GameService) {}
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private connectedClients: Socket[] = [];
+  gameService: any;
+  server: any;
 
-  @SubscribeMessage('createGame')
-  create(@MessageBody() createGameDto: CreateGameDto) {
-    return this.gameService.create(createGameDto);
+  handleConnection(client: Socket) {
+    this.connectedClients.push(client);
   }
 
-  @SubscribeMessage('findAllGame')
-  findAll() {
-    return this.gameService.findAll();
+  handleDisconnect(client: Socket) {
+    const index = this.connectedClients.indexOf(client);
+    if (index !== -1) {
+      this.connectedClients.splice(index, 1);
+    }
   }
 
-  @SubscribeMessage('findOneGame')
-  findOne(@MessageBody() id: number) {
-    return this.gameService.findOne(id);
+  @SubscribeMessage('play')
+  async handlePlay(@ConnectedSocket() client: Socket, @MessageBody() payload: any) {
+    const { gameId, move } = payload;
+
+    try {
+      const game = await this.gameService.getGame(gameId);
+      if (!game) {
+        throw new Error('Game not found');
+      }
+
+      // Perform game logic based on the received move
+      const updatedGame = this.gameService.performGameLogic(game, move);
+
+      // Update the game state
+      await this.gameService.updateGame(gameId, updatedGame);
+
+      // Emit the updated game state to all players in the game room
+      this.server.to(gameId).emit('gameState', updatedGame);
+    } catch (error) {
+      // Handle errors and emit an error message to the player
+      this.emitErrorMessage(client, error.message);
+    }
   }
 
-  @SubscribeMessage('updateGame')
-  update(@MessageBody() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(updateGameDto.id, updateGameDto);
+  private emitGameState(gameId: string, game: any) {
+    // Emit the game state to all players in the game room
+    this.server.to(gameId).emit('gameState', game);
   }
 
-  @SubscribeMessage('removeGame')
-  remove(@MessageBody() id: number) {
-    return this.gameService.remove(id);
+  private emitErrorMessage(client: Socket, errorMessage: string) {
+    // Emit an error message to the specific player
+    client.emit('error', errorMessage);
   }
 }
+
+
+
+// import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+// import { Server, Socket } from 'socket.io';
+
+// @WebSocketGateway()
+// export class GameGateway {
+//   @WebSocketServer()
+//   server: Server;
+
+//     // Handler for the 'connection' event
+//   handleConnection(client: Socket) {
+//     // Logic to handle a new WebSocket connection
+//   }
+
+//   @SubscribeMessage('play')
+//   handlePlay(client: Socket, payload: any) {
+//     // Perform game logic based on the received move
+//     // You can access the payload data sent by the client
+//     // and use it to update the game state or perform any other necessary actions
+//   }
+
+//   // Handler for the 'disconnect' event
+//   handleDisconnect(client: Socket) {
+//     // Logic to handle a WebSocket disconnection
+//   }
+
+//   // Handler for other events and messages
+//   @SubscribeMessage('event')
+//   handleEvent(client: Socket, payload: any) {
+//     // Handle other WebSocket events and messages
+//   }
+// }
