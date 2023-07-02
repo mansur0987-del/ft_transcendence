@@ -14,14 +14,18 @@ class PlayerApplcationService {
 	async getSendPlayerApplication(sendPlayerId: number): Promise<PlayerApplicationEntity[]>{
 		return await this.playerApplicationRepository.find({
 			where: {
-				sendPlayerId: sendPlayerId}
+				sendPlayerId: sendPlayerId,
+				status: 0
+			}
 			})
 	}
 
 	async getGetPlayerApplication(getPlayerId: number): Promise<PlayerApplicationEntity[]>{
 		return await this.playerApplicationRepository.find({
 			where: {
-				getPlayerId: getPlayerId}
+				getPlayerId: getPlayerId,
+				status: 0
+			}
 			})
 	}
 

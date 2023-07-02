@@ -169,6 +169,8 @@ export class AuthService {
 			return qrCode
 		}
 		const { secret, otpAuthUrl } = await this.generateTwoFactorAuthenticationSecret(player);
+		console.log('secret')
+		console.log(secret)
 		await this.playerService.update(
 			player,
 			{twoFactorAuthenticationSecret: secret}
@@ -195,19 +197,24 @@ export class AuthService {
 	  }
 
 	async authenticate(player: PlayerEntity, twoFactorAuthenticationCode: string) : Promise<ReturnStatus> {
+
 		if (twoFactorAuthenticationCode == null){
 			throw new BadRequestException('twoFactorAuthenticationCode is null');
 		}
-
+		console.log('twoFactorAuthenticationCode')
+		console.log(twoFactorAuthenticationCode)
+		console.log('player.twoFactorAuthenticationSecret')
+		console.log(player.twoFactorAuthenticationSecret)
 		const isCodeValid = authenticator.verify({
 			token: twoFactorAuthenticationCode,
 			secret: player.twoFactorAuthenticationSecret,
 		});
-
+		console.log("22222")
 		if (!isCodeValid) {
 			throw new BadRequestException('Wrong authentication code');
 		}
 
+		console.log("33333")
 		await this.playerService.update(
 			player,
 			{isTwoFactorAuthenticationEnabled: true, isLoginFactorAuthentication: false}
