@@ -3,10 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlayerModule } from './player/player.module';
 import { AuthModule } from './auth/auth.module';
-//import { GamesModule } from './games/games.module';
-//import { Games1Module } from './games_1/games_1.module';
-//import { PongModule } from './pong/pong.module';
-//import { Pong1Module } from './pong1/pong1.module';
 import { GameModule } from './game/game.module';
 
 @Module({
@@ -30,10 +26,6 @@ import { GameModule } from './game/game.module';
     }),
     PlayerModule,
     AuthModule,
-    //GamesModule,
-    //Games1Module,
-    //PongModule,
-    //Pong1Module,
     GameModule,
   ],
   providers: [],
