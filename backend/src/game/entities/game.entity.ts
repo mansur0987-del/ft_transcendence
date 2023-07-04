@@ -1,4 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, Timestamp, CreateDateColumn } from 'typeorm';
+import { PlayerEntity } from '../../player/entities/player.entity';
+import { UpdateGameDTO } from '../dto/update-game.dto';
 
 @Entity()
 export class Game {
@@ -6,14 +8,23 @@ export class Game {
   id: number;
 
   @Column()
-  player1: number;
+  player1: PlayerEntity;
 
   @Column()
-  player2: number;
+  player2: PlayerEntity;
 
-  @Column()
+  @Column({ default: '' })
   result: string;
 
+  @Column()
+  player1Score: number;
+
+  @Column()
+  player2Score: number;
+  
+  @Column()
+  gameState: string;
+
   @CreateDateColumn()
-  createdAT: Timestamp;
+  createdAt: Date;
 }
