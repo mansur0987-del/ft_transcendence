@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
 @Entity()
 export class Game {
@@ -14,6 +14,6 @@ export class Game {
   @Column()
   result: string;
 
-  @Column()
-  createdAT: Timestamp;
+  @CreateDateColumn()
+  createdAT: Date;
 }

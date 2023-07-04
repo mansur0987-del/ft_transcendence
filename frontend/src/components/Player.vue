@@ -4,6 +4,7 @@ import { ref, onMounted } from "vue";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
+import { useRoute } from 'vue-router';
 
 const id = ref<number>()
 const name = ref<string>()
@@ -13,14 +14,32 @@ const isFirstWin = ref<boolean>()
 const avatar = ref<any>()
 const players = ref<any[]>([])
 
+
+const route = useRoute();
+
 async function GetUser() {
-	await axios.get('player/profile').then((res) => {
-		id.value = res.data.id
-		name.value = res.data.name
-		name42.value = res.data.name42
-		isFirstGame.value = res.data.isFirstGame
-		isFirstWin.value = res.data.isFirstWin
-	})
+	console.log('route.params.id')
+	console.log(route.params.id)
+	if (!route.params.id) {
+		await axios.get('player/profile').then((res) => {
+			id.value = res.data.id
+			name.value = res.data.name
+			name42.value = res.data.name42
+			isFirstGame.value = res.data.isFirstGame
+			isFirstWin.value = res.data.isFirstWin
+		})
+	}
+	else {
+		const url = 'player/profile/' + route.params.id
+		await axios.get(url).then((res) => {
+			id.value = res.data.id
+			name.value = res.data.name
+			name42.value = res.data.name42
+			isFirstGame.value = res.data.isFirstGame
+			isFirstWin.value = res.data.isFirstWin
+		})
+	}
+
 
 	await axios.get('player/avatar', { responseType: 'arraybuffer' }).then((res) => {
 		avatar.value = "data:image/*" + ";base64," + Buffer.from(res.data).toString('base64');

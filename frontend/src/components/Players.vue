@@ -69,6 +69,8 @@ async function PostApplication(player: any) {
 				{{ player.name }} {{ player.status ? 'Online' : 'Offline' }}
 				<button v-if="player.needButton" @click="PostApplication(player)">Add
 					friend</button>
+				<h2 @click='' :href='`router {{ $route.params.id }}`'>User </h2>
+				<router-view></router-view>
 			</div>
 		</h1>
 	</div>

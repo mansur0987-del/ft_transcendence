@@ -11,7 +11,8 @@ import axios from "axios";
 
 const router = createRouter({
 	routes: [
-		{ path: '/', component: Player, name: 'Player'},
+		{ path: '/', component: Player, name: 'PlayerDef'},
+		{ path: '/:id', component: Player, name: 'Player'},
 		{ path: '/login', component: Login, name: 'Login'},
 		{ path: '/qrverificate', component: QrVerificate, name: 'QrVerificate'},
 		{ path: '/settings', component: Settings, name: 'Settings' },
@@ -19,7 +20,8 @@ const router = createRouter({
 		{ path: '/friendlist', component: FriendList, name: 'FriendList' },
 		{ path: '/chat', component: Chat, name: 'Chat' },
 		{ path: '/game', component: Game, name: 'Game' },
-		{ path: '/player', redirect: '/' }
+		{ path: '/player', redirect: '/' },
+		{ path: '*', redirect: '/' }
 	],
 	history: createWebHistory()
 })
@@ -41,7 +43,7 @@ router.beforeEach(async (to, from) => {
 	console.log(status)
 	if (status === 0){
 		if (to.name === 'Login' || to.name === 'QrVerificate'){
-			return Player
+			return PlayerDef
 		}
 	}
 	else if (status === 2){
@@ -56,7 +58,7 @@ router.beforeEach(async (to, from) => {
 		else if (to.name === 'Login' && to.query.code !== undefined){
 			localStorage.setItem('token', to.query.code);
 			axios.defaults.headers.common['Authorization'] = 'Bearer ' + to.query.code
-			return Player
+			return PlayerDef
 		}
 	}
 })
