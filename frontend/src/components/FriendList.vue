@@ -21,6 +21,10 @@ onMounted(() => {
 	GetFriends()
 })
 
+async function RedirectToProfile(player: any) {
+	window.location.href = '/' + player.id
+}
+
 </script>
 
 <template>
@@ -33,6 +37,7 @@ onMounted(() => {
 				{{ friend.name }} {{ friend.status ? "Online" : "Offline" }}
 				<button @click="PostDeleteFriend(friend)">
 					Delete friend</button>
+				<button @click="RedirectToProfile(friend)">Get info</button>
 			</li>
 		</template>
 	</div>

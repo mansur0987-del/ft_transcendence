@@ -12,6 +12,7 @@ import axios from "axios";
 const router = createRouter({
 	routes: [
 		{ path: '/', component: Player, name: 'Player'},
+		{ path: '/:id', component: Player, name: 'PlayerOther'},
 		{ path: '/login', component: Login, name: 'Login'},
 		{ path: '/qrverificate', component: QrVerificate, name: 'QrVerificate'},
 		{ path: '/settings', component: Settings, name: 'Settings' },
