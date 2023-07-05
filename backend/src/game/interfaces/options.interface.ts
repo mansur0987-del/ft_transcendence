@@ -1,6 +1,6 @@
 import { Mode } from './mode.interface';
 
-interface Field {
+interface Playground {
   width: number;
   height: number;
 }
@@ -22,7 +22,7 @@ interface Score {
 }
 
 export interface GameOptions {
-  field: Field;
+  playground: Playground;
   ball: Ball;
   paddle: Paddle;
   score: Score;

@@ -8,6 +8,6 @@ export interface Player {
   player: PlayerEntity;
   room: Room;
   mode: Mode;
-  tray: number;
+  paddle: number;
   score: number;
 }

@@ -7,7 +7,7 @@ import { GameState } from './entities/game.entity';
 export class GameService {
   private games: GameEntity[] = [];
 
-  initializeGame(player1: PlayerEntity, player2: PlayerEntity): GameEntity {
+  create(player1: PlayerEntity, player2: PlayerEntity): GameEntity {
     // Create a new game instance
     const game: GameEntity = {
       id: this.generateGameId(),
@@ -23,6 +23,10 @@ export class GameService {
     // Store the game in the games array
     this.games.push(game);
     return game;
+  }
+
+  findAll(): GameEntity[] {
+    return this.games;
   }
 
   getPlayerGames(playerId: number): GameEntity[] {

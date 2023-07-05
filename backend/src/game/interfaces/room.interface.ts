@@ -21,7 +21,7 @@ export enum State {
 }
 
 export interface Room {
-//   code: string;
+  code: string;
   state: State;
   players: Array<Player>;
 //   spectators?: Array<Socket>;

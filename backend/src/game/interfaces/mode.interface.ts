@@ -1,4 +1,5 @@
 export enum Mode {
-  NORMAL = 0,
-  FAST
+  DEFAULT = 0,
+  FAST_BALL,
+  SMALL_PADDLE
 }
