@@ -2,6 +2,13 @@ import { Entity, Column, PrimaryGeneratedColumn, Timestamp, CreateDateColumn } f
 import { PlayerEntity } from '../../player/entities/player.entity';
 import { UpdateGameDTO } from '../dto/update-game.dto';
 
+export enum GameState {
+  STARTING = 'starting',
+  RUNNING = 'running',
+  ENDED = 'ended',
+  PAUSED = 'paused',
+}
+
 @Entity()
 export class Game {
   @PrimaryGeneratedColumn()
@@ -23,7 +30,7 @@ export class Game {
   player2Score: number;
   
   @Column()
-  gameState: string;
+  gameState: GameState;
 
   @CreateDateColumn()
   createdAt: Date;

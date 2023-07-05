@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Game } from './entities/game.entity';
 import { PlayerEntity } from '../player/entities/player.entity';
+import { GameState } from './entities/game.entity';
 
 @Injectable()
 export class GameService {
@@ -10,18 +11,16 @@ export class GameService {
     // Create a new game instance
     const game: Game = {
       id: this.generateGameId(),
-      player1,
-      player2,
+      player1: player1,
+      player2: player2,
       player1Score: 0,
       player2Score: 0,
-      gameState: 'active',
+      gameState: GameState.STARTING,
       createdAt: new Date(),
       result: ''
     };
-
     // Store the game in the games array
     this.games.push(game);
-
     return game;
   }
 
@@ -79,7 +78,7 @@ export class GameService {
 
     // Check for win condition
     if (game.player1Score >= 10 || game.player2Score >= 10) {
-      game.gameState = 'finished';
+      game.gameState = GameState.ENDED;
     }
 
     // Update the game state if needed

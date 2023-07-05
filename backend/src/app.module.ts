@@ -5,6 +5,7 @@ import { PlayerModule } from './player/player.module';
 import { AuthModule } from './auth/auth.module';
 import { GamesModule } from './games/games.module';
 import { GamesTestModule } from './games_test/games_test.module';
+import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GamesTestModule } from './games_test/games_test.module';
     AuthModule,
     GamesModule,
     GamesTestModule,
+    TestModule,
   ],
   providers: [],
   controllers: [],

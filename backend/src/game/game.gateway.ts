@@ -57,37 +57,3 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('error', errorMessage);
   }
 }
-
-
-
-// import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-// import { Server, Socket } from 'socket.io';
-
-// @WebSocketGateway()
-// export class GameGateway {
-//   @WebSocketServer()
-//   server: Server;
-
-//     // Handler for the 'connection' event
-//   handleConnection(client: Socket) {
-//     // Logic to handle a new WebSocket connection
-//   }
-
-//   @SubscribeMessage('play')
-//   handlePlay(client: Socket, payload: any) {
-//     // Perform game logic based on the received move
-//     // You can access the payload data sent by the client
-//     // and use it to update the game state or perform any other necessary actions
-//   }
-
-//   // Handler for the 'disconnect' event
-//   handleDisconnect(client: Socket) {
-//     // Logic to handle a WebSocket disconnection
-//   }
-
-//   // Handler for other events and messages
-//   @SubscribeMessage('event')
-//   handleEvent(client: Socket, payload: any) {
-//     // Handle other WebSocket events and messages
-//   }
-// }
