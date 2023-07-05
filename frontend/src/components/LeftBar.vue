@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlayerStatus from './PlayerStatus.vue'
 
 async function GetPlayer() {
 	window.location.href = 'Player'
@@ -27,6 +28,7 @@ async function GetChat() {
 </script>
 
 <template>
+	<PlayerStatus />
 	<div class="button-Player">
 		<button @click="GetPlayer()">
 			Player

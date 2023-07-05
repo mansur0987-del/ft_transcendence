@@ -72,7 +72,7 @@ async function RedirectToProfile(player: any) {
 	<div class="Players">
 		<h1>Players:
 			<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square">
-				{{ player.name }} {{ player.status ? 'Online' : 'Offline' }}
+				{{ player.name }} {{ player.id === playerId ? 'Online' : player.status ? 'Online' : 'Offline' }}
 				<button v-if="player.needButton" @click="PostApplication(player)">Add
 					friend</button>
 				<button v-if="player.id !== playerId" @click="RedirectToProfile(player)">Get info</button>
