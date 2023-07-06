@@ -12,10 +12,12 @@ interface PlayersShows {
 }
 
 const players = ref<any>()
+const playerId = ref<number>()
 
 async function GetUsers() {
 	let deleteIdPlayer: number[] = [];
 	const data: any = (await axios.get('player/sendapplycation')).data
+	playerId.value = data.player.id
 	deleteIdPlayer.push(data.player.id)
 	const SendApplycation: any = data.players
 	for (let i = 0; SendApplycation[i]; i++) {
@@ -57,6 +59,10 @@ async function PostApplication(player: any) {
 	await axios.post('player/sendapplycation', { 'id': player.id })
 }
 
+async function RedirectToProfile(player: any) {
+	window.location.href = '/' + player.id
+}
+
 
 </script>
 
@@ -66,11 +72,10 @@ async function PostApplication(player: any) {
 	<div class="Players">
 		<h1>Players:
 			<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square">
-				{{ player.name }} {{ player.status ? 'Online' : 'Offline' }}
+				{{ player.name }} {{ player.id === playerId ? 'Online' : player.status ? 'Online' : 'Offline' }}
 				<button v-if="player.needButton" @click="PostApplication(player)">Add
 					friend</button>
-				<h2 @click='' :href='`router {{ $route.params.id }}`'>User </h2>
-				<router-view></router-view>
+				<button v-if="player.id !== playerId" @click="RedirectToProfile(player)">Get info</button>
 			</div>
 		</h1>
 	</div>
