@@ -7,9 +7,7 @@ import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const id = ref<number>()
 const name = ref<string>()
-const name42 = ref<string>()
 const isFirstGame = ref<boolean>()
 const isFirstWin = ref<boolean>()
 const avatar = ref<any>()
@@ -58,15 +56,17 @@ onMounted(() => {
 <template>
 	<LeftBar />
 	<Logout />
+	<div class="Avatar">
+		<img :src="avatar" />
+	</div>
 	<div class="Player">
-		<img :src="avatar" style="width: 124px;" />
-		<h1> username: {{ name }}</h1>
+		<h1>Username: {{ name }}</h1>
 		<h1>Achievements:
 			<p v-show="isFirstGame === true" style="color: blue;"> You played one or more games</p>
 			<p v-show="isFirstWin === true" style="color: green;"> You won one or more games</p>
 		</h1>
 		<h1>Applications:
-			<template v-for="player in players">
+			<template class="Applications" v-for="player in players">
 				<li v-if="player.name !== ''">
 					{{ player.name }}
 					<button @click="PostApplication(player)">
@@ -81,4 +81,34 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.Avatar {
+	width: 124px
+}
+
+.Player {
+	position: fixed;
+	top: 30%;
+	left: 15%;
+}
+
+.Player button {
+	background-color: greenyellow;
+	width: 100px;
+	margin-left: auto;
+	margin-right: auto;
+	border: none;
+	color: black;
+	padding: 10px 10px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	transition: transform 500ms ease;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+.Player button:hover {
+	transform: scale(1.1) translateY(-5px);
+}
 </style>

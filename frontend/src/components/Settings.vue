@@ -139,4 +139,9 @@ async function TurnOffQrCode(code: string) {
 </template>
 
 <style scoped>
+.Settings {
+	position: absolute;
+	top: 5%;
+	left: 30%;
+}
 </style>
