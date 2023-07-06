@@ -20,8 +20,7 @@ const router = createRouter({
 		{ path: '/friendlist', component: FriendList, name: 'FriendList' },
 		{ path: '/chat', component: Chat, name: 'Chat' },
 		{ path: '/game', component: Game, name: 'Game' },
-		{ path: '/player', redirect: '/' },
-		{ path: '*', redirect: '/' }
+		{ path: '/player', redirect: '/' }
 	],
 	history: createWebHistory()
 })
@@ -43,7 +42,7 @@ router.beforeEach(async (to, from) => {
 	console.log(status)
 	if (status === 0){
 		if (to.name === 'Login' || to.name === 'QrVerificate'){
-			return PlayerDef
+			return Player
 		}
 	}
 	else if (status === 2){
@@ -58,7 +57,7 @@ router.beforeEach(async (to, from) => {
 		else if (to.name === 'Login' && to.query.code !== undefined){
 			localStorage.setItem('token', to.query.code);
 			axios.defaults.headers.common['Authorization'] = 'Bearer ' + to.query.code
-			return PlayerDef
+			return Player
 		}
 	}
 })
