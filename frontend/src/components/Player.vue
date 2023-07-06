@@ -15,9 +15,6 @@ const isFirstWin = ref<boolean>()
 const avatar = ref<any>()
 const players = ref<any[]>([])
 
-
-const route = useRoute();
-
 async function GetUser() {
 	let url = 'player/profile/'
 	if (route.params.id) {
