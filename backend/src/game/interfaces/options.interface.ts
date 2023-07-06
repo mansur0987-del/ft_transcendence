@@ -1,6 +1,6 @@
 import { Mode } from './mode.interface';
 
-interface Playground {
+interface Playground { // == DISPLAY
   width: number;
   height: number;
 }

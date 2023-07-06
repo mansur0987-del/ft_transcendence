@@ -15,7 +15,7 @@ interface Ball {
 export enum State {
   WAITING,
   STARTING,
-//   COUNTDOWN,
+  // COUNTDOWN,
   INGAME,
   END,
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameEntity } from './entities/game.entity';
 import { GameGateway } from './game.gateway';
-import { GameService } from './game.service';
+import { GameService } from './services/game.service';
 import { RoomService } from "./services/room.service";
 import { GameController } from "./controllers/game.controller";
 import { PlayerModule } from "src/player/player.module";

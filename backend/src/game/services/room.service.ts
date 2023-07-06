@@ -181,11 +181,14 @@ export class RoomService {
         const loser = room.players.find(
           (player1) => player1.player.id != player.player.id,
       ).player;
+      // THE ARG PASSED IS ALWAYS THE WINNER
       const winner = player.player;
+      // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES 
       const score = room.players.map((player) => player.score);
 
       room.players.forEach(player => this.deleteSock(player.socket));
-      // await this.playerService.updateLevel(winner, loser); // UPDATELEVEL COMES FROM PLAYER>SERVICE AND UPDATES LVLV 4R, FUCK THIS SHIT
+
+      // SAVE THE DATA IN MATCH ENTITY
       await this.matchService.create({
         score,
         winner,
@@ -193,24 +196,48 @@ export class RoomService {
       } as MatchEntity);
     }
   }
+  // DOES IT WORK FOR BOTH CLIENTS? 
+  ready(player: Player, mode: Mode): void {
+    player.mode = mode;
+    this.startGame(player.room);
+  }
+
+  /* 
+  * STARTS THE GAME
+  */
+  startCalc(room: Room): void {
+    // if (room.state != State.COUNTDOWN) return;
+    this.game.resetBall(room);
+    room.state = State.INGAME;
+  }
+
+  @Interval(1000 / 60)
+  loop(): void {
+    for (const room of this.rooms.values())
+      if (room.state == State.INGAME) this.game.updateGame(room);
+  }
+
   async deleteSock(socket: Socket): Promise<any> {
     if (this.queue.indexOf(socket) != -1)
       return this.queue.splice(this.queue.indexOf(socket), 1);
 
-    for (const room of this.rooms.values()) {
-      if (room.spectators && room.spectators.indexOf(socket) != -1)
-        return room.spectators.splice(room.spectators.indexOf(socket), 1);
+      // AS LONG AS WE DO NOT HAVE SPECTATORS, WE REMOVE THEESE 3 LINES
+     for (const room of this.rooms.values()) {
+    //   if (room.spectators && room.spectators.indexOf(socket) != -1)
+    //     return room.spectators.splice(room.spectators.indexOf(socket), 1);
 
+    // TRAVERSE ALL THE PLAYERS IN THE ROOM AND REMOVE THE PLAYER THAT IS CONNECTED TO THE SOCKET (ARGUMENT)
       for (const player of room.players)
         if (player.socket.id == socket.id) {
+          // WHY DOES STOP THE GAME FOR THE OPPONENT?
           await this.stopGame(
             room,
-            room.players.find((player1) => player1.user.id != player.user.id),
+            room.players.find((player1) => player1.player.id != player.player.id),
           );
           room.players.splice(room.players.indexOf(player), 1);
           break;
         }
-
+      // IF THE ROOM IS EMPTY, DELETE IT
       if (!room.players.length) return this.rooms.delete(room.code);
     }
   }
