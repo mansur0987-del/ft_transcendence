@@ -1,16 +1,72 @@
 <script setup lang="ts">
-import LeftBar from './LeftBar.vue'
-import Logout from './Logout.vue'
+import { onMounted, ref } from "vue";
+import ExitGame from './ExitGame.vue'
+
+const score = ref<{
+	first: number,
+	second: number
+}>()
+
+score.value = { first: 0, second: 0 }
+
+
+const key = ref<string>()
+async function keyFunc(e: any) {
+	if (e.code === 'ArrowUp') {
+		key.value = 'UP'
+		console.log(key.value)
+	}
+	else if (e.code === 'ArrowDown') {
+		key.value = 'DOWN'
+		console.log(key.value)
+	}
+}
+
+const input = document;
+onMounted(() => {
+	input.addEventListener('keydown', keyFunc)
+})
 
 </script>
 
 <template>
-	<LeftBar />
-	<Logout />
+	<ExitGame />
 	<div class="Game">
 		<h1>Game</h1>
+	</div>
+	<div class="firstScore">
+		<h1>{{ score?.first }}</h1>
+	</div>
+	<div class="secondScore">
+		<h1>{{ score?.second }}</h1>
+	</div>
+	<div class="Key">
+		{{ key }}
 	</div>
 </template>
 
 <style scoped>
+.Game {
+	position: absolute;
+	top: 10px;
+	left: 50%;
+}
+
+.firstScore {
+	position: absolute;
+	top: 10px;
+	left: 30%;
+}
+
+.secondScore {
+	position: absolute;
+	top: 10px;
+	left: 75%;
+}
+
+.Key {
+	position: absolute;
+	top: 50%;
+	left: 20%;
+}
 </style>
