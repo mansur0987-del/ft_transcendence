@@ -23,13 +23,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly authService: AuthService,
     private readonly userService: PlayerService,
     private readonly roomService: RoomService,
+    private readonly MatchService: PlayerService,
   ) {}
   @WebSocketServer()
   server: any;
 
+  // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN 
   async handleConnection(client: Socket): Promise<any> {
     try {
-      // THIS IS A RISK ZONE
+      // THIS IS A RISK ZONE 
       const token = client.handshake.query.token as string;
       // console.log("Token found!", token);
       if (!token) { return client.disconnect(); }
@@ -62,8 +64,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch {}
   }
  
-
-
   @SubscribeMessage('join-room')
   joinRoom(client: Socket, code?: string): void {
     try {
