@@ -1,88 +1,117 @@
-import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { AuthService } from '../auth/service/auth.service';
+import { Mode } from './interfaces/mode.interface';
+import { RoomService } from './services/room.service';
+import { Player } from './interfaces/player.interface';
+import { Room } from './interfaces/room.interface';
+import { PlayerService } from 'src/player/service/player.service';
+import { PlayerStatus } from 'src/player/enums/playerStatus.enum';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: { origin: '*' },
+  namespace: 'pong',
+})
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private connectedClients: Socket[] = [];
-  gameService: any;
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: PlayerService,
+    private readonly roomService: RoomService,
+    private readonly MatchService: PlayerService,
+  ) {}
+  @WebSocketServer()
   server: any;
 
-  handleConnection(client: Socket) {
-    this.connectedClients.push(client);
-  }
-
-  handleDisconnect(client: Socket) {
-    const index = this.connectedClients.indexOf(client);
-    if (index !== -1) {
-      this.connectedClients.splice(index, 1);
-    }
-  }
-
-  @SubscribeMessage('play')
-  async handlePlay(@ConnectedSocket() client: Socket, @MessageBody() payload: any) {
-    const { gameId, move } = payload;
-
+  // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN 
+  async handleConnection(client: Socket): Promise<any> {
     try {
-      const game = await this.gameService.getGame(gameId);
-      if (!game) {
-        throw new Error('Game not found');
-      }
+      // THIS IS A RISK ZONE 
+      const token = client.handshake.query.token as string;
+      // console.log("Token found!", token);
+      if (!token) { return client.disconnect(); }
+      // THIS IS A RISK ZONE
+      const user = await this.authService.callback(token); // MAYBE CALLBACK INSTEAD OF RETRIEVEUSER (authService.retrieveUser(client);)
+      if (!user) { return client.disconnect(); }
 
-      // Perform game logic based on the received move
-      const updatedGame = this.gameService.performGameLogic(game, move);
-
-      // Update the game state
-      await this.gameService.updateGame(gameId, updatedGame);
-
-      // Emit the updated game state to all players in the game room
-      this.server.to(gameId).emit('gameState', updatedGame);
-    } catch (error) {
-      // Handle errors and emit an error message to the player
-      this.emitErrorMessage(client, error.message);
+      client.data.user = user;
+      client.emit('info', { user });
+    } catch (ex){
+      console.log(ex);
     }
   }
 
-  private emitGameState(gameId: string, game: any) {
-    // Emit the game state to all players in the game room
-    this.server.to(gameId).emit('gameState', game);
+  async handleDisconnect(client: Socket): Promise<any> {
+    try {
+      if (!client.data.user) return;
+
+      await this.roomService.deleteSock(client);
+    } catch {}
   }
 
-  private emitErrorMessage(client: Socket, errorMessage: string) {
-    // Emit an error message to the specific player
-    client.emit('error', errorMessage);
+  @SubscribeMessage('add')
+  joinQueue(client: Socket): void {
+    try {
+      if (!client.data.user) {
+          return;
+      }
+      this.roomService.addSock(client);
+    } catch {}
+  }
+ 
+  @SubscribeMessage('join-room')
+  joinRoom(client: Socket, code?: string): void {
+    try {
+      if (!client.data.user) return;
+
+      let room: Room = this.roomService.findRoom(code);
+      if (!room) room = this.roomService.createRoom(code);
+
+      this.roomService.joinRoom(client, room);
+    } catch {}
+  }
+
+  @SubscribeMessage('ready')
+  onReady(client: Socket, input: Mode): void {
+    try {
+
+      if (!client.data.user) return;
+
+      const player: Player = this.roomService.findPlayer(client.data.user.id);
+      if (!player) return;
+
+      this.roomService.ready(player, input);
+    } catch {}
+  }
+
+  @SubscribeMessage('start')
+  onStart(client: Socket): void {
+    try {
+      if (!client.data.user) return;
+
+      const player: Player = this.roomService.findPlayer(client.data.user.id);
+      if (!player || !player.room) return;
+
+      this.roomService.startCalc(player.room);
+    } catch {}
+  }
+
+  @SubscribeMessage('update-paddle')
+  updatePaddle(client: Socket, paddle: number): void {
+    try {
+      if (!client.data.user) return;
+
+      const player: Player = this.roomService.findPlayer(client.data.user.id);
+      if (!player) return;
+
+      player.paddle = paddle * player.room.options.playground.height;
+      const playerIndex = player.room.players.indexOf(player);
+      RoomService.emit(player.room, 'paddle', playerIndex, paddle);
+    } catch {}
   }
 }
-
-
-
-// import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-// import { Server, Socket } from 'socket.io';
-
-// @WebSocketGateway()
-// export class GameGateway {
-//   @WebSocketServer()
-//   server: Server;
-
-//     // Handler for the 'connection' event
-//   handleConnection(client: Socket) {
-//     // Logic to handle a new WebSocket connection
-//   }
-
-//   @SubscribeMessage('play')
-//   handlePlay(client: Socket, payload: any) {
-//     // Perform game logic based on the received move
-//     // You can access the payload data sent by the client
-//     // and use it to update the game state or perform any other necessary actions
-//   }
-
-//   // Handler for the 'disconnect' event
-//   handleDisconnect(client: Socket) {
-//     // Logic to handle a WebSocket disconnection
-//   }
-
-//   // Handler for other events and messages
-//   @SubscribeMessage('event')
-//   handleEvent(client: Socket, payload: any) {
-//     // Handle other WebSocket events and messages
-//   }
-// }
