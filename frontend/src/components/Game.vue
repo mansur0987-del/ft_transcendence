@@ -2,6 +2,9 @@
 import { onMounted, ref } from "vue";
 import ExitGame from './ExitGame.vue'
 
+const test = ref<string>()
+let count: number = 10
+
 const score = ref<{
 	first: number,
 	second: number
@@ -12,12 +15,17 @@ score.value = { first: 0, second: 0 }
 
 const key = ref<string>()
 async function keyFunc(e: any) {
+	console.log(e.code)
 	if (e.code === 'ArrowUp') {
 		key.value = 'UP'
+		count++;
+		test.value = count + 'px'
 		console.log(key.value)
 	}
 	else if (e.code === 'ArrowDown') {
 		key.value = 'DOWN'
+		count--;
+		test.value = count + 'px'
 		console.log(key.value)
 	}
 }
@@ -54,7 +62,7 @@ onMounted(() => {
 
 .firstScore {
 	position: absolute;
-	top: 10px;
+	top: v-bind(test);
 	left: 30%;
 }
 
