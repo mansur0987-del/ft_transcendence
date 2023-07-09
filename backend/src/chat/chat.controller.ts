@@ -10,7 +10,7 @@ export class ChatController {
 
   @Post()
   create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
+    return this.chatService.addRawToChat(1, false, undefined);
   }
 
   @Get()

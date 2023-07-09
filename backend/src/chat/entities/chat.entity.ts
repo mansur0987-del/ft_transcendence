@@ -5,6 +5,9 @@ export class Chat {
     @PrimaryGeneratedColumn()
     id: number;
     
+    @Column({nullable: false})
+    chat_name: string;
+
     @Column({nullable: false })
     type_id: number; // 0 - private 1 - public
     
