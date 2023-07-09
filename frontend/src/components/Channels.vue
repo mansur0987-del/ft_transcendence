@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import WindowCreateChannel from './CreateChannel.vue'
 
 const emit = defineEmits<{
 	(e: 'GetChannelId', chennelId: number): void
@@ -9,10 +10,26 @@ async function GetChannelIdFromClick(clickChannelId: number) {
 	emit("GetChannelId", clickChannelId)
 }
 
+const WindowForCreateChannel = ref<number>(0);
+
+async function CreateChannel() {
+	WindowForCreateChannel.value = 1;
+}
+async function EmitCloseWindow() {
+	WindowForCreateChannel.value = 0
+}
+
 </script>
 
 <template>
-	<div class="Channels">
+	<WindowCreateChannel v-if="WindowForCreateChannel" @CreateChannelWindowIsClose='EmitCloseWindow' />
+	<div class='Channels'>
+		<p>{{ WindowForCreateChannel }}</p>
+		<div class="buttonCreateChannel">
+			<button @click="CreateChannel()">
+				Create
+			</button>
+		</div>
 		<h1>Channels</h1>
 		<p @click="GetChannelIdFromClick(1)" style="cursor: pointer; color: blue">
 			Push 1

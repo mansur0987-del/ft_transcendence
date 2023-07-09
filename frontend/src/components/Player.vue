@@ -28,14 +28,20 @@ async function GetUser() {
 		console.log(res)
 	})
 
-
-	await axios.get('player/avatar', { responseType: 'arraybuffer' }).then((res) => {
+	url = 'player/avatar/'
+	if (route.params.id) {
+		url = url + route.params.id;
+	}
+	await axios.get(url, { responseType: 'arraybuffer' }).then((res) => {
 		avatar.value = "data:image/*" + ";base64," + Buffer.from(res.data).toString('base64');
 	})
 
-	await axios.get('player/getapplycation').then((res) => {
-		players.value = res.data.players
-	})
+	if (!route.params.id) {
+		await axios.get('player/getapplycation').then((res) => {
+			players.value = res.data.players
+		})
+	}
+
 }
 
 async function PostApplication(player: any) {
@@ -56,16 +62,14 @@ onMounted(() => {
 <template>
 	<LeftBar />
 	<Logout />
-	<div class="Avatar">
-		<img :src="avatar" />
-	</div>
+	<img class="Avatar" :src="avatar" />
 	<div class="Player">
 		<h1>Username: {{ name }}</h1>
 		<h1>Achievements:
 			<p v-show="isFirstGame === true" style="color: blue;"> You played one or more games</p>
 			<p v-show="isFirstWin === true" style="color: green;"> You won one or more games</p>
 		</h1>
-		<h1>Applications:
+		<h1 v-if="!route.params.id">Applications:
 			<template class="Applications" v-for="player in players">
 				<li v-if="player.name !== ''">
 					{{ player.name }}
@@ -82,7 +86,10 @@ onMounted(() => {
 
 <style scoped>
 .Avatar {
-	width: 124px
+	position: fixed;
+	width: 400px;
+	top: 100px;
+	left: 50%;
 }
 
 .Player {
