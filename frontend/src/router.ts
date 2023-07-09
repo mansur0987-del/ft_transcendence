@@ -7,12 +7,13 @@ import Players from './components/Players.vue'
 import FriendList from './components/FriendList.vue'
 import Chat from './components/Chat.vue'
 import Game from './components/Game.vue'
+import PathNotFound from './components/PathNotFound.vue'
 import axios from "axios";
 
 const router = createRouter({
 	routes: [
-		{ path: '/', component: Player, name: 'Player'},
-		{ path: '/:id', component: Player, name: 'PlayerOther'},
+		{ path: '/player', component: Player, name: 'Player'},
+		{ path: '/player/:id', component: Player, name: 'PlayerOther'},
 		{ path: '/login', component: Login, name: 'Login'},
 		{ path: '/qrverificate', component: QrVerificate, name: 'QrVerificate'},
 		{ path: '/settings', component: Settings, name: 'Settings' },
@@ -20,7 +21,8 @@ const router = createRouter({
 		{ path: '/friendlist', component: FriendList, name: 'FriendList' },
 		{ path: '/chat', component: Chat, name: 'Chat' },
 		{ path: '/game', component: Game, name: 'Game' },
-		{ path: '/player', redirect: '/' }
+		{ path: '/', redirect: '/player' },
+		{ path: '/:pathMatch(.*)*', component: PathNotFound, name: 'PathNotFound' },
 	],
 	history: createWebHistory()
 })

@@ -19,13 +19,15 @@ async function GetUser() {
 		url = url + route.params.id;
 	}
 	await axios.get(url).then((res) => {
-		if (!res.data) {
-			window.location.href = 'Player'
+		if (!res.data.name) {
+			window.location.assign('http://' + window.location.host + '/pathnotfound')
 		}
 		name.value = res.data.name
 		isFirstGame.value = res.data.isFirstGame
 		isFirstWin.value = res.data.isFirstWin
 		console.log(res)
+	}).catch(() => {
+		window.location.assign('http://' + window.location.host + '/pathnotfound')
 	})
 
 	url = 'player/avatar/'
@@ -50,7 +52,7 @@ async function PostApplication(player: any) {
 }
 
 async function RedirectToProfile(player: any) {
-	window.location.href = '/' + player.id
+	window.location.href = '/player/' + player.id
 }
 
 onMounted(() => {

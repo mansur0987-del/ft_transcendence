@@ -2,27 +2,27 @@
 import PlayerStatus from './PlayerStatus.vue'
 
 async function GetPlayer() {
-	window.location.href = 'Player'
+	window.location.assign('http://' + window.location.host + '/player')
 }
 
 async function GetSettings() {
-	window.location.href = 'Settings'
+	window.location.assign('http://' + window.location.host + '/settings')
 }
 
 async function GetPlayers() {
-	window.location.href = 'Players'
+	window.location.assign('http://' + window.location.host + '/players')
 }
 
 async function GetFriendList() {
-	window.location.href = 'FriendList'
+	window.location.assign('http://' + window.location.host + '/friendlist')
 }
 
 async function GetGame() {
-	window.location.href = 'Game'
+	window.location.assign('http://' + window.location.host + '/game')
 }
 
 async function GetChat() {
-	window.location.href = 'Chat'
+	window.location.assign('http://' + window.location.host + '/chat')
 }
 
 </script>

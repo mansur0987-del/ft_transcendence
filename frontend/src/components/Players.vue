@@ -60,7 +60,7 @@ async function PostApplication(player: any) {
 }
 
 async function RedirectToProfile(player: any) {
-	window.location.href = '/' + player.id
+	window.location.href = '/player/' + player.id
 }
 
 
