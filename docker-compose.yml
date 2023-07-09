@@ -10,8 +10,6 @@ services:
       TZ: GMT-4
       PGTZ: GMT-4
     volumes:
-      - ./PostgeSQL/create_table.sql:/docker-entrypoint-initdb.d/create_table.sql
-      - ./PostgeSQL/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
       #- ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - ${TYPEORM_PORT}:${TYPEORM_PORT}
