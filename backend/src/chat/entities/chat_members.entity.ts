@@ -1,7 +1,11 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('chat_members')
 export class Chat_members {
+
+    @PrimaryGeneratedColumn()
+    id: number;
+
     @Column({ nullable: false })
     chat_id: number; 
     

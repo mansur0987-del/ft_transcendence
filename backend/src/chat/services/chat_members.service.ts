@@ -72,6 +72,27 @@ export class ChatMemberService {
     return await this.chat_members_repository.find({where: {player_id: player_id}})
   }
 
+  async isMember(chat_id: number, player_id: number): Promise<boolean>{
+    let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
+    if (ch == undefined)
+      return false;
+    return (ch.member_flg);
+  }
+
+  async isAdm(chat_id: number, player_id: number): Promise<boolean>{
+    let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
+    if (ch == undefined)
+      return false;
+    return (ch.admin_flg);
+  }
+
+  async isOwner(chat_id: number, player_id: number): Promise<boolean>{
+    let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
+    if (ch == undefined)
+      return false;
+    return (ch.owner_flg);
+  }
+
   async findAllMutedInChat(chat_id: number): Promise<Chat_members[]>{
     return await this.chat_members_repository.createQueryBuilder()
                   .select('chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts')

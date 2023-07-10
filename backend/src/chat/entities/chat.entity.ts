@@ -9,7 +9,7 @@ export class Chat {
     chat_name: string;
 
     @Column({nullable: false })
-    type_id: number; // 0 - private 1 - public
+    isPrivate: boolean; // 0 - private 1 - public
     
     @Column({nullable: false })
     have_password: boolean;
