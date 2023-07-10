@@ -1,6 +1,7 @@
-import {Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {Column, Entity } from 'typeorm'
 
-export class Chat {
+@Entity('player_blocks')
+export class Player_blocks {
     @Column({nullable: false })
     player_id: number; 
     

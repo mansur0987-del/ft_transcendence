@@ -8,19 +8,19 @@ import { Chat } from './entities/chat.entity';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Post()
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.addRawToChat(1, false, undefined);
+  @Post('/')
+  create() {
+    return this.chatService.addRawToChat(1, 'NewChat', false, undefined);
   }
 
-  @Get()
+  @Get('/')
   async findAll(){
     return await this.chatService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.chatService.findOne(+id);
+    return this.chatService.findOneById(+id);
   }
 
   @Patch(':id')
@@ -30,6 +30,6 @@ export class ChatController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.chatService.remove(+id);
+    return this.chatService.removeRawInChat(+id);
   }
 }

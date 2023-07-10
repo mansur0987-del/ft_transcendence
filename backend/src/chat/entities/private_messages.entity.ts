@@ -1,6 +1,7 @@
 import {Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
-export class Chat {
+@Entity('private_messages')
+export class Private_messages {
     @PrimaryGeneratedColumn()
     id: number; 
     

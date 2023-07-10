@@ -2,7 +2,7 @@ import {Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 
 @Entity('chat_messages')
-export class chat_messages {
+export class Chat_messages {
     @PrimaryGeneratedColumn()
     id: number; //message id
     

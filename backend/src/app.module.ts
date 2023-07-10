@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PlayerModule } from './player/player.module';
+import { ChatModule } from './chat/chat.module'
 import { AuthModule } from './auth/auth.module';
 import { GameModule } from './game/game.module';
 
@@ -25,6 +26,7 @@ import { GameModule } from './game/game.module';
       }),
     }),
     PlayerModule,
+    ChatModule,
     AuthModule,
     GameModule,
   ],

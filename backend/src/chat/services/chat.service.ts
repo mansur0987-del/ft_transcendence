@@ -1,9 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
-import { Chat } from './entities/chat.entity';
-import { chat_messages } from "./entities/chat_messages.entity";
+import { Chat } from '../entities/chat.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -12,20 +9,43 @@ export class ChatService {
   private readonly chat_repository: Repository<Chat>
   ) { }
 
-  async addRawToChat(type_id: number, isProtected: boolean, pass: string): Promise<Chat>{
-    return await this.chat_repository.save({
+  async addRawToChat(type_id: number, chat_name: string, isProtected: boolean, pass: string):
+  Promise<Chat>{
+    try {
+      return await this.chat_repository.save({
       type_id: type_id,
+      chat_name: chat_name,
       have_password: isProtected,
       password: pass
     });
+    }
+    catch (ex) {
+      throw new Error(`addRawToChat error: ${ex.message}.`);
+    }
   }
 
   async removeRawInChat(chat_id: number) {
     const chatRaw = await this.findOneById(chat_id);
     if (!chatRaw) { //check condition
-      throw new HttpException('Chat not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Chat not found', HttpStatus.NOT_FOUND);
     }
     await this.chat_repository.remove([chatRaw])
+  }
+
+  async updateRawInChat(id: number, newChatRaw: Chat): Promise<Chat> {
+    try {
+      this.removeRawInChat(id);
+      return await this.chat_repository.save({
+      id: id,
+      type_id: newChatRaw.type_id,
+      chat_name: newChatRaw.chat_name,
+      have_password: newChatRaw.have_password,
+      password: newChatRaw.password
+    });
+    }
+    catch (ex) {
+      throw new Error(`addRawToChat error: ${ex.message}.`);
+    }
   }
 
   async findAll() : Promise<Chat[]> {
@@ -40,9 +60,5 @@ export class ChatService {
 
   async findAllByType(type_id: number): Promise<Chat[]> {
     return await this.chat_repository.find({where: {type_id: type_id}});
-  }
-
-  update(id: number, updateChatDto: UpdateChatDto) {
-    return `This action updates a #${id} chat`;
   }
 }

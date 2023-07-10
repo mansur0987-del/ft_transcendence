@@ -14,6 +14,6 @@ export class Chat {
     @Column({nullable: false })
     have_password: boolean;
 
-    @Column({length: 100 })
+    @Column({nullable: true, length: 100 })
     password: string; //CRYPTED
 }

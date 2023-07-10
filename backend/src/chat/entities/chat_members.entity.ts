@@ -1,9 +1,7 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { PlayerEntity } from "src/player/entities/player.entity";
-import { Chat } from "./chat.entity";
+import { Column, Entity } from 'typeorm';
 
 @Entity('chat_members')
-export class chat_members {
+export class Chat_members {
     @Column({ nullable: false })
     chat_id: number; 
     
@@ -15,6 +13,9 @@ export class chat_members {
 
     @Column({ nullable: false })
     admin_flg: boolean;
+
+    @Column({ nullable: false })
+    member_flg: boolean;
 
     @Column({ nullable: false })
     banned_to_ts: Date
