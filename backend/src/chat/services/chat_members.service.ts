@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { Chat_members } from "../entities/chat_members.entity";
+import { UpdateChatDto } from "../dto/update-chat.dto";
 
 @Injectable()
 export class ChatMemberService {
@@ -33,6 +34,11 @@ export class ChatMemberService {
     }
   }
 
+  async removeAllByChatId(chat_id: number) {
+    const toRemove: Chat_members[] = await this.findAllByChatId(chat_id);
+    await this.chat_members_repository.remove(toRemove);
+  }
+
   async removeRawInChatMembers(chat_id: number, player_id: number) {
     const toRemove = this.findAllByIds(chat_id, player_id);
     if (!toRemove) {
@@ -41,15 +47,18 @@ export class ChatMemberService {
     await this.chat_members_repository.remove(await toRemove);
   }
 
-  async updateRawInChatMembers(chat_id: number, 
-                            player_id: number, 
-                            owner_flg: boolean, 
-                            admin_flg: boolean,
-                            member_flg: boolean,
-                            banned_to_ts: Date,
-                            muted_to_ts: Date): Promise<Chat_members>{
-      this.removeRawInChatMembers(chat_id, player_id);
-      return await this.addRawToChatMembers(chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts)
+  async updateRawInChatMembers(actualV: Chat_members, updDto: UpdateChatDto): Promise<Chat_members>{
+      if (!updDto.owner_flg)
+        updDto.owner_flg = actualV.owner_flg;
+      if (!updDto.admin_flg)
+        updDto.admin_flg = actualV.admin_flg;
+      if (!updDto.member_flg)
+        updDto.member_flg = actualV.member_flg;
+      if (!updDto.banned_to_ts)
+        updDto.banned_to_ts = actualV.banned_to_ts;
+      if (!updDto.muted_to_ts)
+        updDto.muted_to_ts = actualV.muted_to_ts;
+      return await this.chat_members_repository.save(updDto);
   }
 
   async findAllChatMembers(): Promise<Chat_members[]> {

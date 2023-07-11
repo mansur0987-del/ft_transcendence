@@ -59,4 +59,8 @@ export class ChatService {
   async findAllByType(isPrivate: boolean): Promise<Chat[]> {
     return await this.chat_repository.find({where: {isPrivate: isPrivate}});
   }
+
+  async findOneByName(chat_name: string): Promise<Chat>{
+    return await this.chat_repository.findOne({where: {chat_name: chat_name}});
+  }
 }
