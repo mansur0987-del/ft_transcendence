@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-	channelId: number
+	channelId?: number
 }>()
 
 </script>

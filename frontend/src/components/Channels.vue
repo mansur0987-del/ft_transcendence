@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import WindowCreateChannel from './CreateChannel.vue'
+import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
 
 const emit = defineEmits<{
 	(e: 'GetChannelId', chennelId: number): void
 }>()
 
-const WindowForCreateChannel = ref<number>(0);
+const WindowForChannel = ref<{
+	isOpen: boolean,
+	type: string,
+	channelId?: number
+}>({ isOpen: false, type: '' });
 
-async function CreateChannel() {
-	WindowForCreateChannel.value = 1;
+async function WindowChannel(type: string, channelId?: number) {
+	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId }
 }
 async function EmitCloseWindow() {
 	channels.value = (await axios.get('chat/')).data
-	WindowForCreateChannel.value = 0
+	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
 interface Channel {
@@ -22,7 +26,10 @@ interface Channel {
 	chat_name: string,
 	isPrivate: boolean,
 	have_password: boolean,
-	password: string
+	password: string,
+	isMember: boolean,
+	isAdmin: boolean,
+	isOwner: boolean,
 }
 
 const channels = ref<Channel[]>()
@@ -31,15 +38,27 @@ async function GetAllAccessChannels() {
 	channels.value = (await axios.get('chat/')).data
 }
 
-async function GetChannelIdFromClick(clickChannelId: number) {
-	emit("GetChannelId", clickChannelId)
+async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_password: boolean) {
+	if (isMember) {
+		emit("GetChannelId", channelId)
+	}
+	else if (!have_password) {
+		await axios.post('chat/joinToChannel', { chat_id: channelId }).catch((e) => {
+			console.log(e)
+		})
+		emit("GetChannelId", channelId)
+	}
+	else {
+		WindowChannel('checkPassword', channelId)
+	}
+	GetAllAccessChannels()
 }
 
-async function DelChannel(ChannelId: number) {
-	await axios.post('chat/deleteChannel', { 'chat_id': ChannelId }).catch((e) => {
+async function DelChannel(channelId: number) {
+	await axios.post('chat/deleteChannel', { 'chat_id': channelId }).catch((e) => {
 		console.log(e.response.data.message)
 	})
-	channels.value = (await axios.get('chat/')).data
+	GetAllAccessChannels()
 }
 
 onMounted(async () => {
@@ -49,18 +68,20 @@ onMounted(async () => {
 </script>
 
 <template>
-	<WindowCreateChannel v-if="WindowForCreateChannel" @CreateChannelWindowIsClose='EmitCloseWindow' />
+	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId v-if="WindowForChannel.isOpen"
+		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
 		<div class="buttonCreateChannel">
-			<button @click="CreateChannel()">
+			<button @click="WindowChannel('create')">
 				Create
 			</button>
 		</div>
 		<h1>Channels</h1>
 		<div v-for="channel in channels">
 			<p class="channel">
-				<span @click="GetChannelIdFromClick(channel.id)"> {{ channel.chat_name }} </span>
-				<button @click="DelChannel(channel.id)">Delete</button>
+				<span @click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
+					{{ channel.chat_name }} </span>
+				<button v-show="channel.isOwner" @click="DelChannel(channel.id)">Delete</button>
 			</p>
 		</div>
 	</div>
