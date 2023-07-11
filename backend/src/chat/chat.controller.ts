@@ -24,7 +24,7 @@ import { ChatMessageService } from "./services/chat_message.service";
 import { PlayerBlocksService } from "./services/players_blocks.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { PlayerService } from "src/player/service/player.service";
-
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('chat')
 export class ChatController {
@@ -45,11 +45,13 @@ export class ChatController {
   
   
   //post
-  @Post('/createChannel:id')
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/createChannel')
   async createNewChannel(@Request() req: any, @Body() src: CreateChatDto): Promise<Chat> {
     if (src.chat_name == undefined || src.isPrivate == undefined || src.have_password == undefined || (src.have_password && src.password == undefined))
       throw new BadRequestException('Validation failed');
     let result = await this.chatService.addRawToChat(src);
+    console.log(req.user)
     this.chatMembersService.addRawToChatMembers(result.id,
                                                 2, //req.user.id, fix me: where i can get user id
                                                 true,
