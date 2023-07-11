@@ -30,12 +30,17 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
+import { GeoJSON, JsonContains } from "typeorm";
+import { pairs, pairwise } from "rxjs";
+
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
               private readonly chatMembersService: ChatMemberService,
-              private readonly plService: PlayerService
+              private readonly plService: PlayerService,
+              private readonly msgService: ChatMessageService,
+              private readonly plBlocks: PlayerBlocksService
               )
               {}
 
@@ -44,6 +49,7 @@ export class ChatController {
     const salt = await bcrypt.genSalt();
     return await bcrypt.hash(pass, salt);
   }
+
   //get
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
@@ -70,29 +76,58 @@ export class ChatController {
     return result;
   }
   
+  //inside chat
   @UseGuards(AuthGuard('jwt'))
   @Get('/chatInfo')
   async getChatInfo(@Request() req: any, @Body() body: any): Promise<any> {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
-    let result: any;
+    let result: any[] = [];
     //add chat name
     const ChatInfo: Chat = await this.chatService.findOneById(body.chat_id);
-    if (!ChatInfo)
+    if (!ChatInfo || !ChatInfo.chat_name)
       throw new NotFoundException('chat not found');
-    result.chat_name = ChatInfo.chat_name;
-
+    result.push({'chat_name': ChatInfo.chat_name});
     //add relations between query's user and chat
-    result.chatUserRelations = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id)
+    result.push({'rigths_of_user': await this.chatMembersService.findOneByIds(body.chat_id, req.user.id)});
     
     //add users of chat
-    result.chatUsers = [];
     const chatUsers: any[] = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; chatUsers && chatUsers[i]; i++) {
       if (chatUsers[i].member_flg) {
         chatUsers[i].user_name = (await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
-        result.chatUsers.push(chatUsers[i]);
+        result.push({'users_info': chatUsers[i]});
       }
+    }
+    return result;
+  }
+
+  //inside chat
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/chatMessages')
+  async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any>{
+    if (!body || !body.chat_id)
+      throw new BadRequestException('have no body or chat_id in body');
+    
+    //check channel exists
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    //check is member
+    if (!this.chatMembersService.isMember(body.chat_id, req.user.id))
+      throw new ForbiddenException('You are not in this chat');
+
+    let result: any[] = [];
+    //get all messages from chat
+    const allMsg: any[] = await this.msgService.findAllByChatIdInOrder(body.chat_id);
+    for (let i = 0; allMsg && allMsg[i]; i++){
+      if (await this.plBlocks.isBlocked(req.user.id, allMsg[i].player_id))
+        continue;
+      if (allMsg[i].player_id == req.user.id)
+        allMsg[i].isOwnerOfMsg = true;
+      else
+        allMsg[i].isOwnerOfMsg = false;
+      result.push(allMsg[i]);
     }
     return result;
   }
@@ -150,6 +185,21 @@ export class ChatController {
       return this.chatMembersService.updateRawInChatMembers(chatMemberRaw, updDto);
     }
   }
+
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/setAdmin')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/unsetAdmin')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/leaveChannel')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/muteUser')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/banUser')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/setOwner')
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/addMember')
 
   //delete
   @UseGuards(AuthGuard('jwt'))
