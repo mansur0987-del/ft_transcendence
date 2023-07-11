@@ -35,6 +35,13 @@ async function GetChannelIdFromClick(clickChannelId: number) {
 	emit("GetChannelId", clickChannelId)
 }
 
+async function DelChannel(ChannelId: number) {
+	await axios.post('chat/deleteChannel', { 'chat_id': ChannelId }).catch((e) => {
+		console.log(e.response.data.message)
+	})
+	channels.value = (await axios.get('chat/')).data
+}
+
 onMounted(async () => {
 	await GetAllAccessChannels()
 })
@@ -51,8 +58,9 @@ onMounted(async () => {
 		</div>
 		<h1>Channels</h1>
 		<div v-for="channel in channels">
-			<p @click="GetChannelIdFromClick(channel.id)" style="cursor: pointer; color: blue">
-				{{ channel.chat_name }}
+			<p class="channel">
+				<span @click="GetChannelIdFromClick(channel.id)"> {{ channel.chat_name }} </span>
+				<button @click="DelChannel(channel.id)">Delete</button>
 			</p>
 		</div>
 	</div>
@@ -66,7 +74,16 @@ onMounted(async () => {
 	right: 70%;
 	background-color: antiquewhite;
 	height: 90%;
+}
 
+.channel {
+	cursor: pointer;
+	color: blue;
+	width: 200px;
+}
 
+.Channels button {
+	position: absolute;
+	right: 5%;
 }
 </style>
