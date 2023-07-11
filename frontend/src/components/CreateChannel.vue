@@ -1,17 +1,20 @@
 <script setup lang="ts">
+import axios from "axios";
 import { ref } from "vue";
 const emit = defineEmits<{
 	(e: 'CreateChannelWindowIsClose'): void
 }>()
 
 const data = ref<{
-	ChannelName: string,
-	IsPassword: Boolean,
-	Password: string
+	chat_name: string,
+	isPrivate: boolean
+	have_password: Boolean,
+	password: string
 }>({
-	ChannelName: "",
-	IsPassword: false,
-	Password: ""
+	chat_name: "",
+	isPrivate: false,
+	have_password: false,
+	password: ""
 })
 
 const error = ref<string>('')
@@ -22,10 +25,10 @@ async function Close() {
 
 async function Create() {
 	error.value = ''
-	if (!data.value.ChannelName) {
+	if (!data.value.chat_name) {
 		error.value = 'Input channel name!!!'
 	}
-	if (data.value.IsPassword && !data.value.Password) {
+	if (data.value.have_password && !data.value.password) {
 		if (error.value) {
 			error.value = error.value + '\t Input channel password!!!'
 		}
@@ -34,6 +37,9 @@ async function Create() {
 		}
 	}
 	if (!error.value) {
+		console.log('data.value')
+		console.log(data.value)
+		await axios.post('chat/createChannel', data.value)
 		Close()
 	}
 
@@ -47,13 +53,16 @@ async function Create() {
 <template>
 	<div class="Window">
 		<div class="ChannelName">
-			<input v-model="data.ChannelName" placeholder="Channel Name">
+			<input v-model="data.chat_name" placeholder="Channel Name">
+		</div>
+		<div class="PrivatCheckbox">
+			<input class='PrivatBool' type="checkbox" value=True v-model="data.isPrivate" /> Is private?
 		</div>
 		<div class="PasswordCheckbox">
-			<input class='PasswordBool' type="checkbox" value=True v-model="data.IsPassword" /> Add password
+			<input class='PasswordBool' type="checkbox" value=True v-model="data.have_password" /> Add password?
 		</div>
-		<div class="Password" v-if="data.IsPassword">
-			<input v-model="data.Password" placeholder="Channel password">
+		<div class="Password" v-if="data.have_password">
+			<input v-model="data.password" placeholder="Channel password">
 		</div>
 		<div class="Create">
 			<button @click="Create()">
@@ -94,7 +103,7 @@ async function Create() {
 	left: 5px;
 }
 
-.PasswordCheckbox {
+.PrivatCheckbox {
 	position: absolute;
 	z-index: 100;
 	top: 30px;
@@ -102,31 +111,39 @@ async function Create() {
 	color: black;
 }
 
-.Password {
+.PasswordCheckbox {
 	position: absolute;
 	z-index: 100;
 	top: 55px;
+	left: 5px;
+	color: black;
+}
+
+.Password {
+	position: absolute;
+	z-index: 100;
+	top: 80px;
 	left: 5px;
 }
 
 .Create {
 	position: absolute;
 	z-index: 100;
-	top: 80px;
+	top: 105px;
 	left: 100px;
 }
 
 .Close {
 	position: absolute;
 	z-index: 100;
-	top: 80px;
+	top: 105px;
 	left: 5px;
 }
 
 .Error {
 	position: absolute;
 	z-index: 100;
-	top: 105px;
+	top: 130px;
 	left: 5px;
 	color: red;
 }
