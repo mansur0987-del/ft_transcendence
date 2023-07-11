@@ -82,6 +82,8 @@ export class ChatController {
   async getChatInfo(@Request() req: any, @Body() body: any): Promise<any> {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
+    if (!(await this.chatMembersService.isMember(body.chat_id, req.user.id)))
+      throw new ForbiddenException('you are not a member of channel');
     let result: any[] = [];
     //add chat name
     const ChatInfo: Chat = await this.chatService.findOneById(body.chat_id);
