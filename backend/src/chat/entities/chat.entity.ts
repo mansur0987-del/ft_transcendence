@@ -1,15 +1,19 @@
 import {Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
+@Entity('chat')
 export class Chat {
     @PrimaryGeneratedColumn()
-    id: number; 
+    id: number;
+    
+    @Column({nullable: false})
+    chat_name: string;
+
+    @Column({nullable: false })
+    isPrivate: boolean; // 0 - private 1 - public
     
     @Column({nullable: false })
-    type_id: number;
-    
-    @Column()
     have_password: boolean;
 
-    @Column({length: 100 })
-    password: string;
+    @Column({nullable: true, length: 100 })
+    password: string; //CRYPTED
 }

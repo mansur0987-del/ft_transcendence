@@ -36,7 +36,7 @@ export class GameEntity {
   @Column()
   @ValidateNested()
   player2: PlayerEntity;
-  
+
   @Column({type: 'enum', enum: GameState})
   gameState: GameState;
 }
