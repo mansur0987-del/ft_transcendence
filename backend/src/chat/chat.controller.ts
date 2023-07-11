@@ -29,12 +29,19 @@ import { CreateChatDto } from "./dto/create-chat.dto";
 import { PlayerService } from "src/player/service/player.service";
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateChatDto } from "./dto/update-chat.dto";
+import * as bcrypt from 'bcrypt';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService,
               private readonly chatMembersService: ChatMemberService)
               {}
+
+  //utils
+  async getHashingPass(pass: string): Promise<string> {
+    const salt = await bcrypt.genSalt();
+    return await bcrypt.hash(pass, salt);
+  }
   //get
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
@@ -56,6 +63,8 @@ export class ChatController {
       throw new BadRequestException('Validation failed');
     if (await this.chatService.findOneByName(src.chat_name))
       throw new BadRequestException('Validation failed: this chat_name is anavaible');
+    if (src.have_password)
+      src.password = await this.getHashingPass(src.password)
     let result = await this.chatService.addRawToChat(src);
     this.chatMembersService.addRawToChatMembers(result.id,
                                                 req.user.id,
@@ -69,14 +78,15 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/joinToChannel')
-  async joinToChannel(@Request() req: any, @Body() chat_id: number, @Body() password: string) {
+  async joinToChannel(@Request() req: any, @Body() body: any) {
+    console.log('now =', new Date());
     //check chat 
-    const dstChannel = await this.chatService.findOneById(chat_id);
+    const dstChannel = await this.chatService.findOneById(body.chat_id);
     if (!dstChannel)
       throw new NotFoundException('Channel not found');
     if (dstChannel.isPrivate)
       throw new BadRequestException('Cannot join to private channel');
-    if (dstChannel.have_password && dstChannel.password != password)
+    if (dstChannel.have_password && !await bcrypt.compare(body.password, dstChannel.password))
       throw new ForbiddenException('Bad password');
 
     //check chat_member
@@ -87,8 +97,10 @@ export class ChatController {
     {
       if (chatMemberRaw.member_flg)
         throw new NotFoundException('you are already member of this channel');
-      if (chatMemberRaw.banned_to_ts >= new Date())
-        throw new ForbiddenException('you are banned to :ts', chatMemberRaw.banned_to_ts.toString());
+      if (chatMemberRaw.banned_to_ts >= new Date()) {
+        const expireDays = (chatMemberRaw.banned_to_ts.getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
+        throw new ForbiddenException('your BAN expires in ' + expireDays.toString() + ' days!');
+      }
       let updDto: UpdateChatDto = chatMemberRaw;
       updDto.member_flg = true;
       return this.chatMembersService.updateRawInChatMembers(chatMemberRaw, updDto);
@@ -116,3 +128,7 @@ export class ChatController {
   //   return this.chatService.update(+id, updateChatDto);
   // }
 }
+
+
+//$2b$10$xsBwpjCwb9CJrrQeQ540M.ij6V5WAHSzONCnG07.dw74auCpf8uo2
+//$2b$10$KBVrHQ.CQRPc9/lEo0PuBe2oCG0aOGP2QMOzp8wFDpEW5JPKq7XX2
