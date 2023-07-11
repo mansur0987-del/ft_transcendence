@@ -13,9 +13,10 @@ export class ChatService {
 
   async addRawToChat(src: CreateChatDto):
   Promise<Chat>{
+    console.log(src);
     return await this.chat_repository.save({
-      isPrivate: src.isPrivate,
       chat_name: src.chat_name,
+      isPrivate: src.isPrivate,
       have_password: src.have_password,
       password: src.password
     });

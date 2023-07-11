@@ -32,13 +32,14 @@ export class ChatController {
               private readonly chatMembersService: ChatMemberService)
               {}
   //get
+  @UseGuards(AuthGuard('jwt'))
   @Get('/')
-  async findAllForUser(): Promise<Chat[]> {
-    let result: Chat[] = [];
-    let allChats = await this.chatService.findAll();
-    for (let i: number = 0; allChats[i]; i++){
-      if (!allChats[i].isPrivate || this.chatMembersService.isMember(allChats[i].id, 2)) //fix me: how can i get user id
-        result.push(allChats[i]);
+  async findAllForUser(@Request() req: any): Promise<Chat[]> {
+    let result: Chat[] = await this.chatService.findAllByType(false);
+    let allPrivate: Chat[] = await this.chatService.findAllByType(true);
+    for (let i: number = 0; allPrivate[i]; i++){
+      if (await this.chatMembersService.isMember(allPrivate[i].id, req.user.id)) 
+        result.push(allPrivate[i]);
     }
     return result;
   }
@@ -51,9 +52,8 @@ export class ChatController {
     if (src.chat_name == undefined || src.isPrivate == undefined || src.have_password == undefined || (src.have_password && src.password == undefined))
       throw new BadRequestException('Validation failed');
     let result = await this.chatService.addRawToChat(src);
-    console.log(req.user)
     this.chatMembersService.addRawToChatMembers(result.id,
-                                                2, //req.user.id, fix me: where i can get user id
+                                                req.user.id,
                                                 true,
                                                 true,
                                                 true,

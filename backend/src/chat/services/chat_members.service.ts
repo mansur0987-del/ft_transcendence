@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Chat_members } from "../entities/chat_members.entity";
 
 @Injectable()
@@ -74,21 +74,21 @@ export class ChatMemberService {
 
   async isMember(chat_id: number, player_id: number): Promise<boolean>{
     let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
-    if (ch == undefined)
+    if (!ch)
       return false;
     return (ch.member_flg);
   }
 
   async isAdm(chat_id: number, player_id: number): Promise<boolean>{
     let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
-    if (ch == undefined)
+    if (!ch)
       return false;
     return (ch.admin_flg);
   }
 
   async isOwner(chat_id: number, player_id: number): Promise<boolean>{
     let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
-    if (ch == undefined)
+    if (!ch)
       return false;
     return (ch.owner_flg);
   }
