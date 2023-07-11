@@ -23,7 +23,7 @@ export class jwtFirstCheck extends PassportStrategy(
   async validate(payload: Payload): Promise<PlayerEntity> {
     const player = await this.playerService.GetPlayerByName42(payload.name42);
 
-    if (player.isLogin){
+    if (player?.isLogin){
       return player;
     }
   }

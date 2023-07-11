@@ -65,13 +65,17 @@ export class AuthService {
 		}
 
 		const getPlayerToken = await this.httpService.post(url_42, body);
+		console.log('111111')
 		const lastValuePlayerToken = await lastValueFrom(getPlayerToken)
+		console.log('111111')
 
 		const header = {
 			'Content-Type': 'application/json',
 			'Authorization': 'Bearer ' + lastValuePlayerToken.data.access_token,
 		}
+		console.log('111111')
 		const GetPlayerInfo = await this.httpService.get('https://api.intra.42.fr/v2/me', {headers: header})
+		console.log('111111')
 		const lastValuePlayerInfo = await lastValueFrom(GetPlayerInfo)
 
 		const playerInDB = await this.CreatePlayer({name42: lastValuePlayerInfo.data.login});
