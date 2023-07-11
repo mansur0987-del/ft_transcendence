@@ -10,13 +10,14 @@ export class ChatMemberService {
   private readonly chat_members_repository: Repository<Chat_members>
   ) { }
 
-  async addRawToChatMembers(chat_id: number, 
-                            player_id: number, 
-                            owner_flg: boolean, 
-                            admin_flg: boolean,
-                            member_flg: boolean,
-                            banned_to_ts: Date,
-                            muted_to_ts: Date):
+  async addRawToChatMembers(
+    chat_id: number, 
+    player_id: number, 
+    owner_flg: boolean, 
+    admin_flg: boolean,
+    member_flg: boolean,
+    banned_to_ts: Date,
+    muted_to_ts: Date):
   Promise<Chat_members>{
     try {
       return await this.chat_members_repository.save({
@@ -90,14 +91,14 @@ export class ChatMemberService {
 
   async isAdm(chat_id: number, player_id: number): Promise<boolean>{
     let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
-    if (!ch)
+    if (!ch || !ch.member_flg)
       return false;
     return (ch.admin_flg);
   }
 
   async isOwner(chat_id: number, player_id: number): Promise<boolean>{
     let ch: Chat_members = await this.findOneByIds(chat_id, player_id);
-    if (!ch)
+    if (!ch || !ch.admin_flg || !ch.member_flg)
       return false;
     return (ch.owner_flg);
   }

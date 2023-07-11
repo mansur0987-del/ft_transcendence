@@ -1,9 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chat } from '../entities/chat.entity';
 import { CreateChatDto } from "../dto/create-chat.dto";
 import { Repository } from 'typeorm';
-import { isUndefined } from "util";
+// import { PlayerEntity } from "src/player/entities/player.entity";
+import { NotFoundError } from "rxjs";
+// import { isUndefined } from "util";
 
 @Injectable()
 export class ChatService {
@@ -63,4 +65,11 @@ export class ChatService {
   async findOneByName(chat_name: string): Promise<Chat>{
     return await this.chat_repository.findOne({where: {chat_name: chat_name}});
   }
+
+  // async getPlayerName(player_id: number): Promise<string>{
+  //   const player: any = await this.PlayerEntity.findOne({where: {id: player_id}});
+  //   if (!player || !player.name)
+  //     throw new NotFoundException('player not found');
+  //   return player.name;
+  // }
 }
