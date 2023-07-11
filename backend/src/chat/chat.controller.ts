@@ -97,7 +97,7 @@ export class ChatController {
 
   //delete
   @UseGuards(AuthGuard('jwt'))
-  @Delete('/deleteChannel')
+  @Post('/deleteChannel')
   async removeChannel(@Request() req: any, @Body() body: any) {
     if (!body || !body.chat_id)
       throw new BadRequestException('chat id not found in body')
