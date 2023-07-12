@@ -13,7 +13,11 @@ export JWT_ACCESS_KEY=AccessSecret
 export EXPIRESIN_ACCESS_KEY=2d
 
 export UID_42=u-s4t2ud-7dc9defa856531594e86851a4f608353e257ebd040e6160f45c7da2cc4d0e2b1
+<<<<<<< Updated upstream
 export FR_42_SECRET=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
+=======
+export FR_42_SECRET=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
+>>>>>>> Stashed changes
 
 export REDIRECT_URI=http://localhost:3001/auth/callback
 
