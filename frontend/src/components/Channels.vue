@@ -77,19 +77,22 @@ onMounted(async () => {
 			</button>
 		</div>
 		<h1>Channels</h1>
-		<div v-for="channel in channels">
-			<p class="channel">
-				<span @click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
-					{{ channel.chat_name }} </span>
-				<button v-show="channel.isOwner" @click="DelChannel(channel.id)">Delete</button>
-			</p>
+		<div style="position: absolute; overflow: scroll;height: 90%;width: 288px;">
+			<div v-for="channel in channels">
+				<p class="channel">
+					<span @click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
+						{{ channel.chat_name }} </span>
+					<button v-show="channel.isOwner" @click="DelChannel(channel.id)">Delete</button>
+				</p>
+			</div>
 		</div>
+
 	</div>
 </template>
 
 <style scoped>
 .Channels {
-	position: absolute;
+	position: fixed;
 	top: 10px;
 	left: 10%;
 	right: 70%;
@@ -105,6 +108,7 @@ onMounted(async () => {
 
 .Channels button {
 	position: absolute;
-	right: 5%;
+	overflow: scroll;
+	right: 0%;
 }
 </style>
