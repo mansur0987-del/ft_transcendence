@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Chat_members } from "../entities/chat_members.entity";
 import { UpdateChatDto } from "../dto/update-chat.dto";
 
@@ -16,8 +16,8 @@ export class ChatMemberService {
     owner_flg: boolean, 
     admin_flg: boolean,
     member_flg: boolean,
-    banned_to_ts: Date,
-    muted_to_ts: Date):
+    banned_to_ts: string,
+    muted_to_ts: string):
   Promise<Chat_members>{
     try {
       return await this.chat_members_repository.save({

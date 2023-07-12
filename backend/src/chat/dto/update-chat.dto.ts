@@ -13,6 +13,6 @@ export class UpdateChatDto {
     owner_flg: boolean;
     admin_flg: boolean;
     member_flg: boolean;
-    banned_to_ts: Date;
-    muted_to_ts: Date;
+    banned_to_ts: string;
+    muted_to_ts: string;
 }

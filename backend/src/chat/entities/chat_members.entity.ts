@@ -22,8 +22,8 @@ export class Chat_members {
     member_flg: boolean;
 
     @Column({ nullable: false })
-    banned_to_ts: Date
+    banned_to_ts: string;
 
     @Column({ nullable: false })
-    muted_to_ts: Date
+    muted_to_ts: string;
 }
