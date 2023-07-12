@@ -4,10 +4,20 @@ import { ref } from "vue";
 const props = defineProps<{
 	type: string | undefined;
 	chanelId?: number;
+	myRole: number;
+	PropsUser: User
 }>()
 const emit = defineEmits<{
 	(e: 'ChannelWindowIsClose'): void
 }>()
+
+interface User {
+	user_name: string,
+	id: number,
+	role?: number,
+	banned_to_ts: string,
+	muted_to_ts: string
+}
 
 const data = ref<{
 	chat_id?: number,
@@ -15,12 +25,25 @@ const data = ref<{
 	isPrivate: boolean
 	have_password: Boolean,
 	password: string
+	role?: number
+	isMute: boolean
+	muteDays?: number
+	isUnMute: boolean
+	isBan: boolean
+	BanDays?: number
+	isUnBan: boolean
+	isKick: boolean
 }>({
 	chat_id: props.chanelId,
 	chat_name: "",
 	isPrivate: false,
 	have_password: false,
-	password: ""
+	password: "",
+	isMute: false,
+	isUnMute: false,
+	isBan: false,
+	isUnBan: false,
+	isKick: false
 })
 
 const error = ref<string>('')
@@ -42,6 +65,9 @@ async function Submit() {
 	}
 	else if (props.type === 'checkPassword' && !data.value.password) {
 		error.value = 'Input channel password!!!\n'
+	}
+	else if (props.type === 'change') {
+
 	}
 	if (!error.value) {
 		if (props.type === 'create') {
@@ -78,9 +104,55 @@ async function Submit() {
 				<input v-model="data.password" placeholder="Channel password">
 			</div>
 		</div>
-		<div class="CheckPassword" v-if="props.type === 'checkPassword'">
+		<div class="CheckPassword" v-else-if="props.type === 'checkPassword'">
 			<div class="Password">
 				<input v-model="data.password" placeholder="Channel password">
+			</div>
+		</div>
+		<div class="Change" v-else-if="props.type === 'change'">
+			<p style="color: black;">
+				Nickname: {{ props.PropsUser.user_name }}
+			</p>
+			<div class="ChangeRole" style="color: black;">
+				<p>Switch role? </p>
+				<p v-if="props.myRole === 3">
+					<input type="radio" name="role" v-model="data.role" value=3> Owner
+				</p>
+				<p>
+					<input v-if="props.PropsUser.role !== 2" type="radio" name="role" v-model="data.role" value=2> <span
+						v-if="props.PropsUser.role !== 2">Admin</span>
+				</p>
+				<p>
+					<input v-if="props.PropsUser.role !== 1" type="radio" name="role" v-model="data.role" value=1> <span
+						v-if="props.PropsUser.role !== 3">User</span>
+				</p>
+			</div>
+			<div class="Mute" style="color: black;">
+				<p v-if="new Date(props.PropsUser.muted_to_ts) > new Date()">
+					<input type="checkbox" value=True v-model="data.isUnMute"> Unmute?
+				</p>
+				<p v-else>
+					<input type="checkbox" value=True v-model="data.isMute"> Mute?
+				</p>
+				<p v-if="data.isMute">
+					<input type="number" placeholder="days" v-model="data.muteDays"> How many days?
+				</p>
+			</div>
+			<div class="Ban" style="color: black;">
+				<p v-if="new Date(props.PropsUser.banned_to_ts) > new Date()">
+					<input type="checkbox" value=True v-model="data.isUnBan"> Unban?
+				</p>
+				<p v-else>
+					<input type="checkbox" value=True v-model="data.isBan"> Ban?
+				</p>
+				<p v-if="data.isBan">
+					<input type="number" placeholder="days" v-model="data.BanDays"> How many days?
+				</p>
+			</div>
+			<div class="Kick" style="color: black;">
+				<p>
+					<input type="checkbox" value=True v-model="data.isKick"> Kick?
+				</p>
 			</div>
 		</div>
 		<div class="Footer">
@@ -119,6 +191,13 @@ async function Submit() {
 	position: absolute;
 	top: 5px;
 	left: 0%;
+}
+
+.Change {
+	position: absolute;
+	top: 5px;
+	left: 0%;
+	width: 100%;
 }
 
 .ChannelName {

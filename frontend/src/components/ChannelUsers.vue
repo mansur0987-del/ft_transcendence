@@ -16,11 +16,24 @@ const WindowForChannel = ref<{
 	channelId?: number
 }>({ isOpen: false, type: '' });
 
-async function WindowChannel(type: string, channelId?: number) {
-	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId }
+interface User {
+	user_name: string,
+	id: number,
+	role?: number,
+	banned_to_ts: string,
+	muted_to_ts: string
+	member_flg: number,
+	admin_flg: number,
+	owner_flg: number
+}
+const PropsUser = ref<User>()
+async function WindowChannel(type: string, user: User) {
+	WindowForChannel.value = { isOpen: true, type: type, channelId: actualChannelId.value }
+	user.role = user.owner_flg + user.admin_flg + user.member_flg
+	PropsUser.value = user
 }
 async function EmitCloseWindow() {
-	GetUsers()
+	await GetUsers()
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
@@ -39,6 +52,7 @@ watch(props, (newProps) => {
 const users = ref<any>()
 const myUser = ref<any>()
 const currentDate = ref<Date>(new Date())
+let myRole: number
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -48,6 +62,9 @@ async function GetUsers() {
 		}).catch((e) => {
 			console.log(e)
 		})
+		myRole = myUser.value.owner_flg + myUser.value.admin_flg + myUser.value.member_flg
+
+
 		console.log('user.value')
 		console.log(myUser.value)
 
@@ -69,15 +86,15 @@ async function LeaveChannel() {
 </script>
 
 <template>
-	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId v-if="WindowForChannel.isOpen"
-		@ChannelWindowIsClose='EmitCloseWindow' />
+	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
+		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
 	<div class="Users">
 		<button v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
 			Leave
 		</button>
 		<h1>Users {{ channelId }}</h1>
-		<div style="position: absolute; overflow: scroll">
+		<div style="position: absolute; overflow: scroll; width: 100%">
 			<div v-for="(user, index) in users">
 				<p>
 					<span>
@@ -85,8 +102,8 @@ async function LeaveChannel() {
 						{{ user.user_name }}
 						{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
 					</span>
-					<button v-show="(myUser.id != user.id) && (myUser.owner_flg || (myUser.admin_flg && !user.owner_flg))"
-						@click="WindowChannel('change')" style="position: absolute; right: 0%;">
+					<button v-show="(myRole !== 1 && (myUser.id != user.id)) || (myRole === 2 && !user.owner_flg)"
+						@click="WindowChannel('change', user)" style="position: absolute; right: 0%;">
 						Setting
 					</button>
 				</p>
