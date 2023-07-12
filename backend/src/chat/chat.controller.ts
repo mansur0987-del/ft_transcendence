@@ -30,8 +30,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
-import { GeoJSON, JsonContains } from "typeorm";
-import { pairs, pairwise } from "rxjs";
+import { getChatInfoDto } from "./dto/getChatInfo.dto";
 
 
 @Controller('chat')
@@ -84,21 +83,21 @@ export class ChatController {
       throw new BadRequestException('have no body or chat_id in body');
     if (!(await this.chatMembersService.isMember(body.chat_id, req.user.id)))
       throw new ForbiddenException('you are not a member of channel');
-    let result: any[] = [];
+    let result: getChatInfoDto = new getChatInfoDto;
     //add chat name
     const ChatInfo: Chat = await this.chatService.findOneById(body.chat_id);
     if (!ChatInfo || !ChatInfo.chat_name)
       throw new NotFoundException('chat not found');
-    result.push({'chat_name': ChatInfo.chat_name});
+    result.chat_name = ChatInfo.chat_name;
     //add relations between query's user and chat
-    result.push({'rigths_of_user': await this.chatMembersService.findOneByIds(body.chat_id, req.user.id)});
+    result.rigths_of_user = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
     
     //add users of chat
     const chatUsers: any[] = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; chatUsers && chatUsers[i]; i++) {
       if (chatUsers[i].member_flg) {
         chatUsers[i].user_name = (await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
-        result.push({'users_info': chatUsers[i]});
+        result.users_info.push(chatUsers[i]);
       }
     }
     return result;
