@@ -52,7 +52,7 @@ watch(props, (newProps) => {
 const users = ref<any>()
 const myUser = ref<any>()
 const currentDate = ref<Date>(new Date())
-let myRole: number
+const myRole = ref<number>()
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -62,7 +62,7 @@ async function GetUsers() {
 		}).catch((e) => {
 			console.log(e)
 		})
-		myRole = myUser.value.owner_flg + myUser.value.admin_flg + myUser.value.member_flg
+		myRole.value = myUser.value.owner_flg + myUser.value.admin_flg + myUser.value.member_flg
 
 
 		console.log('user.value')
@@ -102,7 +102,7 @@ async function LeaveChannel() {
 						{{ user.user_name }}
 						{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
 					</span>
-					<button v-show="(myRole !== 1 && (myUser.id != user.id)) || (myRole === 2 && !user.owner_flg)"
+					<button v-show="(myUser.id != user.id) && (myRole === 3 || (myRole === 2 && !user.owner_flg))"
 						@click="WindowChannel('change', user)" style="position: absolute; right: 0%;">
 						Setting
 					</button>

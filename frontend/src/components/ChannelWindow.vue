@@ -5,7 +5,7 @@ const props = defineProps<{
 	type: string | undefined;
 	chanelId?: number;
 	myRole: number;
-	PropsUser: User
+	PropsUser: User | undefined
 }>()
 const emit = defineEmits<{
 	(e: 'ChannelWindowIsClose'): void
@@ -25,7 +25,8 @@ const data = ref<{
 	isPrivate: boolean
 	have_password: Boolean,
 	password: string
-	role?: number
+	player_id?: number
+	role?: string
 	isMute: boolean
 	muteDays?: number
 	isUnMute: boolean
@@ -39,6 +40,7 @@ const data = ref<{
 	isPrivate: false,
 	have_password: false,
 	password: "",
+	player_id: props.PropsUser?.id,
 	isMute: false,
 	isUnMute: false,
 	isBan: false,
@@ -67,7 +69,59 @@ async function Submit() {
 		error.value = 'Input channel password!!!\n'
 	}
 	else if (props.type === 'change') {
-
+		console.log('data.value.role')
+		console.log(data.value.role)
+		if (data.value.role === '3') {
+			console.log('111111')
+			await axios.post('chat/setOwner', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
+		else if (data.value.role === '2') {
+			await axios.post('chat/setAdmin', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
+		else if (data.value.role === '1') {
+			await axios.post('chat/unsetAdmin', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
+		if (data.value.isMute) {
+			if (!data.value.muteDays) {
+				error.value = 'input mute days'
+			}
+			else {
+				await axios.post('chat/muteUser', { chat_id: data.value.chat_id, player_id: data.value.player_id, days: data.value.muteDays }).catch((e) => {
+					error.value = e.response.data.message
+				})
+			}
+		}
+		else if (data.value.isUnMute) {
+			await axios.post('chat/unmuteUser', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
+		if (data.value.isBan) {
+			if (!data.value.BanDays) {
+				error.value = 'input ban days'
+			}
+			else {
+				await axios.post('chat/banUser', { chat_id: data.value.chat_id, player_id: data.value.player_id, days: data.value.BanDays }).catch((e) => {
+					error.value = e.response.data.message
+				})
+			}
+		}
+		else if (data.value.isUnBan) {
+			await axios.post('chat/unbanUser', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
+		if (data.value.isKick) {
+			await axios.post('chat/kickUser', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
+				error.value = e.response.data.message
+			})
+		}
 	}
 	if (!error.value) {
 		if (props.type === 'create') {
@@ -111,20 +165,21 @@ async function Submit() {
 		</div>
 		<div class="Change" v-else-if="props.type === 'change'">
 			<p style="color: black;">
-				Nickname: {{ props.PropsUser.user_name }}
+				Nickname: {{ props.PropsUser?.user_name }}
 			</p>
 			<div class="ChangeRole" style="color: black;">
 				<p>Switch role? </p>
+				<input type="radio" name="role" v-model="data.role" value='0' checked> No change
 				<p v-if="props.myRole === 3">
-					<input type="radio" name="role" v-model="data.role" value=3> Owner
+					<input type="radio" name="role" v-model="data.role" value='3'> Owner
 				</p>
 				<p>
-					<input v-if="props.PropsUser.role !== 2" type="radio" name="role" v-model="data.role" value=2> <span
-						v-if="props.PropsUser.role !== 2">Admin</span>
+					<input v-if="props.PropsUser?.role !== 2" type="radio" name="role" v-model="data.role" value='2'> <span
+						v-if="props.PropsUser?.role !== 2">Admin</span>
 				</p>
 				<p>
-					<input v-if="props.PropsUser.role !== 1" type="radio" name="role" v-model="data.role" value=1> <span
-						v-if="props.PropsUser.role !== 3">User</span>
+					<input v-if="props.PropsUser?.role !== 1" type="radio" name="role" v-model="data.role" value='1'> <span
+						v-if="props.PropsUser?.role !== 3">User</span>
 				</p>
 			</div>
 			<div class="Mute" style="color: black;">
@@ -177,7 +232,7 @@ async function Submit() {
 	z-index: 99;
 	border: none;
 	color: rgb(255, 255, 255);
-	padding: 100px 80px;
+	padding: 130px 80px;
 	left: 45%;
 	top: 5px;
 	text-align: center;
@@ -234,7 +289,7 @@ async function Submit() {
 
 .Footer {
 	position: absolute;
-	top: 150px;
+	top: 210px;
 	left: 0%;
 }
 </style>
