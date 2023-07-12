@@ -9,8 +9,6 @@ services:
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
       TZ: GMT-4
       PGTZ: GMT-4
-    volumes:
-      #- ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - ${TYPEORM_PORT}:${TYPEORM_PORT}
     restart: unless-stopped
