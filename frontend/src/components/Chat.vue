@@ -11,12 +11,13 @@ const leave = ref<boolean>(false)
 
 async function FunctionForEmit(GetChannelId: number) {
 	channelId.value = GetChannelId
-	leave.value = true
+	leave.value = false
 }
 
 async function FunctionForEmitLeave() {
+	console.log('FunctionForEmitLeave')
 	channelId.value = undefined
-	leave.value = false
+	leave.value = true
 }
 
 </script>

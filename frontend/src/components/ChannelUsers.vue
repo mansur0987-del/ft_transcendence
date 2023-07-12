@@ -31,6 +31,9 @@ watch(props, (newProps) => {
 		actualChannelId.value = newProps.channelId
 		GetUsers()
 	}
+	else {
+		actualChannelId.value = undefined
+	}
 })
 
 const users = ref<any>()
@@ -69,7 +72,7 @@ async function LeaveChannel() {
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class="Users">
-		<button v-show="actualChannelId && !myUser.owner_flg" @click="LeaveChannel()"
+		<button v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
 			Leave
 		</button>

@@ -10,7 +10,9 @@ const emit = defineEmits<{
 }>()
 
 watch(props, async (newProps) => {
+	console.log('watch')
 	if (newProps.leave === true) {
+		console.log('I leave')
 		await GetAllAccessChannels()
 	}
 })
