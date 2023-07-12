@@ -78,7 +78,7 @@ export class ChatController {
   
   //inside chat
   @UseGuards(AuthGuard('jwt'))
-  @Get('/chatInfo')
+  @Post('/chatInfo')
   async getChatInfo(@Request() req: any, @Body() body: any): Promise<any> {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
@@ -128,9 +128,9 @@ export class ChatController {
     }
     return (result);
   }
-
+  //fix me: add kick user
   @UseGuards(AuthGuard('jwt'))
-  @Get('/chatMessages')
+  @Post('/getChatMessages')
   async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any>{
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
@@ -364,6 +364,7 @@ export class ChatController {
     newDate.setDate(newDate.getDate() + body.days);
     let newR: UpdateChatDto = actualR;
     newR.banned_to_ts = newDate;
+    //fix me: add kick
     return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
   }
 
