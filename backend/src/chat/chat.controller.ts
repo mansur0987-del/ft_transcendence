@@ -236,7 +236,7 @@ export class ChatController {
       throw new ForbiddenException('Bad password');
 
     //check chat_member
-    let chatMemberRaw: Chat_members = await this.chatMembersService.findOneByIds(dstChannel.id, req.userId);
+    let chatMemberRaw: Chat_members = await this.chatMembersService.findOneByIds(dstChannel.id, req.user.id);
     if (!chatMemberRaw) //new member
       return await this.chatMembersService.addRawToChatMembers(dstChannel.id, req.user.id, false, false, true, new Date(0).toISOString(), new Date(0).toISOString());
     else //exists member
