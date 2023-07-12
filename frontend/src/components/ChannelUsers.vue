@@ -57,7 +57,6 @@ async function LeaveChannel() {
 	await axios.post('chat/leaveChannel', { chat_id: actualChannelId.value, player_id: myUser.value.id }).catch((e) => {
 		console.log(e)
 	})
-	actualChannelId.value = undefined
 	users.value = undefined
 	emit('LeaveChannel')
 }

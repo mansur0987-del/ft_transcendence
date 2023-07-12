@@ -7,13 +7,16 @@ import ChannelUsers from './ChannelUsers.vue'
 import { ref } from "vue";
 
 const channelId = ref<number>()
+const leave = ref<boolean>(false)
 
 async function FunctionForEmit(GetChannelId: number) {
 	channelId.value = GetChannelId
+	leave.value = true
 }
 
 async function FunctionForEmitLeave() {
 	channelId.value = undefined
+	leave.value = false
 }
 
 </script>
@@ -21,7 +24,7 @@ async function FunctionForEmitLeave() {
 <template>
 	<LeftBar />
 	<Logout />
-	<Channels @GetChannelId="FunctionForEmit" />
+	<Channels @GetChannelId="FunctionForEmit" :leave=leave />
 	<ChannelMsg :channelId=channelId />
 	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId />
 </template>

@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
-
+const props = defineProps<{
+	leave?: boolean
+}>()
 const emit = defineEmits<{
 	(e: 'GetChannelId', chennelId: number): void
 }>()
+
+watch(props, async (newProps) => {
+	if (newProps.leave === true) {
+		await GetAllAccessChannels()
+	}
+})
 
 const WindowForChannel = ref<{
 	isOpen: boolean,
@@ -39,6 +47,8 @@ async function GetAllAccessChannels() {
 }
 
 async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_password: boolean) {
+	console.log('isMember')
+	console.log(isMember)
 	if (isMember) {
 		emit("GetChannelId", channelId)
 	}
