@@ -104,7 +104,31 @@ export class ChatController {
     return result;
   }
 
-  //inside chat
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/getBannedUsers')
+  async getBannedUsers(@Request() req: any, @Body() body: any): Promise<any>{
+    if (!body || !body.chat_id)
+      throw new BadRequestException('have no body or chat_id in body');
+
+    //check channel exists
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+    
+    //check is adm
+    if (!this.chatMembersService.isAdm(body.chat_id, req.user.id))
+      throw new ForbiddenException('You are not adm or owner in this chat');
+
+    let result: any[] = [];
+    let allR: any = await this.chatMembersService.findAllByChatId(body.chat_id);
+    for (let i = 0; allR[i]; i++){
+      if (allR[i].banned_to_ts > new Date()){
+        allR[i].name = (await this.plService.GetPlayerById(allR[i].player_id)).name;
+        result.push(allR[i]);
+      }
+    }
+    return (result);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('/chatMessages')
   async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any>{
@@ -178,7 +202,7 @@ export class ChatController {
     {
       if (chatMemberRaw.member_flg)
         throw new BadRequestException('you are already member of this channel');
-      if (chatMemberRaw.banned_to_ts >= new Date()) {
+      if (chatMemberRaw.banned_to_ts > new Date()) {
         const expireDays = (chatMemberRaw.banned_to_ts.getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
         throw new ForbiddenException('your BAN expires in ' + expireDays.toString() + ' days!');
       }
@@ -188,20 +212,253 @@ export class ChatController {
     }
   }
 
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/setAdmin')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/unsetAdmin')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/leaveChannel')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/muteUser')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/banUser')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/setOwner')
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/addMember')
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/setAdmin')
+  async setUserAsAdm(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+    
+    //check owner
+    if (!(await this.chatMembersService.isOwner(body.chat_id, req.user.id)))
+      throw new ForbiddenException('you are not owner of channel');
+    
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR || !actualR.member_flg)
+      throw new NotFoundException('Player not found in chat');
+    if (actualR.admin_flg)
+      throw new BadRequestException('Player is already admin of channel');
+    let newR: UpdateChatDto = actualR;
+    newR.admin_flg = true;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/unsetAdmin')
+  async unsetUserAsAdm(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    //check owner
+    if (!(await this.chatMembersService.isOwner(body.chat_id, req.user.id)))
+      throw new ForbiddenException('you are not owner of this channel');
+    
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR.member_flg)
+      throw new NotFoundException('Player not found in chat');
+    if (!actualR.admin_flg)
+      throw new BadRequestException('Player is not admin of this channel');
+    let newR: UpdateChatDto = actualR;
+    newR.admin_flg = false;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/leaveChannel')
+  async leaveChannel(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id)
+      throw new BadRequestException('have no body or chat_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR || !actualR.member_flg)
+      throw new NotFoundException('You are not member of this channel');
+    //check owner
+    if (actualR.owner_flg)
+      throw new ForbiddenException('you must set another owner before leave channel');
+    let newR: UpdateChatDto = actualR;
+    newR.admin_flg = false;
+    newR.member_flg = false;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/muteUser')
+  async muteUser(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id || !body.days)
+      throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    const selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.admin_flg)
+      throw new ForbiddenException('you cannot mute users in this channel');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR)
+      throw new NotFoundException('Player not found in chat');
+
+    if (actualR.owner_flg || (actualR.admin_flg && !selfR.owner_flg))
+      throw new ForbiddenException('your rigths in this channel equal or less then user which you want to mute');
+    
+    let newR: UpdateChatDto = actualR;
+    newR.muted_to_ts = new Date() + body.days;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/unmuteUser')
+  async unMuteUser(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    const selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.admin_flg)
+      throw new ForbiddenException('you cannot unmute users in this channel');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR || actualR.muted_to_ts <= new Date())
+      throw new NotFoundException('Player not found in chat');
+    
+    let newDate: Date = new Date();
+    newDate.setDate(newDate.getDate() - 1);
+    let newR: UpdateChatDto = actualR;
+    newR.muted_to_ts = newDate;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/banUser')
+  async banUser(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id || !body.days)
+      throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    const selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.admin_flg)
+      throw new ForbiddenException('you cannot ban users in this channel');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR)
+      throw new NotFoundException('Player not found in chat');
+
+    if (actualR.owner_flg || (actualR.admin_flg && !selfR.owner_flg))
+      throw new ForbiddenException('your rigths in this channel equal or less then user which you want to ban');
+    
+    let newDate: Date = new Date();
+    newDate.setDate(newDate.getDate() + body.days);
+    let newR: UpdateChatDto = actualR;
+    newR.banned_to_ts = newDate;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/unbanUser')
+  async unBanUser(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    const selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.admin_flg)
+      throw new ForbiddenException('you cannot unban users in this channel');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR || actualR.banned_to_ts <= new Date())
+      throw new NotFoundException('Player not banned in this channel');
+
+    let newDate: Date = new Date();
+    newDate.setDate(newDate.getDate() - 1);
+    let newR: UpdateChatDto = actualR;
+    newR.banned_to_ts = newDate;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/setOwner')
+  async setOwner(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+
+    //check owner
+    const selfActualR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfActualR || !selfActualR.owner_flg)
+      throw new ForbiddenException('you are not owner of channel');
+    
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR.member_flg)
+      throw new NotFoundException('Player not found in chat');
+    if (actualR.owner_flg)
+      throw new BadRequestException('Player is already owner of channel');
+    let newSelfR: UpdateChatDto = selfActualR;
+    newSelfR.owner_flg = false;
+    await this.chatMembersService.updateRawInChatMembers(selfActualR, newSelfR);
+    let newR: UpdateChatDto = actualR;
+    newR.admin_flg = true;
+    newR.owner_flg = true;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/addMember')
+  async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    //check body exists
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id in body');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+    
+    //check adm
+    if (!(await this.chatMembersService.isAdm(body.chat_id, req.user.id)))
+      throw new ForbiddenException('you are not admin of this channel');
+    
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR)
+      return await this.chatMembersService.addRawToChatMembers(
+        body.chat_id,
+        body.player_id,
+        false,
+        false,
+        true,
+        new Date(0),
+        new Date(0));
+    if (actualR.banned_to_ts > new Date()) {
+        const expireDays = (actualR.banned_to_ts.getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
+        throw new ForbiddenException('player\'s BAN expires in ' + expireDays.toString() + ' days!');
+    }
+    if (actualR.member_flg)
+      throw new BadRequestException('Player is already member of this channel');
+    let newR: UpdateChatDto = actualR;
+    newR.member_flg = true;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
 
   //delete
   @UseGuards(AuthGuard('jwt'))
