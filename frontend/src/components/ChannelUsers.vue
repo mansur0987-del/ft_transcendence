@@ -6,6 +6,10 @@ const props = defineProps<{
 	channelId?: number
 }>()
 
+const emit = defineEmits<{
+	(e: 'LeaveChannel'): void
+}>()
+
 const WindowForChannel = ref<{
 	isOpen: boolean,
 	type: string,
@@ -31,6 +35,7 @@ watch(props, (newProps) => {
 
 const users = ref<any>()
 const myUser = ref<any>()
+const currentDate = ref<Date>(new Date())
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -45,12 +50,19 @@ async function GetUsers() {
 
 		console.log('users.value')
 		console.log(users.value)
-
-		const tmp = Date(myUser.value.banned_to_ts) - new Date()
-		console.log(tmp)
 	}
-
 }
+
+async function LeaveChannel() {
+	await axios.post('chat/leaveChannel', { chat_id: actualChannelId.value, player_id: myUser.value.id }).catch((e) => {
+		console.log(e)
+	})
+	actualChannelId.value = undefined
+	users.value = undefined
+	emit('LeaveChannel')
+}
+
+
 
 </script>
 
@@ -58,24 +70,34 @@ async function GetUsers() {
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class="Users">
-		<h1>Users in the channel {{ channelId }}</h1>
-		<div v-for="user in users">
-			<p>
-				<span>
-					{{ user.user_name }}
-					{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
-				</span>
-			</p>
-			<p>
-				<span>
-					{{ user.banned_to_ts !== '1970-01-01T00:00:00.000Z' ? 'banned: ' + new Date(user.banned_to_ts) :
-						'' }}
-					{{ user.muted_to_ts !== '1970-01-01T00:00:00.000Z' ? 'muted: ' + new Date(user.muted_to_ts) : ''
+		<button v-show="actualChannelId && !myUser.owner_flg" @click="LeaveChannel()"
+			style="position: absolute; right: 0%;">
+			Leave
+		</button>
+		<h1>Users {{ channelId }}</h1>
+		<div style="position: absolute; overflow: scroll">
+			<div v-for="(user, index) in users">
+				<p>
+					<span>
+						{{ index + 1 }}
+						{{ user.user_name }}
+						{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
+					</span>
+					<button v-show="(myUser.id != user.id) && (myUser.owner_flg || (myUser.admin_flg && !user.owner_flg))"
+						@click="WindowChannel('change')" style="position: absolute; right: 0%;">
+						Setting
+					</button>
+				</p>
+				<p>
+					{{ new Date(user.banned_to_ts) > currentDate ? 'banned: ' + new Date(user.banned_to_ts) : ''
 					}}
-				</span>
-
-			</p>
+				</p>
+				<p>
+					{{ new Date(user.muted_to_ts) > currentDate ? 'muted: ' + new Date(user.muted_to_ts) : '' }}
+				</p>
+			</div>
 		</div>
+
 
 	</div>
 </template>

@@ -12,6 +12,10 @@ async function FunctionForEmit(GetChannelId: number) {
 	channelId.value = GetChannelId
 }
 
+async function FunctionForEmitLeave() {
+	channelId.value = undefined
+}
+
 </script>
 
 <template>
@@ -19,7 +23,7 @@ async function FunctionForEmit(GetChannelId: number) {
 	<Logout />
 	<Channels @GetChannelId="FunctionForEmit" />
 	<ChannelMsg :channelId=channelId />
-	<ChannelUsers :channelId=channelId />
+	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId />
 </template>
 
 <style scoped>
