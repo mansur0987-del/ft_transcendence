@@ -23,8 +23,4 @@ async function FunctionForEmit(GetChannelId: number) {
 </template>
 
 <style scoped>
-.Chat {
-	position: absolute;
-	top: 10px;
-}
 </style>

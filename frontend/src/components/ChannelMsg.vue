@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import axios from "axios";
-import { onMounted, ref, watch } from "vue";
+import { ref } from "vue";
 const props = defineProps<{
 	channelId?: number
 }>()
@@ -31,47 +30,11 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 
 <style>
 .Chat {
-	position: absolute;
+	position: fixed;
 	top: 10px;
 	left: 35%;
 	right: 35%;
 	background-color: antiquewhite;
 	height: 90%;
-}
-
-.PasswordWindow {
-	position: absolute;
-	z-index: 99;
-	border: none;
-	color: rgb(255, 255, 255);
-	padding: 100px 80px;
-	left: 45%;
-	top: 5px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 14px;
-	background-color: aliceblue;
-}
-
-.PasswordInChat {
-	position: absolute;
-	z-index: 100;
-	top: 30px;
-	left: 5px;
-}
-
-.JoinPasswordInput {
-	position: absolute;
-	z-index: 100;
-	top: 55px;
-	left: 100px;
-}
-
-.ClosePasswordInput {
-	position: absolute;
-	z-index: 100;
-	top: 55px;
-	left: 5px;
 }
 </style>
