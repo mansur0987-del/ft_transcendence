@@ -31,6 +31,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
+import { IsNumber } from 'class-validator';
 
 
 @Controller('chat')
@@ -81,6 +82,8 @@ export class ChatController {
   async getChatInfo(@Request() req: any, @Body() body: any): Promise<any> {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     if (!(await this.chatMembersService.isMember(body.chat_id, req.user.id)))
       throw new ForbiddenException('you are not a member of channel');
     let result: getChatInfoDto = new getChatInfoDto;
@@ -96,7 +99,7 @@ export class ChatController {
     const chatUsers: any[] = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; chatUsers && chatUsers[i]; i++) {
       if (chatUsers[i].member_flg) {
-        chatUsers[i].user_name = (await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
+        chatUsers[i].user_name = 'default';//(await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
         result.users_info.push(chatUsers[i]);
       }
     }
@@ -109,6 +112,9 @@ export class ChatController {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
 
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
+    
     //check channel exists
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -120,20 +126,54 @@ export class ChatController {
     let result: any[] = [];
     let allR: any = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; allR[i]; i++){
-      if (allR[i].banned_to_ts > new Date()){
-        allR[i].name = (await this.plService.GetPlayerById(allR[i].player_id)).name;
+      if (new Date(allR[i].banned_to_ts) > new Date()){
+        allR[i].name = 'default';//(await this.plService.GetPlayerById(allR[i].player_id)).name;
         result.push(allR[i]);
       }
     }
     return (result);
   }
-  //fix me: add kick user
+  
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/kickUser')
+  async kickUser(@Request() req: any, @Body() body: any): Promise<Chat_members>{
+    if (!body || !body.chat_id || !body.player_id)
+      throw new BadRequestException('have no body or chat_id/player_id in body');
+
+    console.log('chat id ', body.chat_id.IsNumber);
+    console.log('pl id ', body.player_id.IsNumber);
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
+
+    //check exists chat
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('Channel not found');
+    
+    //check owner
+    const selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.admin_flg)
+      throw new ForbiddenException('You are not adm or owner in this chat');
+    
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    if (!actualR || !actualR.member_flg)
+      throw new NotFoundException('Player not found in chat');
+
+    if (actualR.owner_flg || (actualR.admin_flg && !selfR.owner_flg))
+      throw new ForbiddenException('your rigths in this channel equal or less then user which you want to mute');
+    
+    let newR: UpdateChatDto = actualR;
+    newR.admin_flg = false;
+    newR.member_flg = false;
+    return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Post('/getChatMessages')
   async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any>{
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
-    
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     //check channel exists
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -174,8 +214,8 @@ export class ChatController {
       true,
       true,
       true,
-      new Date(0),
-      new Date(0));
+      new Date(0).toISOString(),
+      new Date(0).toISOString());
     return result;
   }
 
@@ -184,6 +224,8 @@ export class ChatController {
   async joinToChannel(@Request() req: any, @Body() body: any) {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     //check chat 
     const dstChannel = await this.chatService.findOneById(body.chat_id);
     if (!dstChannel)
@@ -196,13 +238,13 @@ export class ChatController {
     //check chat_member
     let chatMemberRaw: Chat_members = await this.chatMembersService.findOneByIds(dstChannel.id, req.userId);
     if (!chatMemberRaw) //new member
-      return await this.chatMembersService.addRawToChatMembers(dstChannel.id, req.user.id, false, false, true, new Date(0), new Date(0));
+      return await this.chatMembersService.addRawToChatMembers(dstChannel.id, req.user.id, false, false, true, new Date(0).toISOString(), new Date(0).toISOString());
     else //exists member
     {
       if (chatMemberRaw.member_flg)
         throw new BadRequestException('you are already member of this channel');
-      if (chatMemberRaw.banned_to_ts > new Date()) {
-        const expireDays = (chatMemberRaw.banned_to_ts.getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
+      if (new Date(chatMemberRaw.banned_to_ts) > new Date()) {
+        const expireDays = ((new Date(chatMemberRaw.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
         throw new ForbiddenException('your BAN expires in ' + expireDays.toString() + ' days!');
       }
       let updDto: UpdateChatDto = chatMemberRaw;
@@ -217,7 +259,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -242,7 +285,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -267,12 +311,13 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
-
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
 
-    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
     if (!actualR || !actualR.member_flg)
       throw new NotFoundException('You are not member of this channel');
     //check owner
@@ -290,7 +335,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id || !body.days)
       throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber || body.days.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id/days');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -306,8 +352,10 @@ export class ChatController {
     if (actualR.owner_flg || (actualR.admin_flg && !selfR.owner_flg))
       throw new ForbiddenException('your rigths in this channel equal or less then user which you want to mute');
     
+    let newDate: Date = new Date();
+    newDate.setDate(newDate.getDate() + body.days);
     let newR: UpdateChatDto = actualR;
-    newR.muted_to_ts = new Date() + body.days;
+    newR.muted_to_ts = newDate.toISOString();
     return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
   }
 
@@ -317,7 +365,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -327,13 +376,13 @@ export class ChatController {
       throw new ForbiddenException('you cannot unmute users in this channel');
 
     const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
-    if (!actualR || actualR.muted_to_ts <= new Date())
-      throw new NotFoundException('Player not found in chat');
+    if (!actualR || new Date(actualR.muted_to_ts) <= new Date())
+      throw new NotFoundException('Player not mute in chat');
     
     let newDate: Date = new Date();
     newDate.setDate(newDate.getDate() - 1);
     let newR: UpdateChatDto = actualR;
-    newR.muted_to_ts = newDate;
+    newR.muted_to_ts = newDate.toISOString();
     return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
   }
 
@@ -343,7 +392,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id || !body.days)
       throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber || body.days.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id/days');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -362,8 +412,9 @@ export class ChatController {
     let newDate: Date = new Date();
     newDate.setDate(newDate.getDate() + body.days);
     let newR: UpdateChatDto = actualR;
-    newR.banned_to_ts = newDate;
-    //fix me: add kick
+    newR.banned_to_ts = newDate.toISOString();
+    newR.admin_flg = false;
+    newR.member_flg = false;
     return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
   }
 
@@ -373,7 +424,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id/days_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -383,13 +435,13 @@ export class ChatController {
       throw new ForbiddenException('you cannot unban users in this channel');
 
     const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
-    if (!actualR || actualR.banned_to_ts <= new Date())
+    if (!actualR || new Date(actualR.banned_to_ts) <= new Date())
       throw new NotFoundException('Player not banned in this channel');
 
     let newDate: Date = new Date();
     newDate.setDate(newDate.getDate() - 1);
     let newR: UpdateChatDto = actualR;
-    newR.banned_to_ts = newDate;
+    newR.banned_to_ts = newDate.toISOString();
     return await this.chatMembersService.updateRawInChatMembers(actualR, newR);
   }
 
@@ -400,7 +452,8 @@ export class ChatController {
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -425,12 +478,13 @@ export class ChatController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('/addMember')
+  @Post('/addUser')
   async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members>{
     //check body exists
     if (!body || !body.chat_id || !body.player_id)
       throw new BadRequestException('have no body or chat_id/player_id in body');
-
+    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id/player_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -447,10 +501,10 @@ export class ChatController {
         false,
         false,
         true,
-        new Date(0),
-        new Date(0));
-    if (actualR.banned_to_ts > new Date()) {
-        const expireDays = (actualR.banned_to_ts.getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
+        new Date(0).toISOString(),
+        new Date(0).toISOString());
+    if (new Date(actualR.banned_to_ts) > new Date()) {
+        const expireDays = ((new Date(actualR.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
         throw new ForbiddenException('player\'s BAN expires in ' + expireDays.toString() + ' days!');
     }
     if (actualR.member_flg)
@@ -466,6 +520,8 @@ export class ChatController {
   async removeChannel(@Request() req: any, @Body() body: any) {
     if (!body || !body.chat_id)
       throw new BadRequestException('chat id not found in body')
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Cannot found the channel')
     let who = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
@@ -474,10 +530,4 @@ export class ChatController {
     await this.chatMembersService.removeAllByChatId(body.chat_id);
     return await this.chatService.removeRawInChat(body.chat_id);
   }
-
-  // //patch
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-  //   return this.chatService.update(+id, updateChatDto);
-  // }
 }
