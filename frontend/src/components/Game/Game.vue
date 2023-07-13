@@ -13,11 +13,12 @@
 </template>
 
 <script>
-import LeftBar from "../LeftBar.vue";//frontend/src/components/LeftBar.vue";
-import Pong from './Pong.vue';
-import Multiplayer from './Multiplayer.vue';
-import Menu from './Menu.vue';
+import { LeftBar } from '../LeftBar.vue';
+import { Pong } from './Pong.vue';
+import { Multiplayer } from './Multiplayer.vue';
+import { Menu } from './Menu.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
+import MultiplayerVue from "./Multiplayer.vue";
 import { io } from 'socket.io-client';
 import { useLocation } from "vue-router";
 import { GameGateway } from '../../../../backend/src/game/game.gateway.ts';
@@ -35,7 +36,7 @@ export default {
         const isReady = ref(isInvite.value);
         const id = ref(0);
         const mode = ref(0);
-        const { invite, setPlayerId } = useContext(GameGateway);
+        const { invite, setPlayerId } = handleConnection(GameGateway); //useContext(GameGateway);
 
         onMounted(() => {
             isReady.value = invite;

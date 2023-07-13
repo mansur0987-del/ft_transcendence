@@ -6,7 +6,7 @@ import Settings from './components/Settings.vue'
 import Players from './components/Players.vue'
 import FriendList from './components/FriendList.vue'
 import Chat from './components/Chat.vue'
-import Game from './components/Game/Game.vue'
+import Game from './Game/Game.vue'
 import PathNotFound from './components/PathNotFound.vue'
 import axios from "axios";
 

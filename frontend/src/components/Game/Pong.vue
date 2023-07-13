@@ -10,7 +10,8 @@
 </template>
 
 <script>
-import Multiplayer from './Multiplayer';
+//lang="ts"
+import { Multiplayer } from './Multiplayer.vue';
 
 export default {
     components: {
