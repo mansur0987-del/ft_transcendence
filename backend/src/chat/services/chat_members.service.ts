@@ -9,7 +9,6 @@ export class ChatMemberService {
   constructor(@InjectRepository(Chat_members)
   private readonly chat_members_repository: Repository<Chat_members>
   ) { }
-
   async addRawToChatMembers(
     chat_id: number,
     player_id: number,
@@ -59,16 +58,7 @@ export class ChatMemberService {
       updDto.banned_to_ts = actualV.banned_to_ts;
     if (!updDto.muted_to_ts)
       updDto.muted_to_ts = actualV.muted_to_ts;
-    let result = await this.chat_members_repository.save(updDto);
-    let mutedDays: number = ((new Date(result.muted_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
-    let bannedDays: number = ((new Date(result.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
-    if (mutedDays <= 0)
-      mutedDays = 0;
-    if (bannedDays <= 0)
-      bannedDays = 0;
-    result.muted_to_ts = mutedDays.toString();
-    result.banned_to_ts = bannedDays.toString();
-    return result;
+    return await this.chat_members_repository.save(updDto);
   }
 
   async findAllChatMembers(): Promise<Chat_members[]> {
