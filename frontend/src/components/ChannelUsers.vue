@@ -96,6 +96,17 @@ async function UnBanned(userId: number) {
 	GetUsers()
 }
 
+const userName = ref<string>('')
+const errorMsg = ref<string>('')
+
+async function AddUser(userName: string) {
+	await axios.post('chat/addUser', { chat_id: actualChannelId.value, player_name: userName }).catch((e) => {
+		console.log(e)
+		errorMsg.value = e.response.data.message
+	})
+	GetUsers()
+}
+
 </script>
 
 <template>
@@ -140,7 +151,14 @@ async function UnBanned(userId: number) {
 					</button>
 				</div>
 			</div>
-
+			<div class="AddUser" v-on="myRole && myRole > 1" v-show="actualChannelId">
+				<h3>Add user</h3>
+				<input v-model="userName" placeholder="write username" />
+				<button @click="AddUser(userName)">
+					Add
+				</button>
+				<p style=color:red> {{ errorMsg }} </p>
+			</div>
 		</div>
 
 
