@@ -6,7 +6,7 @@
 import { ref, onMounted, onBeforeUnmount, reactive } from 'vue';
 import { paper, Path, PointText, view } from 'paper';
 import { useNavigate } from 'vue-router-dom';
-import { GameContext } from '../context/GameSocket';
+import { GameGateway } from '../../../../backend/src/game/game.gateway.ts';
 
 export default {
     setup(props) {
@@ -19,7 +19,7 @@ export default {
         const paddlePos = [[0, 0.5], [1 - paddleWidth, 0.5]];
         const score = [0, 0];
         const navigate = useNavigate();
-        const { setInvite, playerId, start, setStart } = useContext(GameContext);
+        const { setInvite, playerId, start, setStart } = useContext(GameGateway);
 
         const handleResize = () => {
             view.viewSize = [window.innerWidth, window.innerHeight];

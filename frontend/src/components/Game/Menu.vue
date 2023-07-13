@@ -28,7 +28,7 @@
 
 <script>
 import { ref, reactive } from 'vue';
-import Engine from './Engine';
+import Engine from './Engine.vue';
 
 export default {
     components: {

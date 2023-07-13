@@ -6,12 +6,8 @@ import Settings from './components/Settings.vue'
 import Players from './components/Players.vue'
 import FriendList from './components/FriendList.vue'
 import Chat from './components/Chat.vue'
-<<<<<<< Updated upstream
-import Game from './components/Game.vue'
-import PathNotFound from './components/PathNotFound.vue'
-=======
 import Game from './components/Game/Game.vue'
->>>>>>> Stashed changes
+import PathNotFound from './components/PathNotFound.vue'
 import axios from "axios";
 
 const router = createRouter({
