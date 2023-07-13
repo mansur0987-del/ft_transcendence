@@ -99,7 +99,7 @@ export class ChatController {
     const chatUsers: any[] = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; chatUsers && chatUsers[i]; i++) {
       if (chatUsers[i].member_flg) {
-        chatUsers[i].user_name = 'default';//(await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
+        chatUsers[i].user_name = (await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
         result.users_info.push(chatUsers[i]);
       }
     }
@@ -127,7 +127,7 @@ export class ChatController {
     let allR: any = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; allR[i]; i++){
       if (new Date(allR[i].banned_to_ts) > new Date()){
-        allR[i].name = 'default';//(await this.plService.GetPlayerById(allR[i].player_id)).name;
+        allR[i].name = (await this.plService.GetPlayerById(allR[i].player_id)).name;
         result.push(allR[i]);
       }
     }
