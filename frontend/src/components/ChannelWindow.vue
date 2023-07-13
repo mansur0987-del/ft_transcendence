@@ -4,8 +4,9 @@ import { ref } from "vue";
 const props = defineProps<{
 	type: string | undefined;
 	chanelId?: number;
-	myRole: number;
-	PropsUser: User | undefined
+	myRole?: number;
+	PropsUser?: User | undefined
+	msg?: string
 }>()
 const emit = defineEmits<{
 	(e: 'ChannelWindowIsClose'): void
@@ -144,6 +145,9 @@ async function Submit() {
 
 <template>
 	<div class="Window">
+		<div class="Msg" v-if="props.type === 'msg'">
+			<h3 style="color: red;"> {{ msg }} </h3>
+		</div>
 		<div class="CreateWindow" v-if="props.type === 'create'">
 			<div class="ChannelName">
 				<input v-model="data.chat_name" placeholder="Channel Name">
@@ -183,7 +187,7 @@ async function Submit() {
 				</p>
 			</div>
 			<div class="Mute" style="color: black;">
-				<p v-if="new Date(props.PropsUser.muted_to_ts) > new Date()">
+				<p v-if="props.PropsUser.muted_to_ts">
 					<input type="checkbox" value=True v-model="data.isUnMute"> Unmute?
 				</p>
 				<p v-else>
@@ -194,7 +198,7 @@ async function Submit() {
 				</p>
 			</div>
 			<div class="Ban" style="color: black;">
-				<p v-if="new Date(props.PropsUser.banned_to_ts) > new Date()">
+				<p v-if="props.PropsUser.banned_to_ts">
 					<input type="checkbox" value=True v-model="data.isUnBan"> Unban?
 				</p>
 				<p v-else>
@@ -240,6 +244,13 @@ async function Submit() {
 	display: inline-block;
 	font-size: 14px;
 	background-color: aliceblue;
+}
+
+.Msg {
+	position: absolute;
+	top: 5px;
+	left: 0%;
+	width: 100%;
 }
 
 .CreateWindow {

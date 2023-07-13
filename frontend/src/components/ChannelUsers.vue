@@ -51,8 +51,8 @@ watch(props, (newProps) => {
 
 const users = ref<any>()
 const myUser = ref<any>()
-const currentDate = ref<Date>(new Date())
 const myRole = ref<number>()
+const bannedUsers = ref<any>()
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -63,6 +63,14 @@ async function GetUsers() {
 			console.log(e)
 		})
 		myRole.value = myUser.value.owner_flg + myUser.value.admin_flg + myUser.value.member_flg
+
+		if (myRole.value && myRole.value > 1) {
+			await axios.post('/chat/getBannedUsers', { chat_id: actualChannelId.value }).then((res) => {
+				bannedUsers.value = res.data?.users_info
+			}).catch((e) => {
+				console.log(e)
+			})
+		}
 
 
 		console.log('user.value')
@@ -81,7 +89,12 @@ async function LeaveChannel() {
 	emit('LeaveChannel')
 }
 
-
+async function UnBanned(userId: number) {
+	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
+		console.log(e)
+	})
+	GetUsers()
+}
 
 </script>
 
@@ -107,14 +120,27 @@ async function LeaveChannel() {
 						Setting
 					</button>
 				</p>
+
 				<p>
-					{{ new Date(user.banned_to_ts) > currentDate ? 'banned: ' + new Date(user.banned_to_ts) : ''
-					}}
-				</p>
-				<p>
-					{{ new Date(user.muted_to_ts) > currentDate ? 'muted: ' + new Date(user.muted_to_ts) : '' }}
+					{{ user.muted_to_ts ? 'muted: ' + user.muted_to_ts : '' }}
 				</p>
 			</div>
+			<div class="BannedUsers" v-on="myRole && myRole > 1" v-show="actualChannelId && bannedUsers">
+				<h1> Banned users </h1>
+				<div v-for="(user, index) in bannedUsers">
+					<span>
+						{{ index + 1 }}
+						{{ user.user_name }}
+					</span>
+					<p>
+						{{ user.banned_to_ts ? 'banned: ' + user.banned_to_ts : '' }}
+					</p>
+					<button @click="UnBanned(user.id)" style="position: absolute; right: 0%;">
+						UnBan
+					</button>
+				</div>
+			</div>
+
 		</div>
 
 

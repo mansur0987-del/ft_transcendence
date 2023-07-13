@@ -48,17 +48,25 @@ async function GetAllAccessChannels() {
 	channels.value = (await axios.get('chat/')).data
 }
 
+let msg: string
+
 async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_password: boolean) {
 	console.log('isMember')
 	console.log(isMember)
+	msg = ''
 	if (isMember) {
 		emit("GetChannelId", channelId)
 	}
 	else if (!have_password) {
 		await axios.post('chat/joinToChannel', { chat_id: channelId }).catch((e) => {
-			console.log(e)
+			console.log(e.response.data.message)
+			msg = e.response.data.message
+			WindowChannel('msg', channelId)
 		})
-		emit("GetChannelId", channelId)
+		if (!msg) {
+			emit("GetChannelId", channelId)
+		}
+
 	}
 	else {
 		WindowChannel('checkPassword', channelId)
@@ -80,7 +88,7 @@ onMounted(async () => {
 </script>
 
 <template>
-	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId v-if="WindowForChannel.isOpen"
+	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :msg=msg v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
 		<div class="buttonCreateChannel">
