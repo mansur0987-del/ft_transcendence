@@ -187,7 +187,7 @@ async function Submit() {
 				</p>
 			</div>
 			<div class="Mute" style="color: black;">
-				<p v-if="props.PropsUser?.muted_to_ts">
+				<p v-if="props.PropsUser?.muted_to_ts !== '0'">
 					<input type="checkbox" value=True v-model="data.isUnMute"> Unmute?
 				</p>
 				<p v-else>
@@ -198,7 +198,7 @@ async function Submit() {
 				</p>
 			</div>
 			<div class="Ban" style="color: black;">
-				<p v-if="props.PropsUser?.banned_to_ts">
+				<p v-if="props.PropsUser?.banned_to_ts !== '0'">
 					<input type="checkbox" value=True v-model="data.isUnBan"> Unban?
 				</p>
 				<p v-else>

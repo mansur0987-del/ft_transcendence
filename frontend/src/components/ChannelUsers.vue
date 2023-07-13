@@ -66,7 +66,7 @@ async function GetUsers() {
 
 		if (myRole.value && myRole.value > 1) {
 			await axios.post('/chat/getBannedUsers', { chat_id: actualChannelId.value }).then((res) => {
-				bannedUsers.value = res.data?.users_info
+				bannedUsers.value = res.data
 			}).catch((e) => {
 				console.log(e)
 			})
@@ -133,18 +133,18 @@ async function AddUser(userName: string) {
 				</p>
 
 				<p>
-					{{ user.muted_to_ts ? 'muted: ' + user.muted_to_ts : '' }}
+					{{ user.muted_to_ts !== '0' ? 'muted: ' + user.muted_to_ts + ' day(s)' : '' }}
 				</p>
 			</div>
-			<div class="BannedUsers" v-on="myRole && myRole > 1" v-show="actualChannelId && bannedUsers">
-				<h1> Banned users </h1>
+			<div class="BannedUsers" v-on="myRole && myRole > 1 && actualChannelId">
+				<h3> Banned users: </h3>
 				<div v-for="(user, index) in bannedUsers">
 					<span>
 						{{ index + 1 }}
-						{{ user.user_name }}
+						{{ user.name }}
 					</span>
 					<p>
-						{{ user.banned_to_ts ? 'banned: ' + user.banned_to_ts : '' }}
+						{{ user.banned_to_ts !== '0' ? 'banned: ' + user.banned_to_ts + ' day(s)' : '' }}
 					</p>
 					<button @click="UnBanned(user.id)" style="position: absolute; right: 0%;">
 						UnBan

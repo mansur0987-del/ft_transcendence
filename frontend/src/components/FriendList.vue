@@ -25,6 +25,10 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+async function Chat(player: any) {
+
+}
+
 </script>
 
 <template>
@@ -38,6 +42,7 @@ async function RedirectToProfile(player: any) {
 				<button @click="PostDeleteFriend(friend)">
 					Delete</button>
 				<button @click="RedirectToProfile(friend)">Get info</button>
+				<button @click="Chat(friend)"> Chat </button>
 			</li>
 		</template>
 	</div>

@@ -63,6 +63,10 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+async function Chat(player: any) {
+
+}
+
 
 </script>
 
@@ -77,6 +81,7 @@ async function RedirectToProfile(player: any) {
 					<button v-if="player.needButton" @click="PostApplication(player)">Add
 						friend</button>
 					<button v-if="player.id !== playerId" @click="RedirectToProfile(player)">Get info</button>
+					<button v-if="player.id !== playerId" @click="Chat(player)"> Chat </button>
 				</li>
 
 			</div>
