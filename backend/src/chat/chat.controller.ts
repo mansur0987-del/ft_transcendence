@@ -557,7 +557,7 @@ export class ChatController {
       throw new ForbiddenException('you are not owner of channel');
 
     const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
-    if (!actualR.member_flg)
+    if (!actualR || !actualR.member_flg)
       throw new NotFoundException('Player not found in chat');
     if (actualR.owner_flg)
       throw new BadRequestException('Player is already owner of channel');

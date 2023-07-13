@@ -7,9 +7,9 @@ import { Chat } from '../entities/chat.entity';
 
 @Injectable()
 export class ChatMemberService {
-  constructor(@InjectRepository(Chat_members)
-  private readonly chat_members_repository: Repository<Chat_members>,
-    private readonly chat_repository: Repository<Chat>
+  constructor(
+    @InjectRepository(Chat_members) private readonly chat_members_repository: Repository<Chat_members>,
+    @InjectRepository(Chat) private readonly chat_repository: Repository<Chat>
   ) { }
   async addRawToChatMembers(
     chat_id: number,
@@ -104,15 +104,13 @@ export class ChatMemberService {
     return (ch.owner_flg);
   }
 
-  async findDirectChatByIdsUsers(user1: number, user2: number): Promise<{ chat_id: number, player_id: number, isMember: boolean }[]> {
-    return await this.chat_members_repository.createQueryBuilder()
-      .select('members.chat_id, members.player_id, members.member_flg')
-      .from(Chat_members, 'members')
-      .innerJoin(Chat, 'chat')
-      .where('members.chat_id = chat.chat_id')
-      .andWhere('chat.isDirect= true')
-      .andWhere('members.player_id IN (:user1, :user2)', { user1: user1, user2: user2 }).getRawMany();
-  }
+  // async findDirectChatByIdsUsers(user1: number, user2: number): Promise<{ chat_id: number, user1_id: number, user2_id: number, isMember: boolean }> {
+  //   return await this.chat_members_repository.createQueryBuilder()
+  //     .select('members.chat_id, members.player_id as user1_id, members2.player_id as user2_id, members.member_flg')
+  //     .from(Chat_members, 'members')
+  //     .innerJoin(Chat, 'chat', 'members.chat_id = chat.chat_id AND chat.isDirect = true AND membres.player_id = :user1', { user1: user1 })
+  //     .innerJoin(Chat_members, 'members2', 'chat.chat_id = members2.chat_id AND membres2.player_id = :user2', { user2: user2 }).getRawOne();
+  // }
 
   async findAllMutedInChat(chat_id: number): Promise<Chat_members[]> {
     return await this.chat_members_repository.createQueryBuilder()
