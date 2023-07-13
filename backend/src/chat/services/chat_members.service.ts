@@ -3,11 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat_members } from "../entities/chat_members.entity";
 import { UpdateChatDto } from "../dto/update-chat.dto";
+import { Chat } from '../entities/chat.entity';
 
 @Injectable()
 export class ChatMemberService {
   constructor(@InjectRepository(Chat_members)
-  private readonly chat_members_repository: Repository<Chat_members>
+  private readonly chat_members_repository: Repository<Chat_members>,
+    private readonly chat_repository: Repository<Chat>
   ) { }
   async addRawToChatMembers(
     chat_id: number,
@@ -100,6 +102,16 @@ export class ChatMemberService {
     if (!ch || !ch.admin_flg || !ch.member_flg)
       return false;
     return (ch.owner_flg);
+  }
+
+  async findDirectChatByIdsUsers(user1: number, user2: number): Promise<{ chat_id: number, player_id: number, isMember: boolean }[]> {
+    return await this.chat_members_repository.createQueryBuilder()
+      .select('members.chat_id, members.player_id, members.member_flg')
+      .from(Chat_members, 'members')
+      .innerJoin(Chat, 'chat')
+      .where('members.chat_id = chat.chat_id')
+      .andWhere('chat.isDirect= true')
+      .andWhere('members.player_id IN (:user1, :user2)', { user1: user1, user2: user2 }).getRawMany();
   }
 
   async findAllMutedInChat(chat_id: number): Promise<Chat_members[]> {

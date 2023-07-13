@@ -8,6 +8,9 @@ export class CreateChatDto {
     isPrivate?: boolean;
 
     @IsNotEmpty()
+    isDirect?: boolean;
+
+    @IsNotEmpty()
     have_password?: boolean;
 
     password: string;

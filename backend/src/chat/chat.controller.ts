@@ -4,19 +4,10 @@ import {
   Controller,
   ForbiddenException,
   Get,
-  HttpStatus,
   NotFoundException,
-  Param,
-  ParseFilePipeBuilder,
-  ParseIntPipe,
   Post,
-  Delete,
   Request,
-  Res,
-  StreamableFile,
-  UploadedFile,
-  UseGuards,
-  UseInterceptors
+  UseGuards
 } from '@nestjs/common';
 import { Chat } from './entities/chat.entity';
 import { Chat_members } from "./entities/chat_members.entity";
@@ -32,9 +23,6 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
-import { IsNumber } from 'class-validator';
-import { QueryBuilder, InsertQueryBuilder } from "typeorm";
-
 
 @Controller('chat')
 export class ChatController {
@@ -90,6 +78,31 @@ export class ChatController {
     return result;
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/blockedUsers')
+  async getBlockedUsers(@Request() req: any): Promise<any> {
+    return await this.plBlocks.findAllByPlayerId(req.user.id);
+  }
+
+
+  //inside chat
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/sendMessage')
+  async sendMessage(@Request() req: any, @Body() body: any): Promise<Chat_messages> {
+    if (!body || !body.chat_id || !body.message)
+      throw new BadRequestException('not enough data for send message');
+    if (!(await this.chatService.findOneById(body.chat_id)))
+      throw new NotFoundException('chat not found');
+
+    let selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
+    if (!selfR || !selfR.member_flg)
+      throw new ForbiddenException('you are not member of this channel');
+    if (new Date(selfR.muted_to_ts) > new Date()) {
+      const days = this.ts_to_days(selfR.muted_to_ts);
+      throw new ForbiddenException({ reason: 'muted', daysExpire: days });
+    }
+    return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
+  }
   //inside chat
   @UseGuards(AuthGuard('jwt'))
   @Post('/chatInfo')
@@ -222,8 +235,8 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Post('/createChannel')
   async createNewChannel(@Request() req: any, @Body() src: CreateChatDto): Promise<Chat> {
-    if (src.chat_name == undefined || src.isPrivate == undefined || src.have_password == undefined || (src.have_password && src.password == undefined))
-      throw new BadRequestException('Validation failed');
+    // if (src.chat_name == undefined || src.isPrivate == undefined || src.have_password == undefined || (src.have_password && src.password == undefined))
+    //   throw new BadRequestException('Validation failed');
     if (await this.chatService.findOneByName(src.chat_name))
       throw new BadRequestException('Validation failed: this chat_name is anavaible');
     if (src.have_password)
@@ -239,6 +252,41 @@ export class ChatController {
       new Date(0).toISOString());
     return result;
   }
+
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('/createDirectChannel')
+  // async createNewDirectChannel(@Request() req: any, @Body() body: any): Promise<Chat> {
+  //   if (!body || !body.player_name)
+  //     throw new BadRequestException('INVALID BODY');
+
+  //   const pl = await this.plService.GetPlayerByName(body.player_name);
+  //   if (!pl)
+  //     throw new NotFoundException('player not found');
+  //   if (await this.plBlocks.isBlocked(pl.id, req.user.id))
+  //     throw new ForbiddenException('player blocked you');
+
+  //   const direct: { chat_id: number, player_id: number, isMember: boolean }[] = await this.chatMembersService.findDirectChatByIdsUsers(pl.id, req.user.id);
+  //   if (!direct || direct.length < 2) {
+  //     let result = await await this.chatService.addDirectRawToChat();
+  //     this.chatMembersService.addRawToChatMembers(
+  //       result.id,
+  //       req.user.id,
+  //       false,
+  //       false,
+  //       true,
+  //       new Date(0).toISOString(),
+  //       new Date(0).toISOString());
+  //     this.chatMembersService.addRawToChatMembers(
+  //       result.id,
+  //       pl.id,
+  //       false,
+  //       false,
+  //       true,
+  //       new Date(0).toISOString(),
+  //       new Date(0).toISOString());
+  //     return result;
+  //   }
+  // }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/joinToChannel')
