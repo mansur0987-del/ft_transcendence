@@ -104,27 +104,17 @@ export class ChatMemberService {
     return (ch.owner_flg);
   }
 
-  // async findDirectChatByIdsUsers(user1: number, user2: number): Promise<{ chat_id: number, user1_id: number, user2_id: number, isMember: boolean }> {
-  //   return await this.chat_members_repository.createQueryBuilder()
-  //     .select('members.chat_id, members.player_id as user1_id, members2.player_id as user2_id, members.member_flg')
-  //     .from(Chat_members, 'members')
-  //     .innerJoin(Chat, 'chat', 'members.chat_id = chat.chat_id AND chat.isDirect = true AND membres.player_id = :user1', { user1: user1 })
-  //     .innerJoin(Chat_members, 'members2', 'chat.chat_id = members2.chat_id AND membres2.player_id = :user2', { user2: user2 }).getRawOne();
-  // }
-
   async findAllMutedInChat(chat_id: number): Promise<Chat_members[]> {
     return await this.chat_members_repository.createQueryBuilder()
       .select('chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts')
-      .from(Chat_members, 'chat_members')
-      .where('chat_members.chat_id= :chat_id', { chat_id: chat_id })
-      .andWhere('chat_members.muted_to_ts > NOW()').getMany();
+      .where('Chat_members.chat_id= :chat_id', { chat_id: chat_id })
+      .andWhere('Chat_members.muted_to_ts > NOW()').getMany();
   }
 
   async findAllBannedInChat(chat_id: number): Promise<Chat_members[]> {
     return await this.chat_members_repository.createQueryBuilder()
       .select('chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts')
-      .from(Chat_members, 'chat_members')
-      .where('chat_members.chat_id= :chat_id', { chat_id: chat_id })
-      .andWhere('chat_members.banned_to_ts > NOW()').getMany();
+      .where('Chat_members.chat_id= :chat_id', { chat_id: chat_id })
+      .andWhere('Chat_members.banned_to_ts > NOW()').getMany();
   }
 }

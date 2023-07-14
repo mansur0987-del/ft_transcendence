@@ -5,7 +5,7 @@ export class Chat {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: false })
     chat_name: string;
 
     @Column({ nullable: false })

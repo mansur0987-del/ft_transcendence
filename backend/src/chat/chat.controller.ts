@@ -25,6 +25,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
+import { QueryRunnerProviderAlreadyReleasedError } from "typeorm";
 
 @Controller('chat')
 export class ChatController {
@@ -65,6 +66,15 @@ export class ChatController {
       result.push(allMsg[i]);
     }
     return result;
+  }
+
+  async defineChatName(src: any, user_id: number): Promise<string> {
+    let res = src.chat_name;
+    if (src.isDirect) {
+      const secondId = await this.dirR.findIdSeconUserDirect(src.id, user_id);
+      res += await this.getUserNameById(secondId);
+    }
+    return res;
   }
 
   async createDirectChat(user1: number, user2: number): Promise<number> {
@@ -115,18 +125,21 @@ export class ChatController {
     //add public chats
     let allPublic: any[] = await this.chatService.findAllByType(false);
     for (let i: number = 0; allPublic[i]; i++) {
-      allPublic[i].isMember = await this.chatMembersService.isMember(allPublic[i].id, req.user.id);
-      allPublic[i].isAdmin = await this.chatMembersService.isAdm(allPublic[i].id, req.user.id);
-      allPublic[i].isOwner = await this.chatMembersService.isOwner(allPublic[i].id, req.user.id);
+      const selfR = await this.chatMembersService.findOneByIds(allPublic[i].chat_id, req.user.id);
+      allPublic[i].isMember = selfR.member_flg;
+      allPublic[i].isAdmin = selfR.admin_flg;
+      allPublic[i].isOwner = selfR.owner_flg;
       result.push(await allPublic[i]);
     }
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
-      if (await this.chatMembersService.isMember(allPrivate[i].id, req.user.id)) {
+      const selfR = await this.chatMembersService.findOneByIds(allPublic[i].chat_id, req.user.id);
+      if (selfR.member_flg) {
+        allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
-        allPrivate[i].isAdmin = await this.chatMembersService.isAdm(allPrivate[i].id, req.user.id);
-        allPrivate[i].isOwner = await this.chatMembersService.isOwner(allPrivate[i].id, req.user.id);
+        allPrivate[i].isAdmin = selfR.admin_flg;
+        allPrivate[i].isOwner = selfR.owner_flg;
         result.push(await allPrivate[i]);
       }
     }
@@ -172,9 +185,9 @@ export class ChatController {
     let result: getChatInfoDto = new getChatInfoDto;
     //add chat name
     const ChatInfo: Chat = await this.chatService.findOneById(body.chat_id);
-    if (!ChatInfo || !ChatInfo.chat_name)
+    if (!ChatInfo)
       throw new NotFoundException('chat not found');
-    result.chat_name = ChatInfo.chat_name;
+    result.chat_name = await this.defineChatName(ChatInfo, req.user.id);
     //add relations between query's user and chat
     result.rigths_of_user = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
     result.rigths_of_user.banned_to_ts = await this.ts_to_days(result.rigths_of_user.banned_to_ts);
@@ -279,6 +292,9 @@ export class ChatController {
   async createNewChannel(@Request() req: any, @Body() src: CreateChatDto): Promise<Chat> {
     if (await this.chatService.findOneByName(src.chat_name))
       throw new BadRequestException('Validation failed: this chat_name is anavaible');
+    if (src.chat_name.substring(0, 6) == 'direct')
+      throw new ForbiddenException('you cannot use direct keyword in start of chat_name');
+    console.log(src.chat_name);
     if (src.have_password)
       src.password = await this.getHashingPass(src.password)
     let result = await this.chatService.addRawToChat(src);

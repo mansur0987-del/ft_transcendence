@@ -36,4 +36,11 @@ export class directRService {
     }
     return await this.directR_repository.findOne({where: {user_one: user1, user_two: user2}});
   }
+
+  async findIdSeconUserDirect(chat_id: number, user_id: number): Promise<number> {
+    const res = await this.directR_repository.findOne({where: {chat_id: chat_id}});
+    if (res.user_one == user_id)
+      return res.user_two;
+    return res.user_one;
+  }
 }

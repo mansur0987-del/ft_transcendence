@@ -24,8 +24,8 @@ export class ChatService {
   async addDirectRawToChat():
     Promise<Chat> {
     return await this.chat_repository.save({
-      chat_name: null,
-      isPrivate: false,
+      chat_name: 'direct ',
+      isPrivate: true,
       isDirect: true,
       have_password: false,
       password: null
@@ -72,8 +72,4 @@ export class ChatService {
   async findOneByName(chat_name: string): Promise<Chat> {
     return await this.chat_repository.findOne({ where: { chat_name: chat_name } });
   }
-
-  // async findAllDirect(): Promise<Chat> {
-  //   return await this.chat_repository.findOne({ where: { isDirect: true } });
-  // }
 }
