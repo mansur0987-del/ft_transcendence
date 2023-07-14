@@ -295,7 +295,7 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/enterDirectChannel')
-  async enterDirectChannel(@Request() req: any, @Body() body: any): Promise<{ messages: any[], reqUserName: string, othUserName: string}> {
+  async enterDirectChannel(@Request() req: any, @Body() body: any): Promise<{ chat_id: number, messages: any[], reqUserName: string, othUserName: string}> {
     if (!body || !body.player_name)
       throw new BadRequestException('INVALID BODY');
 
@@ -312,7 +312,8 @@ export class ChatController {
       chat_id = await this.createDirectChat(req.user.id, pl.id)
     else
       chat_id = dirChat.chat_id;
-    let result: { messages: any[], reqUserName: string, othUserName: string};
+    let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string};
+    result.chat_id = chat_id;
     result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
     result.reqUserName = await this.getUserNameById(req.user.id);
     result.othUserName = body.player_name;
