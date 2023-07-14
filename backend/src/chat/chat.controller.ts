@@ -621,6 +621,24 @@ export class ChatController {
     return result;
   }
 
+  //fix me: delete this
+  // @Get('/addUserTest')
+  // async addUserATest(): Promise<Chat_members>{
+  //   const pl = await this.plService.GetPlayerByName('www');
+  //   if (!pl)
+  //     throw new NotFoundException('User not found');
+  //   let actualR: Chat_members = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
+  //   if (!actualR)
+  //     return await this.chatMembersService.addRawToChatMembers(
+  //       1,
+  //       body.player_id,
+  //       false,
+  //       false,
+  //       true,
+  //       new Date(0).toISOString(),
+  //       new Date(0).toISOString());
+  // }
+
   @UseGuards(AuthGuard('jwt'))
   @Post('/addUser')
   async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members> {
@@ -645,7 +663,7 @@ export class ChatController {
     if (!actualR)
       return await this.chatMembersService.addRawToChatMembers(
         body.chat_id,
-        body.player_id,
+        pl.id,
         false,
         false,
         true,
