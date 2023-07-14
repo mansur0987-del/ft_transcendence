@@ -13,8 +13,8 @@ const emit = defineEmits<{
 }>()
 
 interface User {
-	user_name: string,
-	id: number,
+	user_name?: string,
+	player_id: number,
 	role?: number,
 	banned_to_ts: string,
 	muted_to_ts: string
@@ -41,7 +41,7 @@ const data = ref<{
 	isPrivate: false,
 	have_password: false,
 	password: "",
-	player_id: props.PropsUser?.id,
+	player_id: props.PropsUser?.player_id,
 	isMute: false,
 	isUnMute: false,
 	isBan: false,

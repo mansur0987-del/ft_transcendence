@@ -8,7 +8,7 @@ import { Buffer } from "buffer";
 const errorInputName = ref<string>()
 const newName = ref<string>()
 
-async function ChangeName(newName: string) {
+async function ChangeName(newName?: string) {
 	await axios.post('player/profile/rename', { "newName": newName })
 		.then(() => {
 			errorInputName.value = "SUCCESS!!"
@@ -17,8 +17,8 @@ async function ChangeName(newName: string) {
 		})
 }
 
-const file = ref<string>()
-const input_file = ref<object>();
+const file = ref<string>('')
+const input_file = ref<any>();
 const errorInputAvatar = ref<string>()
 
 async function submitFile() {
@@ -71,7 +71,7 @@ onMounted(() => {
 const errorInputQrCode = ref<string>()
 const QrCodeCode = ref<string>()
 
-async function ActiveQrCode(code: string) {
+async function ActiveQrCode(code?: string) {
 	await axios.post('auth/2fa/authenticate', { "twoFactorAuthenticationCode": code })
 		.then(() => {
 			errorInputQrCode.value = "SUCCESS!!"
@@ -84,7 +84,7 @@ async function ActiveQrCode(code: string) {
 	}
 }
 
-async function TurnOffQrCode(code: string) {
+async function TurnOffQrCode(code?: string) {
 	await axios.post('auth/2fa/turn-off', { "twoFactorAuthenticationCode": code })
 		.then(() => {
 			errorInputQrCode.value = "SUCCESS!!"

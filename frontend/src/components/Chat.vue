@@ -9,7 +9,7 @@ import { ref } from "vue";
 const channelId = ref<number>()
 const leave = ref<boolean>(false)
 
-async function FunctionForEmit(GetChannelId: number) {
+async function FunctionForEmit(GetChannelId?: number) {
 	channelId.value = GetChannelId
 	leave.value = false
 }

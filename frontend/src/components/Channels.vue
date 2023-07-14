@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
+import { useRoute } from "vue-router";
 const props = defineProps<{
 	leave?: boolean
 }>()
@@ -43,6 +44,7 @@ interface Channel {
 }
 
 const channels = ref<Channel[]>()
+const route = useRoute();
 
 async function GetAllAccessChannels() {
 	channels.value = (await axios.get('chat/')).data
@@ -54,6 +56,9 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 	console.log('isMember')
 	console.log(isMember)
 	msg = ''
+	if (!route.params.id || channelId !== Number(route.params.id)) {
+		window.history.pushState('http://' + window.location.host + '/chat/' + channelId, 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/' + channelId)
+	}
 	if (isMember) {
 		emit("GetChannelId", channelId)
 	}
@@ -78,11 +83,18 @@ async function DelChannel(channelId: number) {
 	await axios.post('chat/deleteChannel', { 'chat_id': channelId }).catch((e) => {
 		console.log(e.response.data.message)
 	})
+	document.location.assign('http://' + window.location.host + '/chat/')
 	GetAllAccessChannels()
 }
 
 onMounted(async () => {
-	await GetAllAccessChannels()
+	if (route.params.id) {
+		GetChannelIdFromClick(Number(route.params.id), true, false)
+	}
+	else {
+		await GetAllAccessChannels()
+	}
+
 })
 
 </script>
@@ -91,19 +103,17 @@ onMounted(async () => {
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :msg=msg v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
-		<div class="buttonCreateChannel">
-			<button @click="WindowChannel('create')">
-				Create
-			</button>
-		</div>
+		<button @click="WindowChannel('create')">
+			Create
+		</button>
 		<h1>Channels</h1>
-		<div style="position: absolute; overflow: scroll;height: 90%;width: 288px;">
-			<div v-for="channel in channels">
-				<p class="channel">
+		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
+			<div v-for=" channel in channels">
+				<li class="channel">
 					<span @click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
 						{{ channel.chat_name }} </span>
 					<button v-show="channel.isOwner" @click="DelChannel(channel.id)">Delete</button>
-				</p>
+				</li>
 			</div>
 		</div>
 
@@ -117,7 +127,7 @@ onMounted(async () => {
 	left: 10%;
 	right: 70%;
 	background-color: antiquewhite;
-	height: 90%;
+	height: 95%;
 }
 
 .channel {
@@ -128,7 +138,8 @@ onMounted(async () => {
 
 .Channels button {
 	position: absolute;
-	overflow: scroll;
-	right: 0%;
+	padding: 0%;
+	/*overflow: scroll;*/
+	right: 1%;
 }
 </style>

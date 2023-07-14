@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import axios from "axios";
 import { ref } from "vue";
+import { io } from "socket.io-client";
 const props = defineProps<{
 	channelId?: number
 }>()
@@ -11,6 +13,11 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	console.log(channelId)
 	console.log('msg')
 	console.log(msg)
+	await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
+		console.log(e)
+	}).then(() => {
+		sendMsg.value = ''
+	})
 }
 
 </script>
@@ -18,7 +25,7 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 <template>
 	<div class="Chat">
 		<h1>Msg in the channel {{ channelId }}</h1>
-		<span style="position: absolute; top: 95% " v-if="channelId">
+		<span style="position: absolute; top: 100% " v-if="channelId">
 			<input type="text" v-model="sendMsg" placeholder="write msg" style="width: 390px;">
 			<button @click="SendMsg(channelId, sendMsg)">
 				Send

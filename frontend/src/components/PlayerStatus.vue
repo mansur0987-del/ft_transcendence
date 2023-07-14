@@ -8,12 +8,14 @@ function checkVisible() {
 		axios.post('player/profile', { updateData: { status: 0 } })
 	}
 	else {
+		console.log('visible')
 		axios.post('player/profile', { updateData: { status: 1 } })
 	}
 }
 
 onMounted(() => {
-	window.addEventListener('visibilitychange', checkVisible)
+	axios.post('player/profile', { updateData: { status: 1 } })
+	document.addEventListener('visibilitychange', checkVisible)
 })
 
 </script>

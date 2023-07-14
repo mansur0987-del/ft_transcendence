@@ -17,8 +17,9 @@ const WindowForChannel = ref<{
 }>({ isOpen: false, type: '' });
 
 interface User {
-	user_name: string,
-	id: number,
+	name?: string
+	user_name?: string,
+	player_id: number,
 	role?: number,
 	banned_to_ts: string,
 	muted_to_ts: string
@@ -52,7 +53,7 @@ watch(props, (newProps) => {
 const users = ref<any>()
 const myUser = ref<any>()
 const myRole = ref<number>()
-const bannedUsers = ref<any>()
+const bannedUsers = ref<User[]>()
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -99,11 +100,12 @@ async function UnBanned(userId: number) {
 const userName = ref<string>('')
 const errorMsg = ref<string>('')
 
-async function AddUser(userName: string) {
-	await axios.post('chat/addUser', { chat_id: actualChannelId.value, player_name: userName }).catch((e) => {
+async function AddUser() {
+	await axios.post('chat/addUser', { chat_id: actualChannelId.value, player_name: userName.value }).catch((e) => {
 		console.log(e)
 		errorMsg.value = e.response.data.message
 	})
+	userName.value = ''
 	GetUsers()
 }
 
@@ -118,7 +120,7 @@ async function AddUser(userName: string) {
 			Leave
 		</button>
 		<h1>Users {{ channelId }}</h1>
-		<div style="position: absolute; overflow: scroll; width: 100%">
+		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for="(user, index) in users">
 				<p>
 					<span>
@@ -136,25 +138,27 @@ async function AddUser(userName: string) {
 					{{ user.muted_to_ts !== '0' ? 'muted: ' + user.muted_to_ts + ' day(s)' : '' }}
 				</p>
 			</div>
-			<div class="BannedUsers" v-on="myRole && myRole > 1 && actualChannelId">
+			<div class="BannedUsers" v-show="myRole && myRole > 1 && actualChannelId && bannedUsers?.length != 0"
+				style="width: 200px">
 				<h3> Banned users: </h3>
 				<div v-for="(user, index) in bannedUsers">
 					<span>
 						{{ index + 1 }}
 						{{ user.name }}
 					</span>
+					<button @click="UnBanned(user.player_id)" style="position: absolute; right: 0%;">
+						UnBan
+					</button>
 					<p>
 						{{ user.banned_to_ts !== '0' ? 'banned: ' + user.banned_to_ts + ' day(s)' : '' }}
 					</p>
-					<button @click="UnBanned(user.id)" style="position: absolute; right: 0%;">
-						UnBan
-					</button>
+
 				</div>
 			</div>
-			<div class="AddUser" v-on="myRole && myRole > 1" v-show="actualChannelId">
-				<h3>Add user</h3>
+			<div class="AddUser" v-show="myRole && myRole > 1 && actualChannelId">
+				<h3>Add user </h3>
 				<input v-model="userName" placeholder="write username" />
-				<button @click="AddUser(userName)">
+				<button @click="AddUser()">
 					Add
 				</button>
 				<p style=color:red> {{ errorMsg }} </p>
@@ -172,7 +176,7 @@ async function AddUser(userName: string) {
 	left: 70%;
 	right: 10%;
 	background-color: antiquewhite;
-	height: 90%;
+	height: 95%;
 
 }
 </style>

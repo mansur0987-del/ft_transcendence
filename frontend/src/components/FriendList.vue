@@ -26,7 +26,14 @@ async function RedirectToProfile(player: any) {
 }
 
 async function Chat(player: any) {
-
+	await axios.post('chat/enterDirectChannel', { player_name: player.name }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		if (res?.data) {
+			console.log(res.data.chat_id)
+			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
+		}
+	})
 }
 
 </script>
