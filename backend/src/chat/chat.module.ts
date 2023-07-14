@@ -10,10 +10,12 @@ import { Chat_messages } from "./entities/chat_messages.entity";
 import { ChatMessageService } from "./services/chat_message.service";
 import { Player_blocks } from "./entities/players_blocks.entity";
 import { PlayerBlocksService } from "./services/players_blocks.service";
+import { Direct_R } from "./entities/directRelationship.entity";
+import { directRService } from "./services/directRelationships.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chat, Chat_members, Chat_messages, Player_blocks]), PlayerModule],
+  imports: [TypeOrmModule.forFeature([Chat, Chat_members, Chat_messages, Player_blocks, Direct_R]), PlayerModule],
   controllers: [ChatController],
-  providers: [ChatService, ChatMemberService, ChatMessageService, PlayerBlocksService]
+  providers: [ChatService, ChatMemberService, ChatMessageService, PlayerBlocksService, directRService]
 })
 export class ChatModule {}

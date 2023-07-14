@@ -17,6 +17,8 @@ import { ChatService } from './services/chat.service'
 import { ChatMemberService } from "./services/chat_members.service";
 import { ChatMessageService } from "./services/chat_message.service";
 import { PlayerBlocksService } from "./services/players_blocks.service";
+import { Direct_R } from "./entities/directRelationship.entity";
+import { directRService } from "./services/directRelationships.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateChatDto } from "./dto/update-chat.dto";
@@ -30,7 +32,8 @@ export class ChatController {
     private readonly chatMembersService: ChatMemberService,
     private readonly plService: PlayerService,
     private readonly msgService: ChatMessageService,
-    private readonly plBlocks: PlayerBlocksService
+    private readonly plBlocks: PlayerBlocksService,
+    private readonly dirR: directRService
   ) { }
 
   //utils
@@ -42,8 +45,57 @@ export class ChatController {
   async ts_to_days(src: string): Promise<string> {
     let days: number = ((new Date(src)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
     if (days <= 0)
-      return (await '0');
-    return (await days.toFixed(2).toString());
+      return ('0');
+    return (days.toFixed(2).toString());
+  }
+
+  async getChatMessagesUtil(chat_id: number, user_id: number): Promise<any[]>{
+    let result: any[] = [];
+    //get all messages from chat
+    const allMsg: any[] = await this.msgService.findAllByChatIdInOrder(chat_id);
+    for (let i = 0; allMsg && allMsg[i]; i++) {
+      if (await this.plBlocks.isBlocked(user_id, allMsg[i].player_id))
+        continue;
+      if (allMsg[i].player_id == user_id)
+        allMsg[i].isOwnerOfMsg = true;
+      else
+        allMsg[i].isOwnerOfMsg = false;
+      //add sender_name
+      const sender = await this.plService.GetPlayerById(allMsg[i].player_id);
+      if (!sender)
+        allMsg[i].sender_name = 'unknown';
+      else
+        allMsg[i].sender_name = sender.name;
+      result.push(allMsg[i]);
+    }
+    return result;
+  }
+
+  async createDirectChat(user1: number, user2: number): Promise<number> {
+    //add new chat in Chat
+    const newChat = await this.chatService.addDirectRawToChat();
+    //add new chat to directR
+    await this.dirR.addDirChat(user1, user2, newChat.id);
+    //add users to chat
+    await this.chatMembersService.addRawToChatMembers(
+      newChat.id,
+      user1,
+      false,
+      false,
+      true,
+      new Date(0).toISOString(),
+      new Date(0).toISOString()
+    )
+    await this.chatMembersService.addRawToChatMembers(
+      newChat.id,
+      user2,
+      false,
+      false,
+      true,
+      new Date(0).toISOString(),
+      new Date(0).toISOString()
+    )
+    return newChat.id;
   }
 
   //fix me: delete this
@@ -203,7 +255,7 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/getChatMessages')
-  async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any> {
+  async getChatMessagesForUser(@Request() req: any, @Body() body: any): Promise<any[]> {
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
     if (body.chat_id.IsNotNumber)
@@ -215,28 +267,13 @@ export class ChatController {
     //check is member
     if (!this.chatMembersService.isMember(body.chat_id, req.user.id))
       throw new ForbiddenException('You are not in this chat');
-
-    let result: any[] = [];
-    //get all messages from chat
-    const allMsg: any[] = await this.msgService.findAllByChatIdInOrder(body.chat_id);
-    for (let i = 0; allMsg && allMsg[i]; i++) {
-      if (await this.plBlocks.isBlocked(req.user.id, allMsg[i].player_id))
-        continue;
-      if (allMsg[i].player_id == req.user.id)
-        allMsg[i].isOwnerOfMsg = true;
-      else
-        allMsg[i].isOwnerOfMsg = false;
-      result.push(allMsg[i]);
-    }
-    return result;
+    return await this.getChatMessagesUtil(body.chat_id, req.user.id);
   }
 
   //post
   @UseGuards(AuthGuard('jwt'))
   @Post('/createChannel')
   async createNewChannel(@Request() req: any, @Body() src: CreateChatDto): Promise<Chat> {
-    // if (src.chat_name == undefined || src.isPrivate == undefined || src.have_password == undefined || (src.have_password && src.password == undefined))
-    //   throw new BadRequestException('Validation failed');
     if (await this.chatService.findOneByName(src.chat_name))
       throw new BadRequestException('Validation failed: this chat_name is anavaible');
     if (src.have_password)
@@ -253,40 +290,31 @@ export class ChatController {
     return result;
   }
 
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('/createDirectChannel')
-  // async createNewDirectChannel(@Request() req: any, @Body() body: any): Promise<Chat> {
-  //   if (!body || !body.player_name)
-  //     throw new BadRequestException('INVALID BODY');
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/enterDirectChannel')
+  async enterDirectChannel(@Request() req: any, @Body() body: any): Promise<{ messages: any[], reqUserName: string, othUserName: string}> {
+    if (!body || !body.player_name)
+      throw new BadRequestException('INVALID BODY');
 
-  //   const pl = await this.plService.GetPlayerByName(body.player_name);
-  //   if (!pl)
-  //     throw new NotFoundException('player not found');
-  //   if (await this.plBlocks.isBlocked(pl.id, req.user.id))
-  //     throw new ForbiddenException('player blocked you');
+    const pl = await this.plService.GetPlayerByName(body.player_name);
+    if (!pl)
+      throw new NotFoundException('player not found');
+    if (await this.plBlocks.isBlocked(pl.id, req.user.id))
+      throw new ForbiddenException('player blocked you');
 
-  //   const direct: { chat_id: number, player_id: number, isMember: boolean }[] = await this.chatMembersService.findDirectChatByIdsUsers(pl.id, req.user.id);
-  //   if (!direct || direct.length < 2) {
-  //     let result = await await this.chatService.addDirectRawToChat();
-  //     this.chatMembersService.addRawToChatMembers(
-  //       result.id,
-  //       req.user.id,
-  //       false,
-  //       false,
-  //       true,
-  //       new Date(0).toISOString(),
-  //       new Date(0).toISOString());
-  //     this.chatMembersService.addRawToChatMembers(
-  //       result.id,
-  //       pl.id,
-  //       false,
-  //       false,
-  //       true,
-  //       new Date(0).toISOString(),
-  //       new Date(0).toISOString());
-  //     return result;
-  //   }
-  // }
+    //check R exists
+    const dirChat = await this.dirR.findDirect_RbyUsers(req.user.id, pl.id);
+    let chat_id: number;
+    if (!dirChat)
+      chat_id = await this.createDirectChat(req.user.id, pl.id)
+    else
+      chat_id = dirChat.chat_id;
+    let result: { messages: any[], reqUserName: string, othUserName: string};
+    result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
+    result.reqUserName = (await this.plService.GetPlayerById(req.user.id))?.name;
+    result.othUserName = body.player_name;
+    return result;
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/joinToChannel')
