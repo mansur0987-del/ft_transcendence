@@ -15,7 +15,7 @@ export class ChatService {
     return await this.chat_repository.save({
       chat_name: src.chat_name,
       isPrivate: src.isPrivate,
-      isDirect: src.isDirect,
+      isDirect: false,
       have_password: src.have_password,
       password: src.password
     });

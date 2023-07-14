@@ -573,15 +573,14 @@ export class ChatController {
     return result;
   }
 
-  //fix me: player id->player name
   @UseGuards(AuthGuard('jwt'))
   @Post('/addUser')
   async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members> {
     //check body exists
-    if (!body || !body.chat_id || !body.player_id)
-      throw new BadRequestException('have no body or chat_id/player_id in body');
-    if (body.chat_id.IsNotNumber || body.player_id.IsNotNumber)
-      throw new BadRequestException('invalid chat_id/player_id');
+    if (!body || !body.chat_id || !body.player_name)
+      throw new BadRequestException('have no body or chat_id / player_id in body');
+    if (body.chat_id.IsNotNumber)
+      throw new BadRequestException('invalid chat_id');
     //check exists chat
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('Channel not found');
@@ -590,7 +589,12 @@ export class ChatController {
     if (!(await this.chatMembersService.isAdm(body.chat_id, req.user.id)))
       throw new ForbiddenException('you are not admin of this channel');
 
-    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, body.player_id);
+    //find player
+    const pl = await this.plService.GetPlayerByName(body.player_name);
+    if (!pl)
+      throw new NotFoundException('User not found');
+
+    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
     if (!actualR)
       return await this.chatMembersService.addRawToChatMembers(
         body.chat_id,
@@ -600,15 +604,17 @@ export class ChatController {
         true,
         new Date(0).toISOString(),
         new Date(0).toISOString());
+        
     if (new Date(actualR.banned_to_ts) > new Date()) {
       const expireDays = ((new Date(actualR.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
       throw new ForbiddenException('player\'s BAN expires in ' + expireDays.toFixed(2).toString() + ' days!');
     }
-    if (actualR.member_flg)
-      throw new BadRequestException('Player is already member of this channel');
-    let newR: UpdateChatDto = actualR;
-    newR.member_flg = true;
-    let result = await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+    let result = actualR;
+    if (!actualR.member_flg) {
+      let newR: UpdateChatDto = actualR;
+      newR.member_flg = true;
+      result = await this.chatMembersService.updateRawInChatMembers(actualR, newR);
+    }
     result.banned_to_ts = await this.ts_to_days(result.banned_to_ts);
     result.muted_to_ts = await this.ts_to_days(result.muted_to_ts);
     return result;
