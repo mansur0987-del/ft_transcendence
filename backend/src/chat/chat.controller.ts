@@ -61,11 +61,7 @@ export class ChatController {
       else
         allMsg[i].isOwnerOfMsg = false;
       //add sender_name
-      const sender = await this.plService.GetPlayerById(allMsg[i].player_id);
-      if (!sender)
-        allMsg[i].sender_name = 'unknown';
-      else
-        allMsg[i].sender_name = sender.name;
+      allMsg[i].sender_name = await this.getUserNameById(allMsg[i].player_id);
       result.push(allMsg[i]);
     }
     return result;
@@ -96,6 +92,13 @@ export class ChatController {
       new Date(0).toISOString()
     )
     return newChat.id;
+  }
+
+  async getUserNameById(user_id: number): Promise<string>{
+    const pl = await this.plService.GetPlayerById(user_id);
+    if (!pl || !pl.name)
+      return 'unknown';
+    return pl.name;
   }
 
   //fix me: delete this
@@ -180,7 +183,7 @@ export class ChatController {
     const chatUsers: any[] = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; chatUsers && chatUsers[i]; i++) {
       if (chatUsers[i].member_flg) {
-        chatUsers[i].user_name = (await this.plService.GetPlayerById(chatUsers[i].player_id)).name;
+        chatUsers[i].user_name = await this.getUserNameById(chatUsers[i].player_id);
         chatUsers[i].banned_to_ts = await this.ts_to_days(chatUsers[i].banned_to_ts);
         chatUsers[i].muted_to_ts = await this.ts_to_days(chatUsers[i].muted_to_ts);
         result.users_info.push(chatUsers[i]);
@@ -210,7 +213,7 @@ export class ChatController {
     let allR: any = await this.chatMembersService.findAllByChatId(body.chat_id);
     for (let i = 0; allR[i]; i++) {
       if (new Date(allR[i].banned_to_ts) > new Date()) {
-        allR[i].name = (await this.plService.GetPlayerById(allR[i].player_id)).name;
+        allR[i].name = await this.getUserNameById(allR[i].player_id);
         allR[i].banned_to_ts = await this.ts_to_days(allR[i].banned_to_ts);
         allR[i].muted_to_ts = await this.ts_to_days(allR[i].muted_to_ts);
         result.push(allR[i]);
@@ -311,7 +314,7 @@ export class ChatController {
       chat_id = dirChat.chat_id;
     let result: { messages: any[], reqUserName: string, othUserName: string};
     result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
-    result.reqUserName = (await this.plService.GetPlayerById(req.user.id))?.name;
+    result.reqUserName = await this.getUserNameById(req.user.id);
     result.othUserName = body.player_name;
     return result;
   }
