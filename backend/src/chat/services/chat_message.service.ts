@@ -39,16 +39,14 @@ export class ChatMessageService {
   async findAllInChatMessagesBetween(chat_id: number, ts1: Date, ts2: Date): Promise<Chat_messages[]> {
     return await this.chat_messages_repository.createQueryBuilder()
                     .select('id, chat_id, player_id, message, sent_ts')
-                    .from(Chat_messages, 'chat_messages')
-                    .where("chat_messages.chat_id= :chat_id", {chat_id: chat_id})
-                    .andWhere("chat_messages.sent_ts between :ts1 and ts2", {ts1: ts1, ts2: ts2}).getMany();
+                    .where("Chat_messages.chat_id= :chat_id", {chat_id: chat_id})
+                    .andWhere("Chat_messages.sent_ts between :ts1 and ts2", {ts1: ts1, ts2: ts2}).getMany();
   }
 
-  async findAllByChatIdInOrder(chat_id: number): Promise<Chat_messages[]> {
+  async findAllByChatIdInOrder(chat_id: number): Promise<Chat_messages[]> {    
     return await this.chat_messages_repository.createQueryBuilder()
                     .select('id, chat_id, player_id, message, sent_ts')
-                    .from(Chat_messages, 'chat_messages')
-                    .where("chat_messages.chat_id= :chat_id", {chat_id: chat_id})
-                    .orderBy("chat_messages.sent_ts").getMany();
+                    .where("Chat_messages.chat_id= :chat_id", {chat_id: chat_id})
+                    .orderBy("Chat_messages.sent_ts").getMany();
   }
 }

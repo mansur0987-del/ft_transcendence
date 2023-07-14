@@ -1,6 +1,6 @@
 import {Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 import { PrimaryColumn } from "typeorm";
-@Entity('private_messages')
+@Entity('direct_relationships')
 export class Direct_R {
     @PrimaryColumn()
     chat_id: number;

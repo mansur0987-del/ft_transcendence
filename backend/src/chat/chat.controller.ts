@@ -110,7 +110,7 @@ export class ChatController {
   //get
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
-  async findAllForUser(@Request() req: any): Promise<Chat[]> {
+  async findAllForUser(@Request() req: any): Promise<any[]> {
     let result: any[] = [];
     //add public chats
     let allPublic: any[] = await this.chatService.findAllByType(false);
@@ -302,9 +302,9 @@ export class ChatController {
     const pl = await this.plService.GetPlayerByName(body.player_name);
     if (!pl)
       throw new NotFoundException('player not found');
+
     if (await this.plBlocks.isBlocked(pl.id, req.user.id))
       throw new ForbiddenException('player blocked you');
-
     //check R exists
     const dirChat = await this.dirR.findDirect_RbyUsers(req.user.id, pl.id);
     let chat_id: number;
@@ -312,11 +312,11 @@ export class ChatController {
       chat_id = await this.createDirectChat(req.user.id, pl.id)
     else
       chat_id = dirChat.chat_id;
-    let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string};
+    let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string} = {chat_id: 0, messages: [], reqUserName: 'def', othUserName: 'def'};
     result.chat_id = chat_id;
     result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
     result.reqUserName = await this.getUserNameById(req.user.id);
-    result.othUserName = body.player_name;
+    result.othUserName = 'default';//body.player_name;
     return result;
   }
 
@@ -625,8 +625,7 @@ export class ChatController {
     const pl = await this.plService.GetPlayerByName(body.player_name);
     if (!pl)
       throw new NotFoundException('User not found');
-
-    const actualR = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
+    let actualR: Chat_members = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
     if (!actualR)
       return await this.chatMembersService.addRawToChatMembers(
         body.chat_id,
