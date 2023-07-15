@@ -53,6 +53,14 @@ watch(props, (newProps) => {
 	}
 })
 
+async function GetDate(tm: Date | undefined) {
+	return (tm?.getDate())
+}
+
+async function GetTime(tm: Date | undefined) {
+	return (tm?.getTime())
+}
+
 </script>
 
 <template>
@@ -66,8 +74,8 @@ watch(props, (newProps) => {
 		</span>
 		<div class="Msgs" v-for="msg in msgs">
 			<p>
-				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ msg.sent_ts?.getDate() }} {{
-					msg.sent_ts?.getTime() }}
+				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ GetDate(msg.sent_ts) }} {{
+					GetTime(msg.sent_ts) }}
 			</p>
 		</div>
 
