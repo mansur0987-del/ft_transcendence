@@ -28,7 +28,7 @@ interface Msg {
 	sender_name?: string,
 	isOwnerOfMsg?: boolean,
 	message?: string,
-	sent_ts?: Date,
+	sent_ts: string,
 }
 
 const msgs = ref<Msg[]>()
@@ -74,8 +74,8 @@ async function GetTime(tm: Date | undefined): Promise<any> {
 		</span>
 		<div class="Msgs" v-for="msg in msgs">
 			<p>
-				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ GetDate(msg.sent_ts) }} {{
-					GetTime(msg.sent_ts) }}
+				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ GetDate(new Date(msg.sent_ts)) }} {{
+					GetTime(new Date(msg.sent_ts)) }}
 			</p>
 		</div>
 
