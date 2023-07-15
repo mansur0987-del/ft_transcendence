@@ -22,4 +22,4 @@ export HOST_FRONT=localhost
 export BASE_URL=http://localhost:3001/
 export FRONT_URL=http://localhost:8080
 
-cd backend && npm run start:dev
+cd backend && npm run start:dev && cd ../frontend && npm run dev

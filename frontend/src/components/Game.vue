@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import ExitGame from './ExitGame.vue'
+import Menu from './Menu.vue'
+import Pong from './Pong.vue'
 
 const test = ref<string>()
 let count: number = 10
