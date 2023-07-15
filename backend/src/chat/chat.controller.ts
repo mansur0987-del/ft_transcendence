@@ -52,7 +52,6 @@ export class ChatController {
 
   async getChatMessagesUtil(chat_id: number, user_id: number): Promise<any[]> {
     let result: any[] = [];
-    //get all messages from chat
     const allMsg: any[] = await this.msgService.findAllByChatIdInOrder(chat_id);
     for (let i = 0; allMsg && allMsg[i]; i++) {
       if (await this.plBlocks.isBlocked(user_id, allMsg[i].player_id))
@@ -121,26 +120,19 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
   async findAllForUser(@Request() req: any): Promise<any[]> {
-    // let result: any[] = [];
     //add public chats
     let allPublic: any[] = await this.chatService.findAllByType(false);
-    console.log('allPublic')
-      console.log(allPublic)
     for (let i: number = 0; allPublic[i]; i++) {
       const selfR = await this.chatMembersService.findOneByIds(allPublic[i].id, req.user.id);
-      console.log('selfR')
-      console.log(selfR)
       allPublic[i].isMember = selfR ? selfR.member_flg : false;
       allPublic[i].isAdmin = selfR ? selfR.admin_flg : false;
       allPublic[i].isOwner = selfR ? selfR.owner_flg : false;
-
-      // result.push(await allPublic[i]);
     }
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
       const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].id, req.user.id);
-      if (selfR?.member_flg) {
+      if (selfR ?.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
         allPrivate[i].isAdmin = await selfR.admin_flg;
@@ -180,7 +172,6 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Post('/chatInfo')
   async getChatInfo(@Request() req: any, @Body() body: any): Promise<any> {
-    console.log('chat id = ', body.chat_id);
     if (!body || !body.chat_id)
       throw new BadRequestException('have no body or chat_id in body');
     if (body.chat_id.IsNotNumber)
@@ -299,7 +290,6 @@ export class ChatController {
       throw new BadRequestException('Validation failed: this chat_name is anavaible');
     if (src.chat_name.substring(0, 6) == 'direct')
       throw new ForbiddenException('you cannot use direct keyword in start of chat_name');
-    console.log(src.chat_name);
     if (src.have_password)
       src.password = await this.getHashingPass(src.password)
     let result = await this.chatService.addRawToChat(src);
@@ -703,6 +693,7 @@ export class ChatController {
     if (!who || !who.owner_flg)
       throw new ForbiddenException('you are not owner of this channel');
     await this.chatMembersService.removeAllByChatId(body.chat_id);
+    await this.msgService.removeAllByChatId(body.chat_id);
     return await this.chatService.removeRawInChat(body.chat_id);
   }
 }
