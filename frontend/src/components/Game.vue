@@ -13,65 +13,66 @@
 </template>
 
 <script>
-import { LeftBar } from './LeftBar.vue';
-import { Pong } from './Pong.vue';
-import { Multiplayer } from './Multiplayer.vue';
-import { Menu } from './Menu.vue';
+import LeftBar from './LeftBar.vue';
+import Pong from './Pong.vue';
+import Multiplayer from './Multiplayer.vue';
+import Menu from './Menu.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
 import MultiplayerVue from "./Multiplayer.vue";
 import { io } from 'socket.io-client';
-import { useLocation } from "vue-router";
+import { useLocation } from 'vue-use-kit'
 import { GameGateway } from '../../../backend/src/Game/game.gateway'
 
-export default {
-    components: {
-        LeftBar,
-        Pong,
-        Multiplayer,
-        Menu
-    },
-    setup() {
-        const GameGateway = ref(null);
-        const isInvite = ref(false);
-        const isReady = ref(isInvite.value);
-        const id = ref(0);
-        const mode = ref(0);
-        const { invite, setPlayerId } = handleConnection(GameGateway); //useContext(GameGateway);
+// export default {
+//     components: {
+//         LeftBar,
+//         Pong,
+//         Multiplayer,
+//         Menu
+//     },
+//     setup() 
 
-        onMounted(() => {
-            isReady.value = invite;
+// const GameGateway = ref(null);
+const isInvite = ref(false);
+const isReady = ref(isInvite.value);
+const id = ref(0);
+const mode = ref(0);
+const { invite, setPlayerId } = handleConnection(GameGateway); //useContext(GameGateway);
 
-            if (GameGateway.value) {
-                GameGateway.value.on('room', (data) => {
-                    console.log('Received a message from the backend room code:', data);
-                    isReady.value = true;
-                });
+onMounted(() => {
+    isReady.value = invite;
 
-                GameGateway.value.on('add', (data) => {
-                    console.log('Gateway add: ', data);
-                    setPlayerId(data - 1);
-                });
-            }
-
-            return () => {
-                if (GameGateway.value) {
-                    GameGateway.value.off('connect');
-                    GameGateway.value.off('info');
-                    GameGateway.value.off('room');
-                    GameGateway.value.off('add');
-                    GameGateway.value.off('disconnect');
-                }
-            }
+    if (GameGateway.value) {
+        GameGateway.value.on('room', (data) => {
+            console.log('Received a message from the backend room code:', data);
+            isReady.value = true;
         });
 
-        return {
-            GameGateway,
-            isReady,
-            id,
-            setId,
-            mode,
-            setMode
-        };
+        GameGateway.value.on('add', (data) => {
+            console.log('Gateway add: ', data);
+            setPlayerId(data - 1);
+        });
     }
-};
+
+    return () => {
+        if (GameGateway.value) {
+            GameGateway.value.off('connect');
+            GameGateway.value.off('info');
+            GameGateway.value.off('room');
+            GameGateway.value.off('add');
+            GameGateway.value.off('disconnect');
+        }
+    }
+});
+
+        // return {
+        //     GameGateway,
+        //     isReady,
+        //     id,
+        //     setId,
+        //     mode,
+        //     setMode
+        // };
+//     }
+// };
 </script>

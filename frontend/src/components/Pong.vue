@@ -11,7 +11,7 @@
 
 <script>
 //lang="ts"
-import { Multiplayer } from './Multiplayer.vue';
+import Multiplayer from './Multiplayer.vue';
 
 export default {
     components: {
