@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
-import { io } from "socket.io-client";
+import { socket } from '@/socket'
 const props = defineProps<{
 	channelId?: number
 }>()
 
 const sendMsg = ref<string>('')
+const actualChannel = ref<number>()
 
 async function SendMsg(channelId: number | undefined, msg: string) {
 	console.log('channelId')
@@ -21,6 +22,10 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	if (channelId) {
 		GetMsg(channelId)
 	}
+	socket.on('msgToClient', (res) => {
+		console.log('1111')
+		console.log(res)
+	})
 }
 
 interface Msg {
@@ -49,17 +54,15 @@ onMounted(async () => {
 
 watch(props, (newProps) => {
 	if (newProps.channelId) {
-		GetMsg(newProps.channelId)
+		actualChannel.value = newProps.channelId
+		GetMsg(actualChannel.value)
+	}
+	else {
+		actualChannel.value = undefined
 	}
 })
 
-async function GetDate(tm: Date | undefined): Promise<any> {
-	return (tm?.getDate())
-}
 
-async function GetTime(tm: Date | undefined): Promise<any> {
-	return (tm?.getTime())
-}
 
 </script>
 
