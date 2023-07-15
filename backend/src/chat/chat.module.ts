@@ -18,4 +18,4 @@ import { directRService } from "./services/directRelationships.service";
   controllers: [ChatController],
   providers: [ChatService, ChatMemberService, ChatMessageService, PlayerBlocksService, directRService]
 })
-export class ChatModule {}
+export class ChatModule { }

@@ -1,4 +1,14 @@
 import {
+  SubscribeMessage,
+  WebSocketGateway,
+  OnGatewayInit,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
+import { Socket, Server } from 'socket.io';
+import {
   BadRequestException,
   Body,
   Controller,
@@ -12,12 +22,10 @@ import {
 import { Chat } from './entities/chat.entity';
 import { Chat_members } from "./entities/chat_members.entity";
 import { Chat_messages } from "./entities/chat_messages.entity";
-import { Player_blocks } from "./entities/players_blocks.entity";
 import { ChatService } from './services/chat.service'
 import { ChatMemberService } from "./services/chat_members.service";
 import { ChatMessageService } from "./services/chat_message.service";
 import { PlayerBlocksService } from "./services/players_blocks.service";
-import { Direct_R } from "./entities/directRelationship.entity";
 import { directRService } from "./services/directRelationships.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { AuthGuard } from '@nestjs/passport';
@@ -25,10 +33,10 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
-import { QueryRunnerProviderAlreadyReleasedError } from "typeorm";
 
+@WebSocketGateway()
 @Controller('chat')
-export class ChatController {
+export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService,
     private readonly chatMembersService: ChatMemberService,
     private readonly plService: PlayerService,
@@ -36,6 +44,11 @@ export class ChatController {
     private readonly plBlocks: PlayerBlocksService,
     private readonly dirR: directRService
   ) { }
+
+  @WebSocketServer()
+  server: Server;
+
+  private logger: Logger = new Logger('ChatController');
 
   //utils
   async getHashingPass(pass: string): Promise<string> {
@@ -110,12 +123,6 @@ export class ChatController {
     return pl.name;
   }
 
-  //fix me: delete this
-  @Post('/sqlAddUser')
-  async execSql(@Body() body: any) {
-    await this.chatMembersService.addRawToChatMembers(body.chat_id, body.player_id, body.owner_flg, body.admin_flg, body.member_flg, body.banned_to_ts, body.muted_to_ts);
-  }
-
   //get
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
@@ -132,7 +139,7 @@ export class ChatController {
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
       const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].id, req.user.id);
-      if (selfR ?.member_flg) {
+      if (selfR && selfR.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
         allPrivate[i].isAdmin = await selfR.admin_flg;
@@ -152,6 +159,7 @@ export class ChatController {
 
   //inside chat
   @UseGuards(AuthGuard('jwt'))
+  @SubscribeMessage('msgToServer')
   @Post('/sendMessage')
   async sendMessage(@Request() req: any, @Body() body: any): Promise<Chat_messages> {
     if (!body || !body.chat_id || !body.message)
@@ -166,7 +174,9 @@ export class ChatController {
       const days = this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
-    return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
+    let res = await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
+    this.server.emit('msgToClient', res);
+    return res;
   }
   //inside chat
   @UseGuards(AuthGuard('jwt'))
@@ -695,5 +705,17 @@ export class ChatController {
     await this.chatMembersService.removeAllByChatId(body.chat_id);
     await this.msgService.removeAllByChatId(body.chat_id);
     return await this.chatService.removeRawInChat(body.chat_id);
+  }
+
+  afterInit(server: Server) {
+    this.logger.log('Init');
+  }
+
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(`Client connected: ${client.id}`);
   }
 }
