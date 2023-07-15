@@ -114,7 +114,7 @@ async function TurnOffQrCode(code?: string) {
 				<input type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
 			</label>
 			<button v-on:click="submitFile()">Submit</button>
-			<p style=color:red>{{ errorInputAvatar }} </p>
+			<p style="color:red; position: relative; left: 20%">{{ errorInputAvatar }} </p>
 		</h1>
 		<div v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">
 			<h1>
@@ -125,7 +125,7 @@ async function TurnOffQrCode(code?: string) {
 				<button @click="ActiveQrCode(QrCodeCode)">
 					Activate 2fa Authorization
 				</button>
-				<p style=color:red>{{ errorInputQrCode }} </p>
+				<p style="color:red; position: relative; left: 20%">{{ errorInputQrCode }} </p>
 			</h1>
 		</div>
 		<div v-else>
@@ -140,8 +140,29 @@ async function TurnOffQrCode(code?: string) {
 
 <style scoped>
 .Settings {
-	position: absolute;
+	position: fixed;
 	top: 5%;
-	left: 30%;
+	left: 35%;
+	width: 50%;
+	height: 60%;
+	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
+	border-radius: 20px;
+	z-index: 1;
+	background: inherit;
+	overflow: hidden;
+}
+
+.Settings:before {
+	content: "";
+	position: absolute;
+	background: inherit;
+	z-index: -1;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(1px);
+	margin: -20px;
 }
 </style>

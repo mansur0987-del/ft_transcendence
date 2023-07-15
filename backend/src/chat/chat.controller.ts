@@ -124,18 +124,23 @@ export class ChatController {
     // let result: any[] = [];
     //add public chats
     let allPublic: any[] = await this.chatService.findAllByType(false);
+    console.log('allPublic')
+      console.log(allPublic)
     for (let i: number = 0; allPublic[i]; i++) {
-      const selfR = await this.chatMembersService.findOneByIds(allPublic[i].chat_id, req.user.id);
-      allPublic[i].isMember = await selfR.member_flg;
-      allPublic[i].isAdmin = await selfR.admin_flg;
-      allPublic[i].isOwner = await selfR.owner_flg;
+      const selfR = await this.chatMembersService.findOneByIds(allPublic[i].id, req.user.id);
+      console.log('selfR')
+      console.log(selfR)
+      allPublic[i].isMember = selfR ? selfR.member_flg : false;
+      allPublic[i].isAdmin = selfR ? selfR.admin_flg : false;
+      allPublic[i].isOwner = selfR ? selfR.owner_flg : false;
+
       // result.push(await allPublic[i]);
     }
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
-      const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].chat_id, req.user.id);
-      if (selfR.member_flg) {
+      const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].id, req.user.id);
+      if (selfR?.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
         allPrivate[i].isAdmin = await selfR.admin_flg;
@@ -344,7 +349,7 @@ export class ChatController {
       throw new BadRequestException('have no body or chat_id in body');
     if (body.chat_id.IsNotNumber)
       throw new BadRequestException('invalid chat_id');
-    //check chat 
+    //check chat
     const dstChannel = await this.chatService.findOneById(body.chat_id);
     if (!dstChannel)
       throw new NotFoundException('Channel not found');
