@@ -23,7 +23,15 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	}
 }
 
-const msgs = ref<object[]>()
+interface Msg {
+	player_id?: number,
+	sender_name?: string,
+	isOwnerOfMsg?: boolean,
+	message?: string,
+	sent_ts?: Date,
+}
+
+const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
 	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
@@ -57,7 +65,9 @@ watch(props, (newProps) => {
 			</button>
 		</span>
 		<div class="Msgs" v-for="msg in msgs">
-			{{ msg }}
+			<p>
+				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ msg.sent_ts }}
+			</p>
 		</div>
 
 	</div>
