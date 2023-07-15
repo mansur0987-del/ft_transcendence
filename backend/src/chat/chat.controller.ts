@@ -126,9 +126,9 @@ export class ChatController {
     let allPublic: any[] = await this.chatService.findAllByType(false);
     for (let i: number = 0; allPublic[i]; i++) {
       const selfR = await this.chatMembersService.findOneByIds(allPublic[i].chat_id, req.user.id);
-      allPublic[i].isMember = selfR.member_flg;
-      allPublic[i].isAdmin = selfR.admin_flg;
-      allPublic[i].isOwner = selfR.owner_flg;
+      allPublic[i].isMember = await selfR.member_flg;
+      allPublic[i].isAdmin = await selfR.admin_flg;
+      allPublic[i].isOwner = await selfR.owner_flg;
       // result.push(await allPublic[i]);
     }
     //add private chats
@@ -138,8 +138,8 @@ export class ChatController {
       if (selfR.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
-        allPrivate[i].isAdmin = selfR.admin_flg;
-        allPrivate[i].isOwner = selfR.owner_flg;
+        allPrivate[i].isAdmin = await selfR.admin_flg;
+        allPrivate[i].isOwner = await selfR.owner_flg;
         allPublic.push(await allPrivate[i]);
       }
     }
