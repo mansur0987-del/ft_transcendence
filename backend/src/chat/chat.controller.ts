@@ -134,7 +134,7 @@ export class ChatController {
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
-      const selfR = await this.chatMembersService.findOneByIds(allPublic[i].chat_id, req.user.id);
+      const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].chat_id, req.user.id);
       if (selfR.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
@@ -360,10 +360,8 @@ export class ChatController {
     {
       if (chatMemberRaw.member_flg)
         throw new BadRequestException('you are already member of this channel');
-      if (new Date(chatMemberRaw.banned_to_ts) > new Date()) {
-        const expireDays = ((new Date(chatMemberRaw.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
-        throw new ForbiddenException('your BAN expires in ' + expireDays.toString() + ' days!');
-      }
+      if (new Date(chatMemberRaw.banned_to_ts) > new Date())
+        throw new ForbiddenException('your BAN expires in ' + await this.ts_to_days(chatMemberRaw.banned_to_ts) + ' days!');
       let updDto: UpdateChatDto = chatMemberRaw;
       updDto.member_flg = true;
       let result = await this.chatMembersService.updateRawInChatMembers(chatMemberRaw, updDto);
