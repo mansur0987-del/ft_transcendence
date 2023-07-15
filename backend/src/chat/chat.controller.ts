@@ -50,7 +50,7 @@ export class ChatController {
     return (days.toFixed(2).toString());
   }
 
-  async getChatMessagesUtil(chat_id: number, user_id: number): Promise<any[]>{
+  async getChatMessagesUtil(chat_id: number, user_id: number): Promise<any[]> {
     let result: any[] = [];
     //get all messages from chat
     const allMsg: any[] = await this.msgService.findAllByChatIdInOrder(chat_id);
@@ -104,7 +104,7 @@ export class ChatController {
     return newChat.id;
   }
 
-  async getUserNameById(user_id: number): Promise<string>{
+  async getUserNameById(user_id: number): Promise<string> {
     const pl = await this.plService.GetPlayerById(user_id);
     if (!pl || !pl.name)
       return 'unknown';
@@ -311,7 +311,7 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/enterDirectChannel')
-  async enterDirectChannel(@Request() req: any, @Body() body: any): Promise<{ chat_id: number, messages: any[], reqUserName: string, othUserName: string}> {
+  async enterDirectChannel(@Request() req: any, @Body() body: any): Promise<{ chat_id: number }> {
     if (!body || !body.player_name)
       throw new BadRequestException('INVALID BODY');
 
@@ -328,12 +328,18 @@ export class ChatController {
       chat_id = await this.createDirectChat(req.user.id, pl.id)
     else
       chat_id = dirChat.chat_id;
-    let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string} = {chat_id: 0, messages: [], reqUserName: 'def', othUserName: 'def'};
-    result.chat_id = chat_id;
-    result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
-    result.reqUserName = await this.getUserNameById(req.user.id);
-    result.othUserName = 'default';//body.player_name;
-    return result;
+    // let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string} = {chat_id: 0, messages: [], reqUserName: 'def', othUserName: 'def'};
+    // result.chat_id = chat_id;
+    // result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
+    // result.reqUserName = await this.getUserNameById(req.user.id);
+    // result.othUserName = 'default';//body.player_name;
+    const selfR = await this.chatMembersService.findOneByIds(chat_id, req.user.id);
+    if (!selfR.member_flg) {
+      let newSelfR = selfR;
+      newSelfR.member_flg = true;
+      await this.chatMembersService.updateRawInChatMembers(selfR, newSelfR);
+    }
+    return { chat_id: chat_id };
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -667,7 +673,7 @@ export class ChatController {
         true,
         new Date(0).toISOString(),
         new Date(0).toISOString());
-        
+
     if (new Date(actualR.banned_to_ts) > new Date()) {
       const expireDays = ((new Date(actualR.banned_to_ts)).getTime() - (new Date()).getTime()) / (1000 * 3600 * 24);
       throw new ForbiddenException('player\'s BAN expires in ' + expireDays.toFixed(2).toString() + ' days!');
