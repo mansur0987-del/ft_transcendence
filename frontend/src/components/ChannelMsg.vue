@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { io } from "socket.io-client";
 const props = defineProps<{
 	channelId?: number
@@ -18,7 +18,32 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	}).then(() => {
 		sendMsg.value = ''
 	})
+	if (channelId) {
+		GetMsg(channelId)
+	}
 }
+
+const msgs = ref<object[]>()
+
+async function GetMsg(channelId: number) {
+	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		msgs.value = res.data
+	})
+}
+
+onMounted(async () => {
+	if (props.channelId) {
+		await GetMsg(props.channelId)
+	}
+})
+
+watch(props, (newProps) => {
+	if (newProps.channelId) {
+		GetMsg(newProps.channelId)
+	}
+})
 
 </script>
 
@@ -31,6 +56,9 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 				Send
 			</button>
 		</span>
+		<div class="Msgs" v-for="msg in msgs">
+			{{ msg }}
+		</div>
 
 	</div>
 </template>
