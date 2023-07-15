@@ -53,11 +53,11 @@ watch(props, (newProps) => {
 	}
 })
 
-function GetDate(tm: Date | undefined) {
+async function GetDate(tm: Date | undefined): Promise<any> {
 	return (tm?.getDate())
 }
 
-function GetTime(tm: Date | undefined) {
+async function GetTime(tm: Date | undefined): Promise<any> {
 	return (tm?.getTime())
 }
 
