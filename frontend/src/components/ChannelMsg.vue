@@ -66,8 +66,8 @@ watch(props, (newProps) => {
 		</span>
 		<div class="Msgs" v-for="msg in msgs">
 			<p>
-				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ msg.sent_ts?.getDate }} {{
-					msg.sent_ts?.getTime }}
+				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ msg.sent_ts?.getDate() }} {{
+					msg.sent_ts?.getTime() }}
 			</p>
 		</div>
 
