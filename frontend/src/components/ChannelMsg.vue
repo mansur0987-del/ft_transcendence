@@ -74,9 +74,22 @@ async function GetTime(tm: Date | undefined): Promise<any> {
 		</span>
 		<div class="Msgs" v-for="msg in msgs">
 			<p>
-				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ (new Date(msg.sent_ts)).getHours() }}:
-				{{ (new Date(msg.sent_ts)).getMinutes() }}: {{ (new Date(msg.sent_ts)).getSeconds() }}
-				{{ (new Date(msg.sent_ts)).getDate() }}.{{ (new Date(msg.sent_ts)).getMonth() + 1 }}
+				<span style="color: blue;">
+					{{ msg.sender_name }}
+
+				</span>
+				{{ msg.message }}
+				<span style="color: rgb(251, 56, 241); position: relative; right: %0;">
+					<span>
+						{{ (new Date(msg.sent_ts)).getHours() }}:
+						{{ (new Date(msg.sent_ts)).getMinutes() }}:{{ (new Date(msg.sent_ts)).getSeconds() }}
+					</span>
+					<span>
+						{{ (new Date(msg.sent_ts)).getDate() }}.{{ (new Date(msg.sent_ts)).getMonth() + 1 }}
+					</span>
+
+				</span>
+
 			</p>
 		</div>
 
