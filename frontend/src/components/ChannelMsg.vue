@@ -14,14 +14,17 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	console.log(channelId)
 	console.log('msg')
 	console.log(msg)
-	await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
-		console.log(e)
-	}).then(() => {
-		sendMsg.value = ''
+	socket.emit('SendMsg', channelId, msg, () => {
+		console.log('emit SendMsg')
 	})
-	if (channelId) {
-		GetMsg(channelId)
-	}
+	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
+	//	console.log(e)
+	//}).then(() => {
+	//	sendMsg.value = ''
+	//})
+	//if (channelId) {
+	//	GetMsg(channelId)
+	//}
 	socket.on('msgToClient', (res) => {
 		console.log('1111')
 		console.log(res)
