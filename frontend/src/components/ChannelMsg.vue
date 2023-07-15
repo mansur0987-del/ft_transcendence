@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
-import { socket } from '@/socket'
+//import { socket } from '@/socket'
+import io from 'socket.io-client';
+import { socket } from "@/socket";
 const props = defineProps<{
 	channelId?: number
 }>()
@@ -14,9 +16,9 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	console.log(channelId)
 	console.log('msg')
 	console.log(msg)
-	socket.emit('SendMsg', channelId, msg, () => {
-		console.log('emit SendMsg')
-	})
+	//socket.emit('SendMsg', channelId, msg, () => {
+	//	console.log('emit SendMsg')
+	//})
 	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
 	//	console.log(e)
 	//}).then(() => {
@@ -25,7 +27,10 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	//if (channelId) {
 	//	GetMsg(channelId)
 	//}
-	socket.on('msgToClient', (res) => {
+	const socket = io('http://localhost:3001/chat')
+	console.log('socket')
+	console.log(socket)
+	socket.on('msgToClient', () => {
 		console.log('1111')
 		console.log(res)
 	})

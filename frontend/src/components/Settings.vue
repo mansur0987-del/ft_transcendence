@@ -4,6 +4,7 @@ import { ref, onMounted } from "vue";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
+import { ElInput, ElButton } from 'element-plus'
 
 const errorInputName = ref<string>()
 const newName = ref<string>()
@@ -102,18 +103,19 @@ async function TurnOffQrCode(code?: string) {
 	<LeftBar />
 	<Logout />
 	<div class="Settings">
-		<h1>New name:
-			<input v-model="newName" placeholder="write new name" />
-			<button @click="ChangeName(newName)">
-				Change name
-			</button>
-			<p style=color:red>{{ errorInputName }} </p>
-		</h1>
+		<h3>Change name
+			<el-input v-model="newName" clearable placeholder="write new name" style="width: 70%;" />
+			<el-button @click="ChangeName(newName)">
+				Submit
+			</el-button>
+			<span v-if="errorInputName !== 'SUCCESS!!'" style="color:red; font-size: 16px;">{{ errorInputName }} </span>
+			<span v-else style="color:green; font-size: 16px;">{{ errorInputName }} </span>
+		</h3>
 		<h1>
 			<label>Change avatar:
 				<input type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
 			</label>
-			<button v-on:click="submitFile()">Submit</button>
+			<el-button v-on:click="submitFile()">Submit</el-button>
 			<p style="color:red; position: relative; left: 20%">{{ errorInputAvatar }} </p>
 		</h1>
 		<div v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">

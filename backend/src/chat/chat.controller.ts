@@ -34,14 +34,8 @@ import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
 
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
-
-@Controller('chat')
 @WebSocketGateway()
+@Controller('chat')
 export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService,
     private readonly chatMembersService: ChatMemberService,
@@ -165,8 +159,8 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
 
   //inside chat
   @UseGuards(AuthGuard('jwt'))
-  @Post('/sendMessage')
   @SubscribeMessage('msgToServer')
+  @Post('/sendMessage')
   async sendMessage(@Request() req: any, @Body() body: any): Promise<Chat_messages> {
     if (!body || !body.chat_id || !body.message)
       throw new BadRequestException('not enough data for send message');
@@ -181,8 +175,7 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
     let res = await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
-    console.log(this.server);
-    (await this.server).emit('msgToClient', res);
+    this.server.emit('msgToClient', res);
     return res;
   }
   //inside chat

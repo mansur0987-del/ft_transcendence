@@ -11,10 +11,10 @@ const URL = process.env.BASE_URL
 
 export const socket = io(URL);
 
-//socket.on("conne", () => {
-//	console.log('socket connect')
-//  	state.connected = true;
-//});
+socket.on("connect", () => {
+	console.log('socket connect')
+  	state.connected = true;
+});
 
 //socket.on("disconnect", () => {
 //  state.connected = false;

@@ -5,7 +5,6 @@ import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
-import { ElTable } from 'element-plus'
 
 const route = useRoute();
 const name = ref<string>()
