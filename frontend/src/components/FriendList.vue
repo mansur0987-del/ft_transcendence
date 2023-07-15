@@ -25,6 +25,17 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+async function Chat(player: any) {
+	await axios.post('chat/enterDirectChannel', { player_name: player.name }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		if (res?.data) {
+			console.log(res.data.chat_id)
+			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
+		}
+	})
+}
+
 </script>
 
 <template>
@@ -38,6 +49,7 @@ async function RedirectToProfile(player: any) {
 				<button @click="PostDeleteFriend(friend)">
 					Delete</button>
 				<button @click="RedirectToProfile(friend)">Get info</button>
+				<button @click="Chat(friend)"> Chat </button>
 			</li>
 		</template>
 	</div>

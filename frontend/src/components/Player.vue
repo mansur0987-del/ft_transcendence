@@ -5,6 +5,7 @@ import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
+import { ElTable } from 'element-plus'
 
 const route = useRoute();
 const name = ref<string>()
@@ -66,6 +67,7 @@ onMounted(() => {
 	<Logout />
 	<img class="Avatar" :src="avatar" />
 	<div class="Player">
+		<div class=""></div>
 		<h1>Username: {{ name }}</h1>
 		<h1>Achievements:
 			<p v-show="isFirstGame === true" style="color: blue;"> You played one or more games</p>
@@ -83,21 +85,44 @@ onMounted(() => {
 		</h1>
 		<h1>stats: </h1>
 		<h1>rank: </h1>
+
 	</div>
 </template>
 
 <style scoped>
 .Avatar {
 	position: fixed;
-	width: 400px;
-	top: 100px;
-	left: 50%;
+	width: 250px;
+	top: 5%;
+	left: 15%;
 }
+
 
 .Player {
 	position: fixed;
-	top: 30%;
-	left: 15%;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: 60%;
+	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
+	border-radius: 20px;
+	z-index: 1;
+	background: inherit;
+	overflow: hidden;
+}
+
+.Player:before {
+	content: "";
+	position: absolute;
+	background: inherit;
+	z-index: -1;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(1px);
+	margin: -20px;
 }
 
 .Player button {

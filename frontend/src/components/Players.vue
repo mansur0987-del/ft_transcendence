@@ -63,6 +63,18 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+async function Chat(player: any) {
+	await axios.post('chat/enterDirectChannel', { player_name: player.name }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		if (res?.data) {
+			console.log(res.data)
+			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
+		}
+	})
+
+}
+
 
 </script>
 
@@ -77,6 +89,7 @@ async function RedirectToProfile(player: any) {
 					<button v-if="player.needButton" @click="PostApplication(player)">Add
 						friend</button>
 					<button v-if="player.id !== playerId" @click="RedirectToProfile(player)">Get info</button>
+					<button v-if="player.id !== playerId" @click="Chat(player)"> Chat </button>
 				</li>
 
 			</div>

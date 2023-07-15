@@ -4,7 +4,7 @@ import { ref } from "vue";
 
 
 const errorInputCode = ref<string>()
-const code = ref<string>()
+const code = ref<string>('')
 
 async function CheckCode(code: string) {
 	await axios.post('auth/signin', { "twoFactorAuthenticationCode": code })

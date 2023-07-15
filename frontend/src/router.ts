@@ -24,6 +24,7 @@ const router = createRouter({
 		{ path: '/players', component: Players, name: 'Players' },
 		{ path: '/friendlist', component: FriendList, name: 'FriendList' },
 		{ path: '/chat', component: Chat, name: 'Chat' },
+		{ path: '/chat/:id', component: Chat, name: 'ChatDir' },
 		{ path: '/game', component: Game, name: 'Game' },
 		{ path: '/', redirect: '/player' },
 		{ path: '/:pathMatch(.*)*', component: PathNotFound, name: 'PathNotFound' },
@@ -60,7 +61,7 @@ router.beforeEach(async (to, from) => {
 		if (to.name !== 'Login'){
 			return '/login'
 		}
-		else if (to.name === 'Login' && to.query.code !== undefined){
+		else if (to.name === 'Login' && to.query.code !== undefined && to.query.code !== null){
 			localStorage.setItem('token', to.query.code);
 			axios.defaults.headers.common['Authorization'] = 'Bearer ' + to.query.code
 			return Player
