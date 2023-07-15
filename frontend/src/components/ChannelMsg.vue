@@ -75,7 +75,7 @@ async function GetTime(tm: Date | undefined): Promise<any> {
 		<div class="Msgs" v-for="msg in msgs">
 			<p>
 				{{ msg.sender_name }} {{ msg.isOwnerOfMsg }} {{ msg.message }} {{ (new Date(msg.sent_ts)).getDate() }} {{
-					(new Date(msg.sent_ts)).getTime() }}
+					(new Date(msg.sent_ts)).getTimezoneOffset() }}
 			</p>
 		</div>
 
