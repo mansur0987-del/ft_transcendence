@@ -121,7 +121,7 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
   async findAllForUser(@Request() req: any): Promise<any[]> {
-    let result: any[] = [];
+    // let result: any[] = [];
     //add public chats
     let allPublic: any[] = await this.chatService.findAllByType(false);
     for (let i: number = 0; allPublic[i]; i++) {
@@ -129,7 +129,7 @@ export class ChatController {
       allPublic[i].isMember = selfR.member_flg;
       allPublic[i].isAdmin = selfR.admin_flg;
       allPublic[i].isOwner = selfR.owner_flg;
-      result.push(await allPublic[i]);
+      // result.push(await allPublic[i]);
     }
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
@@ -140,10 +140,10 @@ export class ChatController {
         allPrivate[i].isMember = true;
         allPrivate[i].isAdmin = selfR.admin_flg;
         allPrivate[i].isOwner = selfR.owner_flg;
-        result.push(await allPrivate[i]);
+        allPublic.push(await allPrivate[i]);
       }
     }
-    return result;
+    return allPublic;
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -328,11 +328,6 @@ export class ChatController {
       chat_id = await this.createDirectChat(req.user.id, pl.id)
     else
       chat_id = dirChat.chat_id;
-    // let result: { chat_id: number, messages: any[], reqUserName: string, othUserName: string} = {chat_id: 0, messages: [], reqUserName: 'def', othUserName: 'def'};
-    // result.chat_id = chat_id;
-    // result.messages = await this.getChatMessagesUtil(chat_id, req.user.id);
-    // result.reqUserName = await this.getUserNameById(req.user.id);
-    // result.othUserName = 'default';//body.player_name;
     const selfR = await this.chatMembersService.findOneByIds(chat_id, req.user.id);
     if (!selfR.member_flg) {
       let newSelfR = selfR;
