@@ -4,13 +4,7 @@ import { Socket } from 'socket.io';
 import { MatchEntity } from 'src/player/entities/match.entity';
 import { MatchService } from 'src/player/service/match.service';
 import { PlayerService } from 'src/player/service/player.service';
-import {
-  GameOptions,
-  Mode,
-  Room,
-  State,
-  Player,
-} from '../interfaces';
+import { GameOptions, Mode, Room, State, Player } from '../interfaces';
 import { GameService } from './game.service';
 
 @Injectable()
@@ -29,7 +23,7 @@ export class RoomService {
     ball: { speed: 20, radius: 20 },
     paddle: { width: 20, height: 200, x: 50 },
     score: { y: 15, max: 10 },
-    mode: null
+    mode: null,
   });
 
   /**
@@ -85,7 +79,6 @@ export class RoomService {
 
       if (room.players.length == 2) room.state = State.STARTING;
     } else {
-
       socket.emit(
         'ready',
         room.options,
@@ -97,7 +90,6 @@ export class RoomService {
   }
 
   addSock(socket: Socket): void {
-    
     // ensure the player isn't already in the queue
     for (const sock of this.queue)
       if (sock.data.player.id == socket.data.player.id) return;
@@ -146,7 +138,6 @@ export class RoomService {
   //..
 
   startGame(room: Room): void {
-
     if (room.state != State.STARTING) return;
 
     // make sure everyone selected a playmode?
@@ -155,8 +146,7 @@ export class RoomService {
     room.state = State.WAITING;
 
     // at random select one of 2 players' game mode
-    room.options.mode =
-      room.players[Math.round(Math.random())].mode;
+    room.options.mode = room.players[Math.round(Math.random())].mode;
 
     if (room.options.mode == Mode.FAST_BALL) {
       room.options.ball.radius = 25;
@@ -178,15 +168,15 @@ export class RoomService {
     room.state = State.END;
 
     if (room.players.length == 2) {
-        const loser = room.players.find(
-          (player1) => player1.player.id != player.player.id,
+      const loser = room.players.find(
+        (player1) => player1.player.id != player.player.id,
       ).player;
       // THE ARG PASSED IS ALWAYS THE WINNER
       const winner = player.player;
-      // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES 
+      // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES
       const score = room.players.map((player) => player.score);
 
-      room.players.forEach(player => this.deleteSock(player.socket));
+      room.players.forEach((player) => this.deleteSock(player.socket));
 
       // SAVE THE DATA IN MATCH ENTITY
       await this.matchService.create({
@@ -196,15 +186,15 @@ export class RoomService {
       } as MatchEntity);
     }
   }
-  // DOES IT WORK FOR BOTH CLIENTS? 
+  // DOES IT WORK FOR BOTH CLIENTS?
   ready(player: Player, mode: Mode): void {
     player.mode = mode;
     this.startGame(player.room);
   }
 
-  /* 
-  * STARTS THE GAME
-  */
+  /*
+   * STARTS THE GAME
+   */
   startCalc(room: Room): void {
     // if (room.state != State.COUNTDOWN) return;
     this.game.resetBall(room);
@@ -221,18 +211,20 @@ export class RoomService {
     if (this.queue.indexOf(socket) != -1)
       return this.queue.splice(this.queue.indexOf(socket), 1);
 
-      // AS LONG AS WE DO NOT HAVE SPECTATORS, WE REMOVE THEESE 3 LINES
-     for (const room of this.rooms.values()) {
-    //   if (room.spectators && room.spectators.indexOf(socket) != -1)
-    //     return room.spectators.splice(room.spectators.indexOf(socket), 1);
+    // AS LONG AS WE DO NOT HAVE SPECTATORS, WE REMOVE THEESE 3 LINES
+    for (const room of this.rooms.values()) {
+      //   if (room.spectators && room.spectators.indexOf(socket) != -1)
+      //     return room.spectators.splice(room.spectators.indexOf(socket), 1);
 
-    // TRAVERSE ALL THE PLAYERS IN THE ROOM AND REMOVE THE PLAYER THAT IS CONNECTED TO THE SOCKET (ARGUMENT)
+      // TRAVERSE ALL THE PLAYERS IN THE ROOM AND REMOVE THE PLAYER THAT IS CONNECTED TO THE SOCKET (ARGUMENT)
       for (const player of room.players)
         if (player.socket.id == socket.id) {
           // WHY DOES STOP THE GAME FOR THE OPPONENT?
           await this.stopGame(
             room,
-            room.players.find((player1) => player1.player.id != player.player.id),
+            room.players.find(
+              (player1) => player1.player.id != player.player.id,
+            ),
           );
           room.players.splice(room.players.indexOf(player), 1);
           break;
@@ -241,10 +233,4 @@ export class RoomService {
       if (!room.players.length) return this.rooms.delete(room.code);
     }
   }
-
-
-
-
-
-
 }

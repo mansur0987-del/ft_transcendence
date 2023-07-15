@@ -2,6 +2,8 @@
 import axios from "axios";
 import { onMounted } from "vue";
 
+
+
 function checkVisible() {
 	if (document.visibilityState !== "visible") {
 		console.log('unvisible')

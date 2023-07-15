@@ -33,7 +33,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       // THIS IS A RISK ZONE
       const token = client.handshake.query.token as string;
-      // console.log("Token found!", token);
+      console.log('Token found!', token);
       if (!token) {
         return client.disconnect();
       }
