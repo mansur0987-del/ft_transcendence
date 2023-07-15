@@ -32,6 +32,7 @@ async function Redirect42() {
 .button-text {
 	font-size: 20px;
 	font-weight: bold;
+	color: antiquewhite;
 }
 
 .button button {
