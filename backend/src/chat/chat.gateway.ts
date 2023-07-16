@@ -37,6 +37,7 @@ export class ChatGateway {//implements OnGatewayInit, OnGatewayConnection, OnGat
 	// @UseGuards(AuthGuard('jwt')) @Request() req: any, 
 	@SubscribeMessage('msgToServer')
 	handleMessage(client: Socket, body: any): void {
+		console.log('body msg', body);
 		client.on('sendMsgClient', (res) => {
 			console.log(res);
 		})
