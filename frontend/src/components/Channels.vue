@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from "vue";
 import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
 import { useRoute } from "vue-router";
+import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
 	leave?: boolean
 }>()
@@ -103,16 +104,18 @@ onMounted(async () => {
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :msg=msg v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
-		<button @click="WindowChannel('create')">
+		<el-button style="width: 20%;" color="green" @click="WindowChannel('create')">
 			Create
-		</button>
+		</el-button>
 		<h1>Channels</h1>
 		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for=" channel in channels">
 				<li class="channel">
-					<span @click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
+					<span style="font-size: 21px;"
+						@click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
 						{{ channel.chat_name }} </span>
-					<button v-show="channel.isOwner" @click="DelChannel(channel.id)">Delete</button>
+					<el-button color="red" size="small" v-show="channel.isOwner"
+						@click="DelChannel(channel.id)">Delete</el-button>
 				</li>
 			</div>
 		</div>
@@ -123,11 +126,33 @@ onMounted(async () => {
 <style scoped>
 .Channels {
 	position: fixed;
-	top: 10px;
-	left: 10%;
-	right: 70%;
-	background-color: antiquewhite;
-	height: 95%;
+	top: 2%;
+	left: 11%;
+	width: 22%;
+	height: max-content;
+	max-height: 95%;
+	border-radius: 10px;
+	z-index: 1;
+	overflow: auto;
+}
+
+.Channels:after {
+	content: "";
+	position: fixed;
+	background: inherit;
+	z-index: -1;
+	top: 2%;
+	left: 11%;
+	width: 22%;
+	height: auto;
+	max-height: 95%;
+	right: 0;
+	bottom: 0;
+	border-radius: 10px;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 
 .channel {

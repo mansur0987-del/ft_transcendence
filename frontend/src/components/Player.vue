@@ -5,11 +5,12 @@ import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
+import { ElButton } from 'element-plus'
 
 const route = useRoute();
 const name = ref<string>()
-const isFirstGame = ref<boolean>()
-const isFirstWin = ref<boolean>()
+const isFirstGame = ref<boolean>(false)
+const isFirstWin = ref<boolean>(false)
 const avatar = ref<any>()
 const players = ref<any[]>([])
 
@@ -76,9 +77,10 @@ onMounted(() => {
 			<template class="Applications" v-for="player in players">
 				<li v-if="player.name !== ''">
 					{{ player.name }}
-					<button @click="PostApplication(player)">
-						Add friend</button>
-					<button @click="RedirectToProfile(player)">Get info</button>
+					<el-button style="position: absolute; right: 12%;" @click="PostApplication(player)">
+						Add friend</el-button>
+					<el-button style="position: absolute; right: 0%;" @click="RedirectToProfile(player)">Get
+						info</el-button>
 				</li>
 			</template>
 		</h1>
@@ -102,46 +104,29 @@ onMounted(() => {
 	top: 5%;
 	left: 35%;
 	width: 50%;
-	height: 60%;
-	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
-	border-radius: 20px;
+	height: max-content;
+	max-height: 90%;
+	border-radius: 10px;
 	z-index: 1;
-	background: inherit;
-	overflow: hidden;
+	overflow: auto;
 }
 
-.Player:before {
+.Player:after {
 	content: "";
-	position: absolute;
+	position: fixed;
 	background: inherit;
 	z-index: -1;
-	top: 0;
-	left: 0;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: auto;
+	max-height: 90%;
 	right: 0;
 	bottom: 0;
-	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
-	filter: blur(1px);
-	margin: -20px;
-}
-
-.Player button {
-	background-color: greenyellow;
-	width: 100px;
-	margin-left: auto;
-	margin-right: auto;
-	border: none;
-	color: black;
-	padding: 10px 10px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 16px;
-	transition: transform 500ms ease;
 	border-radius: 10px;
-	cursor: pointer;
-}
-
-.Player button:hover {
-	transform: scale(1.1) translateY(-5px);
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>

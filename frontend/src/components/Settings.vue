@@ -103,39 +103,45 @@ async function TurnOffQrCode(code?: string) {
 	<LeftBar />
 	<Logout />
 	<div class="Settings">
-		<h3>Change name
+		<h3 style="padding: 5px;">Change name
 			<el-input v-model="newName" clearable placeholder="write new name" style="width: 70%;" />
-			<el-button @click="ChangeName(newName)">
+			<el-button style="position: absolute; right: 0%;" @click="ChangeName(newName)">
 				Submit
 			</el-button>
-			<span v-if="errorInputName !== 'SUCCESS!!'" style="color:red; font-size: 16px;">{{ errorInputName }} </span>
-			<span v-else style="color:green; font-size: 16px;">{{ errorInputName }} </span>
+			<p v-if="errorInputName !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputName }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputName }} </p>
 		</h3>
-		<h1>
-			<label>Change avatar:
-				<input type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
-			</label>
-			<el-button v-on:click="submitFile()">Submit</el-button>
-			<p style="color:red; position: relative; left: 20%">{{ errorInputAvatar }} </p>
-		</h1>
-		<div v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">
-			<h1>
+		<h3 style="padding: 5px;">Change avatar
+			<input slot style="width: 70%;" type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
+
+			<el-button style="position: absolute; right: 0%;" v-on:click="submitFile()">Submit</el-button>
+			<p v-if="errorInputAvatar !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputAvatar }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputAvatar }} </p>
+		</h3>
+		<div style="padding: 5px;" v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">
+			<h3>
 				<img :src="qrCodeImg" />
-			</h1>
-			<h1> Scan QrCode and input code
-				<input v-model="QrCodeCode" placeholder="code from google auth" />
-				<button @click="ActiveQrCode(QrCodeCode)">
+
+				Scan QrCode and input code
+				<el-input style="width: 70%;" v-model="QrCodeCode" placeholder="code from google auth" />
+				<el-button style="position: absolute; right: 0%;" @click="ActiveQrCode(QrCodeCode)">
 					Activate 2fa Authorization
-				</button>
-				<p style="color:red; position: relative; left: 20%">{{ errorInputQrCode }} </p>
-			</h1>
+				</el-button>
+				<p v-if="errorInputQrCode !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+					errorInputQrCode }} </p>
+				<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputQrCode }} </p>
+			</h3>
 		</div>
 		<div v-else>
-			<input v-model="QrCodeCode" placeholder="code from google auth" />
-			<button @click="TurnOffQrCode(QrCodeCode)">
+			<el-input style="width: 70%;" v-model="QrCodeCode" placeholder="code from google auth" />
+			<el-button style="position: absolute; right: 0%;" @click="TurnOffQrCode(QrCodeCode)">
 				Turn off 2fa Authorization
-			</button>
-			<p style=color:red>{{ errorInputQrCode }} </p>
+			</el-button>
+			<p v-if="errorInputQrCode !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputQrCode }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputQrCode }} </p>
 		</div>
 	</div>
 </template>
@@ -146,25 +152,29 @@ async function TurnOffQrCode(code?: string) {
 	top: 5%;
 	left: 35%;
 	width: 50%;
-	height: 60%;
-	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
-	border-radius: 20px;
+	height: max-content;
+	max-height: 90%;
+	border-radius: 10px;
 	z-index: 1;
-	background: inherit;
-	overflow: hidden;
+	overflow: auto;
 }
 
-.Settings:before {
+.Settings:after {
 	content: "";
-	position: absolute;
+	position: fixed;
 	background: inherit;
 	z-index: -1;
-	top: 0;
-	left: 0;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: auto;
+	max-height: 90%;
 	right: 0;
 	bottom: 0;
+	border-radius: 10px;
 	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
-	filter: blur(1px);
-	margin: -20px;
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>
