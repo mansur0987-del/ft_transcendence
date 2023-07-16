@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, watch } from "vue";
+import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
 import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
-	channelId?: number
+	channelId?: number,
+	socket?: Socket
 }>()
 
 const emit = defineEmits<{
@@ -73,15 +75,6 @@ async function GetUsers() {
 				console.log(e)
 			})
 		}
-
-		console.log('bannedUsers.value')
-		console.log(bannedUsers.value)
-
-		console.log('user.value')
-		console.log(myUser.value)
-
-		console.log('users.value')
-		console.log(users.value)
 	}
 }
 

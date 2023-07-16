@@ -5,6 +5,9 @@ import { ElInput, ElButton, ElInputNumber, ElRadioGroup, ElRadioButton } from 'e
 const props = defineProps<{
 	type: string | undefined;
 	chanelId?: number;
+	channelName?: string,
+	isPrivate?: boolean,
+	have_password?: boolean,
 	myRole?: number;
 	PropsUser?: User | undefined
 	msg?: string
@@ -38,9 +41,9 @@ const data = ref<{
 	isKick: boolean
 }>({
 	chat_id: props.chanelId,
-	chat_name: "",
-	isPrivate: false,
-	have_password: false,
+	chat_name: props.channelName ? props.channelName : "",
+	isPrivate: props.isPrivate ? props.isPrivate : false,
+	have_password: props.have_password ? props.have_password : false,
 	password: "",
 	player_id: props.PropsUser?.player_id,
 	isMute: false,
@@ -60,7 +63,7 @@ async function Close() {
 async function Submit() {
 	console.log(props.type)
 	error.value = ''
-	if (props.type === 'create') {
+	if (props.type === 'create' || props.type === 'settings') {
 		if (!data.value.chat_name) {
 			error.value = 'Input channel name!!!\n'
 		}
@@ -142,6 +145,9 @@ async function Submit() {
 				error.value = e.response.data.message
 			})
 		}
+		if (props.type === 'settings') {
+
+		}
 	}
 	if (!error.value) {
 		Close()
@@ -155,9 +161,11 @@ async function Submit() {
 		<div class="Msg" v-if="props.type === 'msg'">
 			<h3 style="color: red;"> {{ msg }} </h3>
 		</div>
-		<div class="CreateWindow" v-if="props.type === 'create'">
+		<div class="CreateWindow" v-if="props.type === 'create' || props.type === 'settings'">
 			<div class="ChannelName">
-				<el-input style="width: 210px;" v-model="data.chat_name" placeholder="Channel Name" />
+				{{ data.chat_name }}
+				<el-input style="width: 210px;" v-model="data.chat_name" placeholder="Channel Name"
+					:value="data.chat_name" />
 			</div>
 			<div class="PrivatCheckbox">
 				<input v-model="data.isPrivate" class='PrivatBool' type="checkbox" value=True /> Is private?

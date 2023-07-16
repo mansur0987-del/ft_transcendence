@@ -4,7 +4,8 @@ import { onMounted, ref, watch } from "vue";
 import { io, Socket } from 'socket.io-client';
 import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
-	channelId?: number
+	channelId?: number,
+	socket?: Socket
 }>()
 
 const sendMsg = ref<string>('')
@@ -32,10 +33,9 @@ interface Msg {
 	message?: string,
 	sent_ts: string,
 }
-let socket: Socket
 const msgs = ref<Msg[]>()
 
-async function GetMsg(channelId: number) {
+async function GetMsg() {
 	socket.on('msgToServer', (res) => {
 		console.log('connect socket')
 		console.log('res')
@@ -49,19 +49,13 @@ async function GetMsg(channelId: number) {
 }
 
 async function ConnectChannel(channelId: number) {
-	socket.emit('OpenChannelToServer', { channelId: channelId })
+	socket.emit('connectToChat', { chat_id: channelId })
 	console.log('msgToServer')
 
-	await GetMsg(channelId)
+	await GetMsg()
 }
-
+let socket: Socket
 onMounted(async () => {
-	socket = io(process.env.BASE_URL + 'chat', {
-		transportOptions: {
-			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
-		},
-	})
-
 	if (props.channelId) {
 		actualChannel.value = props.channelId;
 		await ConnectChannel(actualChannel.value)
@@ -69,18 +63,25 @@ onMounted(async () => {
 })
 
 watch(props, async (newProps) => {
-	if (newProps.channelId) {
-		if (socket.connected) {
-			socket.disconnect()
+	if (!newProps.channelId) {
+		actualChannel.value = undefined
+		if (socket?.hasListeners('connectToChat')) {
+			socket.off('connectToChat')
+		}
+	}
+	else if (newProps.channelId) {
+		if (newProps.socket) {
+			socket = newProps.socket
+		}
+		console.log('socketMsg')
+		console.log(socket)
+		if (socket.hasListeners('connectToChat')) {
+			console.log('connectToChat = true')
+
+			socket.off('connectToChat')
 		}
 		actualChannel.value = newProps.channelId
 		await ConnectChannel(actualChannel.value)
-	}
-	else {
-		actualChannel.value = undefined
-		if (socket.connected) {
-			socket.disconnect()
-		}
 	}
 })
 

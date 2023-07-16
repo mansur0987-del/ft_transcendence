@@ -31,7 +31,6 @@ async function Chat(player: any) {
 		console.log(e)
 	}).then((res: any) => {
 		if (res?.data) {
-			console.log(res.data.chat_id)
 			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
 		}
 	})

@@ -26,7 +26,6 @@ async function GetUser() {
 		name.value = res.data.name
 		isFirstGame.value = res.data.isFirstGame
 		isFirstWin.value = res.data.isFirstWin
-		console.log(res)
 	}).catch(() => {
 		window.location.assign('http://' + window.location.host + '/pathnotfound')
 	})
