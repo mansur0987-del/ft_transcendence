@@ -35,10 +35,10 @@ export class ChatGateway {//implements OnGatewayInit, OnGatewayConnection, OnGat
 	// private logger: Logger = new Logger('chatGateway');
 
 
-	// @UseGuards(AuthGuard('jwt')) @Request() req: any, 
+	@UseGuards(AuthGuard('jwt'))
 	@SubscribeMessage('msgToServer')
-	handleMessage(@MessageBody() body: any): void {
-		console.log('body msg', body);
+	handleMessage(@Request() req: any, @MessageBody() body: any): void {
+		console.log('\n\n\nbody msg', body, '\n\n\nclient id =', req.user.id, '\n\n\n');
 		// client.on('sendMsgClient', (res) => {
 		// 	console.log(res);
 		// })
