@@ -5,6 +5,7 @@ import {
 	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
+	MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
@@ -36,11 +37,11 @@ export class ChatGateway {//implements OnGatewayInit, OnGatewayConnection, OnGat
 
 	// @UseGuards(AuthGuard('jwt')) @Request() req: any, 
 	@SubscribeMessage('msgToServer')
-	handleMessage(client: Socket, body: any): void {
+	handleMessage(@MessageBody() body: any): void {
 		console.log('body msg', body);
-		client.on('sendMsgClient', (res) => {
-			console.log(res);
-		})
+		// client.on('sendMsgClient', (res) => {
+		// 	console.log(res);
+		// })
 	}
 
 
