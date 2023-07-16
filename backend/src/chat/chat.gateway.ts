@@ -21,7 +21,12 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-@WebSocketGateway()
+@WebSocketGateway({
+	cors: {
+		origin: process.env.FRONT_URL,
+	},
+	namespace: 'chat'
+})
 export class ChatGateway {//implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	// @WebSocketServer()
 	// server: Server;
