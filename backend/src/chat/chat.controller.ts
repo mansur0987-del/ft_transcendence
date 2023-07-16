@@ -1,14 +1,4 @@
 import {
-  SubscribeMessage,
-  WebSocketGateway,
-  OnGatewayInit,
-  WebSocketServer,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
-import {
   BadRequestException,
   Body,
   Controller,
@@ -34,15 +24,8 @@ import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
 
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
-
 @Controller('chat')
-@WebSocketGateway()
-export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatController {
   constructor(private readonly chatService: ChatService,
     private readonly chatMembersService: ChatMemberService,
     private readonly plService: PlayerService,
@@ -50,11 +33,6 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly plBlocks: PlayerBlocksService,
     private readonly dirR: directRService
   ) { }
-
-  @WebSocketServer()
-  server: Server;
-
-  private logger: Logger = new Logger('ChatController');
 
   //utils
   async getHashingPass(pass: string): Promise<string> {
@@ -162,11 +140,9 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
     return await this.plBlocks.findAllByPlayerId(req.user.id);
   }
 
-
   //inside chat
   @UseGuards(AuthGuard('jwt'))
   @Post('/sendMessage')
-  @SubscribeMessage('msgToServer')
   async sendMessage(@Request() req: any, @Body() body: any): Promise<Chat_messages> {
     if (!body || !body.chat_id || !body.message)
       throw new BadRequestException('not enough data for send message');
@@ -180,10 +156,7 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
       const days = this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
-    let res = await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
-    console.log(this.server);
-    (await this.server).emit('msgToClient', res);
-    return res;
+    return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
   }
   //inside chat
   @UseGuards(AuthGuard('jwt'))
@@ -632,24 +605,6 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
     return result;
   }
 
-  //fix me: delete this
-  // @Get('/addUserTest')
-  // async addUserATest(): Promise<Chat_members>{
-  //   const pl = await this.plService.GetPlayerByName('www');
-  //   if (!pl)
-  //     throw new NotFoundException('User not found');
-  //   let actualR: Chat_members = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
-  //   if (!actualR)
-  //     return await this.chatMembersService.addRawToChatMembers(
-  //       1,
-  //       body.player_id,
-  //       false,
-  //       false,
-  //       true,
-  //       new Date(0).toISOString(),
-  //       new Date(0).toISOString());
-  // }
-
   @UseGuards(AuthGuard('jwt'))
   @Post('/addUser')
   async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members> {
@@ -712,17 +667,5 @@ export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGat
     await this.chatMembersService.removeAllByChatId(body.chat_id);
     await this.msgService.removeAllByChatId(body.chat_id);
     return await this.chatService.removeRawInChat(body.chat_id);
-  }
-
-  afterInit(server: Server) {
-    this.logger.log('Init');
-  }
-
-  handleDisconnect(client: Socket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
-  }
-
-  handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Client connected: ${client.id}`);
   }
 }
