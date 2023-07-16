@@ -24,13 +24,13 @@ async function CheckCode(code: string) {
 
 <template>
 	<div class="QrVerificate">
-		<h1>Enter code:
+		<h3>Enter code:
 			<el-input style="width: 70%;" v-model="code" placeholder="Enter code" />
 			<el-button style="position: absolute; right: 0%;" @click="CheckCode(code)"> Enter</el-button>
 			<p v-if="errorInputCode !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
 				errorInputCode }} </p>
 			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputCode }} </p>
-		</h1>
+		</h3>
 	</div>
 </template>
 
@@ -38,9 +38,9 @@ async function CheckCode(code: string) {
 .QrVerificate {
 	position: fixed;
 	top: 20%;
-	left: 35%;
+	left: 25%;
 	width: 50%;
-	height: max-content;
+	height: 40%;
 	max-height: 90%;
 	border-radius: 10px;
 	z-index: 1;
@@ -53,9 +53,9 @@ async function CheckCode(code: string) {
 	background: inherit;
 	z-index: -1;
 	top: 20%;
-	left: 35%;
+	left: 25%;
 	width: 50%;
-	height: auto;
+	height: 40%;
 	max-height: 90%;
 	right: 0;
 	bottom: 0;

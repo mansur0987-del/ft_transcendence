@@ -11,10 +11,6 @@ const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
 
 async function SendMsg(channelId: number | undefined, msg: string) {
-	//console.log('channelId')
-	//console.log(channelId)
-	//console.log('msg')
-	//console.log(msg)
 	//
 	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
 	//	console.log(e)
@@ -24,17 +20,9 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	//if (channelId) {
 	//	GetMsg(channelId)
 	//}
-	socket.value?.emit('msgToServer', channelId, msg)
+	socket.emit('msgToServer', { chat_id: channelId, message: msg })
+	sendMsg.value = ''
 	console.log('msgToServer')
-	//console.log('socket')
-	//console.log(socket)
-	//socket.on('msgToClient', () => {
-	//	console.log('msgToClient')
-	//})
-	//console.log('socket.connected')
-	//console.log(socket.connected)
-	//console.log('socket')
-	//console.log(socket)
 }
 
 interface Msg {
@@ -44,11 +32,11 @@ interface Msg {
 	message?: string,
 	sent_ts: string,
 }
-const socket = ref<Socket>()
+let socket: Socket
 const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
-	socket.value?.on('msgToServer', (res) => {
+	socket.on('msgToServer', (res) => {
 		console.log('connect socket')
 		console.log('res')
 		console.log(res)
@@ -60,25 +48,39 @@ async function GetMsg(channelId: number) {
 	//})
 }
 
+async function ConnectChannel(channelId: number) {
+	socket.emit('OpenChannelToServer', { channelId: channelId })
+	console.log('msgToServer')
+
+	await GetMsg(channelId)
+}
+
 onMounted(async () => {
-	socket.value = io(process.env.BASE_URL + 'chat', {
+	socket = io(process.env.BASE_URL + 'chat', {
 		transportOptions: {
 			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
 		},
 	})
 
 	if (props.channelId) {
-		await GetMsg(props.channelId)
+		actualChannel.value = props.channelId;
+		await ConnectChannel(actualChannel.value)
 	}
 })
 
-watch(props, (newProps) => {
+watch(props, async (newProps) => {
 	if (newProps.channelId) {
+		if (socket.connected) {
+			socket.disconnect()
+		}
 		actualChannel.value = newProps.channelId
-		GetMsg(actualChannel.value)
+		await ConnectChannel(actualChannel.value)
 	}
 	else {
 		actualChannel.value = undefined
+		if (socket.connected) {
+			socket.disconnect()
+		}
 	}
 })
 
@@ -87,7 +89,7 @@ watch(props, (newProps) => {
 </script>
 
 <template>
-	<div class="Chat">
+	<div class="Chat" v-if="channelId">
 		<h1>Msg in the channel {{ channelId }}</h1>
 		<div class="Msgs" v-for="msg in msgs">
 			<p>

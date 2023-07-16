@@ -121,7 +121,7 @@ async function AddUser() {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
 		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
-	<div class="Users">
+	<div class="Users" v-if="channelId">
 		<el-button color="yellow" v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
 			Leave

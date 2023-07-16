@@ -3,18 +3,17 @@ import { ref, onMounted, watch } from "vue";
 import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
 import { useRoute } from "vue-router";
-import { ElInput, ElButton } from 'element-plus'
+import { ElButton } from 'element-plus'
 const props = defineProps<{
 	leave?: boolean
 }>()
 const emit = defineEmits<{
-	(e: 'GetChannelId', chennelId: number): void
+	(e: 'GetChannelId', chennelId: number | undefined): void
 }>()
 
 watch(props, async (newProps) => {
 	console.log('watch')
 	if (newProps.leave === true) {
-		console.log('I leave')
 		await GetAllAccessChannels()
 	}
 })
@@ -29,7 +28,9 @@ async function WindowChannel(type: string, channelId?: number) {
 	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId }
 }
 async function EmitCloseWindow() {
-	channels.value = (await axios.get('chat/')).data
+	setTimeout(async () => {
+		channels.value = (await axios.get('chat/')).data
+	}, 500)
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
@@ -77,15 +78,16 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 	else {
 		WindowChannel('checkPassword', channelId)
 	}
-	GetAllAccessChannels()
+	await GetAllAccessChannels()
 }
 
 async function DelChannel(channelId: number) {
 	await axios.post('chat/deleteChannel', { 'chat_id': channelId }).catch((e) => {
 		console.log(e.response.data.message)
 	})
-	document.location.assign('http://' + window.location.host + '/chat/')
-	GetAllAccessChannels()
+	window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
+	await GetAllAccessChannels()
+	emit("GetChannelId", undefined)
 }
 
 onMounted(async () => {

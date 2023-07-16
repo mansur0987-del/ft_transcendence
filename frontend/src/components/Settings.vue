@@ -134,7 +134,7 @@ async function TurnOffQrCode(code?: string) {
 				<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputQrCode }} </p>
 			</h3>
 		</div>
-		<div v-else>
+		<div v-else style="padding: 5px;">
 			<el-input style="width: 70%;" v-model="QrCodeCode" placeholder="code from google auth" />
 			<el-button style="position: absolute; right: 0%;" @click="TurnOffQrCode(QrCodeCode)">
 				Turn off 2fa Authorization
