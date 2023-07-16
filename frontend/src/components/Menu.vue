@@ -49,16 +49,10 @@ export default {
             >
            {{isLoading}}
             </button>
-           
-            <button v-if="isHardcore" class="bg-red-700 hover:bg-red-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4" >
 
-            </button>
-            <button v-else-if="!isHardcore" class="bg-red-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4">
-
-
-            </button>
-                :class={"isHardcore ?  : bg-gray-700 hover:bg-gray-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4"}
-                onClick={() => toggleMode()}
+			<button
+                :class="isHardcore ? 'bg-red-700 hover:bg-red-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4' : 'bg-gray-700 hover:bg-gray-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4'"
+                @Click="toggleMode()"
             >
                 {{isHardcore ? "Hardcore" : "Standard"}}
             </button>
