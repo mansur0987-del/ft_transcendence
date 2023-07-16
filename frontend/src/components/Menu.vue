@@ -56,8 +56,8 @@ export default {
             >
                 {{isHardcore ? "Hardcore" : "Standard"}}
             </button>
-            <p className="text-center">Instructions:</p>
-            <ul className="list-disc list-inside mt-2">
+            <p class="text-center">Instructions:</p>
+            <ul class="list-disc list-inside mt-2">
                 <li>Use the W and S keys to move your paddle up and down</li>
                 <li>Use the space bar to pause the game</li>
             </ul>
