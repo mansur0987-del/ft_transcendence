@@ -24,8 +24,14 @@ import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
 
+<<<<<<< HEAD
 @Controller('chat')
 export class ChatController {
+=======
+@WebSocketGateway()
+@Controller('chat')
+export class ChatController implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+>>>>>>> 7193740cf11b50399ee4b565a7363fceb04d5485
   constructor(private readonly chatService: ChatService,
     private readonly chatMembersService: ChatMemberService,
     private readonly plService: PlayerService,
