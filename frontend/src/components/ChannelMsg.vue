@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
-import io from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { ElInput, ElButton } from 'element-plus'
-import { socket } from "@/socket";
 const props = defineProps<{
 	channelId?: number
 }>()
@@ -12,10 +11,10 @@ const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
 
 async function SendMsg(channelId: number | undefined, msg: string) {
-	console.log('channelId')
-	console.log(channelId)
-	console.log('msg')
-	console.log(msg)
+	//console.log('channelId')
+	//console.log(channelId)
+	//console.log('msg')
+	//console.log(msg)
 	//
 	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
 	//	console.log(e)
@@ -25,29 +24,17 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	//if (channelId) {
 	//	GetMsg(channelId)
 	//}
-	const socket = io(process.env.BASE_URL + 'chat', {
-		transportOptions: {
-			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
-		},
-	})
-	console.log('socket')
-	console.log(socket)
-	console.log('socket.connected')
-	console.log(socket.connected)
-	socket.emit('SendMsg', channelId, msg, () => {
-		console.log('emit SendMsg')
-	})
-	console.log('socket')
-	console.log(socket)
-	console.log('socket.connected')
-	console.log(socket.connected)
-	socket.on('msgToClient', () => {
-		console.log('msgToClient')
-	})
-	console.log('socket.connected')
-	console.log(socket.connected)
-	console.log('socket')
-	console.log(socket)
+	socket.value?.emit('msgToServer', channelId, msg)
+	console.log('msgToServer')
+	//console.log('socket')
+	//console.log(socket)
+	//socket.on('msgToClient', () => {
+	//	console.log('msgToClient')
+	//})
+	//console.log('socket.connected')
+	//console.log(socket.connected)
+	//console.log('socket')
+	//console.log(socket)
 }
 
 interface Msg {
@@ -57,18 +44,29 @@ interface Msg {
 	message?: string,
 	sent_ts: string,
 }
-
+const socket = ref<Socket>()
 const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
-	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
-		console.log(e)
-	}).then((res: any) => {
-		msgs.value = res.data
+	socket.value?.on('msgToServer', (res) => {
+		console.log('connect socket')
+		console.log('res')
+		console.log(res)
 	})
+	//await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
+	//	console.log(e)
+	//}).then((res: any) => {
+	//	msgs.value = res.data
+	//})
 }
 
 onMounted(async () => {
+	socket.value = io(process.env.BASE_URL + 'chat', {
+		transportOptions: {
+			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
+		},
+	})
+
 	if (props.channelId) {
 		await GetMsg(props.channelId)
 	}
