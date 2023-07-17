@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
 	channelId?: number,
@@ -10,11 +10,14 @@ const props = defineProps<{
 
 const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
-
+const error = ref<string>('')
 async function SendMsg(channelId: number | undefined, msg: string) {
-	socket.emit('msgToServer', { chat_id: channelId, message: msg })
+
+	error.value = ''
+	socket?.emit('msgToServer', { chat_id: channelId, message: msg })
 	sendMsg.value = ''
 	console.log('msgToServer')
+
 }
 
 interface Msg {
@@ -37,25 +40,27 @@ async function GetMsg(channelId: number) {
 	}).then((res: any) => {
 		msgs.value = res.data
 	})
-	socket.on('msgFromServer', (res: GetMsgSocket) => {
+	socket?.on('msgFromServer', (res: GetMsgSocket) => {
 		console.log('res')
 		console.log(res)
 		const currentDate = (new Date()).toISOString()
 		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
-
+		const documentes = document.body.getElementsByClassName('Msgs')
+		const element = documentes[documentes.length - 1]
+		element.scrollIntoView()
 	})
 
 }
 
 let socket: Socket
 async function ConnectChannel(channelId: number) {
-	socket.emit('connectToChat', { chat_id: channelId })
+	socket?.emit('connectToChat', { chat_id: channelId })
 	console.log('msgToServer')
 	await GetMsg(channelId)
 }
 
 onMounted(async () => {
-	socket.off('msgFromServer')
+	socket?.off('msgFromServer')
 	if (props.channelId) {
 		actualChannel.value = props.channelId;
 		await ConnectChannel(actualChannel.value)
@@ -65,27 +70,25 @@ onMounted(async () => {
 watch(props, async (newProps) => {
 	if (!newProps.channelId) {
 		actualChannel.value = undefined
-		socket.off('msgFromServer')
+		socket?.off('msgFromServer')
 	}
 	else if (newProps.channelId) {
 		if (newProps.socket) {
 			socket = newProps.socket
 		}
-		socket.off('msgFromServer')
+		socket?.off('msgFromServer')
 		actualChannel.value = newProps.channelId
 		await ConnectChannel(actualChannel.value)
 	}
 })
-
-
 
 </script>
 
 <template>
 	<div class="Chat" v-if="channelId">
 		<h1>Msg in the channel {{ channelId }}</h1>
-		<div class="Msgs" v-for="msg in msgs">
-			<p>
+		<div class="Msgs" v-for="msg in msgs" id="Msgs">
+			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
 					{{ msg.sender_name }}:
 
@@ -103,14 +106,15 @@ watch(props, async (newProps) => {
 				</span>
 			</p>
 		</div>
-		<p style="position: fixed; top: 95%; width: 30%;" v-show="channelId">
+		<p style="position: fixed; top: 90%; width: 30%;" v-show="channelId">
 			<el-input style="width: 85%;" type="text" v-model="sendMsg" placeholder="write msg" />
 			<el-button @click="SendMsg(channelId, sendMsg)">
 				Send
 			</el-button>
 		</p>
-
-
+		<p style="position: fixed; top: 95%; width: 30%; color: red;">
+			{{ error }}
+		</p>
 	</div>
 </template>
 
@@ -121,7 +125,7 @@ watch(props, async (newProps) => {
 	left: 35%;
 	width: 30%;
 	height: max-content;
-	max-height: 95%;
+	max-height: 85%;
 	border-radius: 10px;
 	z-index: 1;
 	overflow: auto;
@@ -136,7 +140,7 @@ watch(props, async (newProps) => {
 	left: 35%;
 	width: 30%;
 	height: auto;
-	max-height: 95%;
+	max-height: 85%;
 	right: 0;
 	bottom: 0;
 	border-radius: 10px;

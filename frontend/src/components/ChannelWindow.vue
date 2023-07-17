@@ -165,7 +165,6 @@ async function Submit() {
 		</div>
 		<div class="CreateWindow" v-if="props.type === 'create' || props.type === 'settings'">
 			<div class="ChannelName">
-				{{ data.chat_name }}
 				<el-input style="width: 210px;" v-model="data.chat_name" placeholder="Channel Name"
 					:value="data.chat_name" />
 			</div>
