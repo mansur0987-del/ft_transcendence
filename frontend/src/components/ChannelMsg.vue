@@ -36,7 +36,7 @@ interface Msg {
 const msgs = ref<Msg[]>()
 
 async function GetMsg() {
-	socket.on('msgToServer', (res) => {
+	socket.on('msgFromServer', (res) => {
 		console.log('connect socket')
 		console.log('res')
 		console.log(res)
