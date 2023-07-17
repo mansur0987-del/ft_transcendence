@@ -41,14 +41,6 @@ export class ChatMemberService {
     await this.chat_members_repository.remove(toRemove);
   }
 
-  async removeRawInChatMembers(chat_id: number, player_id: number) {
-    const toRemove = this.findAllByIds(chat_id, player_id);
-    if (!toRemove) {
-      throw new HttpException('Chat_member not found', HttpStatus.NOT_FOUND);
-    }
-    await this.chat_members_repository.remove(await toRemove);
-  }
-
   async updateRawInChatMembers(actualV: Chat_members, updDto: UpdateChatDto): Promise<Chat_members> {
     if (!updDto.owner_flg)
       updDto.owner_flg = actualV.owner_flg;
@@ -69,10 +61,6 @@ export class ChatMemberService {
 
   async findOneByIds(chat_id: number, player_id: number): Promise<Chat_members> {
     return await this.chat_members_repository.findOne({ where: { chat_id: chat_id, player_id: player_id } })
-  }
-
-  async findAllByIds(chat_id: number, player_id: number): Promise<Chat_members[]> {
-    return await this.chat_members_repository.find({ where: { chat_id: chat_id, player_id: player_id } })
   }
 
   async findAllByChatId(chat_id: number): Promise<Chat_members[]> {
@@ -108,13 +96,13 @@ export class ChatMemberService {
     return await this.chat_members_repository.createQueryBuilder()
       .select('chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts')
       .where('Chat_members.chat_id= :chat_id', { chat_id: chat_id })
-      .andWhere('Chat_members.muted_to_ts > NOW()').getMany();
+      .andWhere('Chat_members.muted_to_ts > NOW()').getRawMany();
   }
 
   async findAllBannedInChat(chat_id: number): Promise<Chat_members[]> {
     return await this.chat_members_repository.createQueryBuilder()
       .select('chat_id, player_id, owner_flg, admin_flg, member_flg, banned_to_ts, muted_to_ts')
       .where('Chat_members.chat_id= :chat_id', { chat_id: chat_id })
-      .andWhere('Chat_members.banned_to_ts > NOW()').getMany();
+      .andWhere('Chat_members.banned_to_ts > NOW()').getRawMany();
   }
 }

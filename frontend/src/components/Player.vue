@@ -5,11 +5,12 @@ import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
+import { ElButton } from 'element-plus'
 
 const route = useRoute();
 const name = ref<string>()
-const isFirstGame = ref<boolean>()
-const isFirstWin = ref<boolean>()
+const isFirstGame = ref<boolean>(false)
+const isFirstWin = ref<boolean>(false)
 const avatar = ref<any>()
 const players = ref<any[]>([])
 
@@ -25,7 +26,6 @@ async function GetUser() {
 		name.value = res.data.name
 		isFirstGame.value = res.data.isFirstGame
 		isFirstWin.value = res.data.isFirstWin
-		console.log(res)
 	}).catch(() => {
 		window.location.assign('http://' + window.location.host + '/pathnotfound')
 	})
@@ -66,6 +66,7 @@ onMounted(() => {
 	<Logout />
 	<img class="Avatar" :src="avatar" />
 	<div class="Player">
+		<div class=""></div>
 		<h1>Username: {{ name }}</h1>
 		<h1>Achievements:
 			<p v-show="isFirstGame === true" style="color: blue;"> You played one or more games</p>
@@ -75,49 +76,56 @@ onMounted(() => {
 			<template class="Applications" v-for="player in players">
 				<li v-if="player.name !== ''">
 					{{ player.name }}
-					<button @click="PostApplication(player)">
-						Add friend</button>
-					<button @click="RedirectToProfile(player)">Get info</button>
+					<el-button style="position: absolute; right: 12%;" @click="PostApplication(player)">
+						Add friend</el-button>
+					<el-button style="position: absolute; right: 0%;" @click="RedirectToProfile(player)">Get
+						info</el-button>
 				</li>
 			</template>
 		</h1>
 		<h1>stats: </h1>
 		<h1>rank: </h1>
+
 	</div>
 </template>
 
 <style scoped>
 .Avatar {
 	position: fixed;
-	width: 400px;
-	top: 100px;
-	left: 50%;
-}
-
-.Player {
-	position: fixed;
-	top: 30%;
+	width: 250px;
+	top: 5%;
 	left: 15%;
 }
 
-.Player button {
-	background-color: greenyellow;
-	width: 100px;
-	margin-left: auto;
-	margin-right: auto;
-	border: none;
-	color: black;
-	padding: 10px 10px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 16px;
-	transition: transform 500ms ease;
+
+.Player {
+	position: fixed;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: max-content;
+	max-height: 90%;
 	border-radius: 10px;
-	cursor: pointer;
+	z-index: 1;
+	overflow: auto;
 }
 
-.Player button:hover {
-	transform: scale(1.1) translateY(-5px);
+.Player:after {
+	content: "";
+	position: fixed;
+	background: inherit;
+	z-index: -1;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: auto;
+	max-height: 90%;
+	right: 0;
+	bottom: 0;
+	border-radius: 10px;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>

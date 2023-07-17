@@ -4,11 +4,12 @@ import { ref, onMounted } from "vue";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
+import { ElInput, ElButton } from 'element-plus'
 
 const errorInputName = ref<string>()
 const newName = ref<string>()
 
-async function ChangeName(newName: string) {
+async function ChangeName(newName?: string) {
 	await axios.post('player/profile/rename', { "newName": newName })
 		.then(() => {
 			errorInputName.value = "SUCCESS!!"
@@ -17,8 +18,8 @@ async function ChangeName(newName: string) {
 		})
 }
 
-const file = ref<string>()
-const input_file = ref<object>();
+const file = ref<string>('')
+const input_file = ref<any>();
 const errorInputAvatar = ref<string>()
 
 async function submitFile() {
@@ -71,7 +72,7 @@ onMounted(() => {
 const errorInputQrCode = ref<string>()
 const QrCodeCode = ref<string>()
 
-async function ActiveQrCode(code: string) {
+async function ActiveQrCode(code?: string) {
 	await axios.post('auth/2fa/authenticate', { "twoFactorAuthenticationCode": code })
 		.then(() => {
 			errorInputQrCode.value = "SUCCESS!!"
@@ -84,7 +85,7 @@ async function ActiveQrCode(code: string) {
 	}
 }
 
-async function TurnOffQrCode(code: string) {
+async function TurnOffQrCode(code?: string) {
 	await axios.post('auth/2fa/turn-off', { "twoFactorAuthenticationCode": code })
 		.then(() => {
 			errorInputQrCode.value = "SUCCESS!!"
@@ -102,46 +103,78 @@ async function TurnOffQrCode(code: string) {
 	<LeftBar />
 	<Logout />
 	<div class="Settings">
-		<h1>New name:
-			<input v-model="newName" placeholder="write new name" />
-			<button @click="ChangeName(newName)">
-				Change name
-			</button>
-			<p style=color:red>{{ errorInputName }} </p>
-		</h1>
-		<h1>
-			<label>Change avatar:
-				<input type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
-			</label>
-			<button v-on:click="submitFile()">Submit</button>
-			<p style=color:red>{{ errorInputAvatar }} </p>
-		</h1>
-		<div v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">
-			<h1>
+		<h3 style="padding: 5px;">Change name
+			<el-input v-model="newName" clearable placeholder="write new name" style="width: 70%;" />
+			<el-button style="position: absolute; right: 0%;" @click="ChangeName(newName)">
+				Submit
+			</el-button>
+			<p v-if="errorInputName !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputName }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputName }} </p>
+		</h3>
+		<h3 style="padding: 5px;">Change avatar
+			<input slot style="width: 70%;" type="file" id="file" ref="input_file" v-on:change="handleFileUpload()" />
+
+			<el-button style="position: absolute; right: 0%;" v-on:click="submitFile()">Submit</el-button>
+			<p v-if="errorInputAvatar !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputAvatar }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputAvatar }} </p>
+		</h3>
+		<div style="padding: 5px;" v-if="isTwoFactorAuthenticationEnabled === false" class="QrCodeSection">
+			<h3>
 				<img :src="qrCodeImg" />
-			</h1>
-			<h1> Scan QrCode and input code
-				<input v-model="QrCodeCode" placeholder="code from google auth" />
-				<button @click="ActiveQrCode(QrCodeCode)">
+
+				Scan QrCode and input code
+				<el-input style="width: 70%;" v-model="QrCodeCode" placeholder="code from google auth" />
+				<el-button style="position: absolute; right: 0%;" @click="ActiveQrCode(QrCodeCode)">
 					Activate 2fa Authorization
-				</button>
-				<p style=color:red>{{ errorInputQrCode }} </p>
-			</h1>
+				</el-button>
+				<p v-if="errorInputQrCode !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+					errorInputQrCode }} </p>
+				<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputQrCode }} </p>
+			</h3>
 		</div>
-		<div v-else>
-			<input v-model="QrCodeCode" placeholder="code from google auth" />
-			<button @click="TurnOffQrCode(QrCodeCode)">
+		<div v-else style="padding: 5px;">
+			<el-input style="width: 70%;" v-model="QrCodeCode" placeholder="code from google auth" />
+			<el-button style="position: absolute; right: 0%;" @click="TurnOffQrCode(QrCodeCode)">
 				Turn off 2fa Authorization
-			</button>
-			<p style=color:red>{{ errorInputQrCode }} </p>
+			</el-button>
+			<p v-if="errorInputQrCode !== 'SUCCESS!!'" style="color:red; font-size: 16px; text-align: center;">{{
+				errorInputQrCode }} </p>
+			<p v-else style="color:green; font-size: 16px; text-align: center;">{{ errorInputQrCode }} </p>
 		</div>
 	</div>
 </template>
 
 <style scoped>
 .Settings {
-	position: absolute;
+	position: fixed;
 	top: 5%;
-	left: 30%;
+	left: 35%;
+	width: 50%;
+	height: max-content;
+	max-height: 90%;
+	border-radius: 10px;
+	z-index: 1;
+	overflow: auto;
+}
+
+.Settings:after {
+	content: "";
+	position: fixed;
+	background: inherit;
+	z-index: -1;
+	top: 5%;
+	left: 35%;
+	width: 50%;
+	height: auto;
+	max-height: 90%;
+	right: 0;
+	bottom: 0;
+	border-radius: 10px;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>

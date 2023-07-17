@@ -4,7 +4,6 @@ import { onMounted } from "vue";
 
 function checkVisible() {
 	if (document.visibilityState !== "visible") {
-		console.log('unvisible')
 		axios.post('player/profile', { updateData: { status: 0 } })
 	}
 	else {
@@ -13,7 +12,8 @@ function checkVisible() {
 }
 
 onMounted(() => {
-	window.addEventListener('visibilitychange', checkVisible)
+	axios.post('player/profile', { updateData: { status: 1 } })
+	document.addEventListener('visibilitychange', checkVisible)
 })
 
 </script>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, watch } from "vue";
+import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
+import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
-	channelId?: number
+	channelId?: number,
+	socket?: Socket
 }>()
 
 const emit = defineEmits<{
@@ -17,8 +20,9 @@ const WindowForChannel = ref<{
 }>({ isOpen: false, type: '' });
 
 interface User {
-	user_name: string,
-	id: number,
+	name?: string
+	user_name?: string,
+	player_id: number,
 	role?: number,
 	banned_to_ts: string,
 	muted_to_ts: string
@@ -52,7 +56,7 @@ watch(props, (newProps) => {
 const users = ref<any>()
 const myUser = ref<any>()
 const myRole = ref<number>()
-const bannedUsers = ref<any>()
+const bannedUsers = ref<User[]>()
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -71,13 +75,6 @@ async function GetUsers() {
 				console.log(e)
 			})
 		}
-
-
-		console.log('user.value')
-		console.log(myUser.value)
-
-		console.log('users.value')
-		console.log(users.value)
 	}
 }
 
@@ -99,11 +96,16 @@ async function UnBanned(userId: number) {
 const userName = ref<string>('')
 const errorMsg = ref<string>('')
 
-async function AddUser(userName: string) {
-	await axios.post('chat/addUser', { chat_id: actualChannelId.value, player_name: userName }).catch((e) => {
+async function AddUser() {
+	await axios.post('chat/addUser', { chat_id: actualChannelId.value, player_name: userName.value }).catch((e) => {
 		console.log(e)
 		errorMsg.value = e.response.data.message
+	}).then((res: any) => {
+		if (res.data) {
+			errorMsg.value = ''
+		}
 	})
+	userName.value = ''
 	GetUsers()
 }
 
@@ -112,51 +114,55 @@ async function AddUser(userName: string) {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
 		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
-	<div class="Users">
-		<button v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
+	<div class="Users" v-if="channelId">
+		<el-button color="yellow" v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
 			Leave
-		</button>
+		</el-button>
 		<h1>Users {{ channelId }}</h1>
-		<div style="position: absolute; overflow: scroll; width: 100%">
+		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for="(user, index) in users">
 				<p>
-					<span>
-						{{ index + 1 }}
+					<span style="font-size: 21px;">
 						{{ user.user_name }}
-						{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
+						<span style="color: blue;">
+							{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
+						</span>
+
 					</span>
-					<button v-show="(myUser.id != user.id) && (myRole === 3 || (myRole === 2 && !user.owner_flg))"
+					<el-button size="small"
+						v-show="(myUser.id != user.id) && (myRole === 3 || (myRole === 2 && !user.owner_flg))"
 						@click="WindowChannel('change', user)" style="position: absolute; right: 0%;">
 						Setting
-					</button>
+					</el-button>
 				</p>
 
-				<p>
+				<p style="font-size: 18px;">
 					{{ user.muted_to_ts !== '0' ? 'muted: ' + user.muted_to_ts + ' day(s)' : '' }}
 				</p>
 			</div>
-			<div class="BannedUsers" v-on="myRole && myRole > 1 && actualChannelId">
+			<div class="BannedUsers" v-show="myRole && myRole > 1 && actualChannelId && bannedUsers?.length != 0"
+				style="width: 200px">
 				<h3> Banned users: </h3>
-				<div v-for="(user, index) in bannedUsers">
-					<span>
-						{{ index + 1 }}
+				<div v-for="(user) in bannedUsers">
+					<span style="font-size: 21px;">
 						{{ user.name }}
 					</span>
-					<p>
+					<el-button size="small" @click="UnBanned(user.player_id)" style="position: absolute; right: 0%;">
+						UnBan
+					</el-button>
+					<p style="font-size: 18px;">
 						{{ user.banned_to_ts !== '0' ? 'banned: ' + user.banned_to_ts + ' day(s)' : '' }}
 					</p>
-					<button @click="UnBanned(user.id)" style="position: absolute; right: 0%;">
-						UnBan
-					</button>
+
 				</div>
 			</div>
-			<div class="AddUser" v-on="myRole && myRole > 1" v-show="actualChannelId">
-				<h3>Add user</h3>
-				<input v-model="userName" placeholder="write username" />
-				<button @click="AddUser(userName)">
+			<div class="AddUser" v-show="myRole && myRole > 1 && actualChannelId">
+				<h3>Add user </h3>
+				<el-input style="width: 80%;" v-model="userName" placeholder="write username" />
+				<el-button style="position: absolute; right: 0%;" @click="AddUser()">
 					Add
-				</button>
+				</el-button>
 				<p style=color:red> {{ errorMsg }} </p>
 			</div>
 		</div>
@@ -168,11 +174,32 @@ async function AddUser(userName: string) {
 <style>
 .Users {
 	position: fixed;
-	top: 10px;
-	left: 70%;
-	right: 10%;
-	background-color: antiquewhite;
-	height: 90%;
+	top: 2%;
+	left: 67%;
+	width: 22%;
+	height: max-content;
+	max-height: 95%;
+	border-radius: 10px;
+	z-index: 1;
+	overflow: auto;
+}
 
+.Users:after {
+	content: "";
+	position: fixed;
+	background: inherit;
+	z-index: -1;
+	top: 2%;
+	left: 67%;
+	width: 22%;
+	height: auto;
+	max-height: 95%;
+	right: 0;
+	bottom: 0;
+	border-radius: 10px;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>
