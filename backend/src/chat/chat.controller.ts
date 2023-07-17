@@ -23,6 +23,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
+// import { ChatGateway } from "./chat.gateway"
 
 @Controller('chat')
 export class ChatController {
@@ -31,7 +32,8 @@ export class ChatController {
     private readonly plService: PlayerService,
     private readonly msgService: ChatMessageService,
     private readonly plBlocks: PlayerBlocksService,
-    private readonly dirR: directRService
+    private readonly dirR: directRService,
+    // private readonly chatGate: ChatGateway
   ) { }
 
   //utils
@@ -157,6 +159,7 @@ export class ChatController {
       const days = this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
+    // this.chatGate.emitToOther(body.chat_id, body.message);
     return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
   }
   //inside chat
