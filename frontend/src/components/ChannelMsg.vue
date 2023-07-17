@@ -35,26 +35,24 @@ interface GetMsgSocket {
 const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
+
 	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
 		console.log(e)
 	}).then((res: any) => {
 		msgs.value = res.data
 	})
+	const document_chat = document.body.getElementsByClassName('Chat')
+	const elemet_chat = document_chat[0]
+	elemet_chat.scrollTop = elemet_chat.scrollHeight
 	socket?.on('msgFromServer', (res: GetMsgSocket) => {
 		console.log('res')
 		console.log(res)
 		const currentDate = (new Date()).toISOString()
 		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
-		let document_chat = document.body.getElementsByClassName('Chat')
-		let elemet_chat = document_chat[0]
-		elemet_chat.scrollTo({ behavior: "smooth", top: 0 })
-		//const documentes = document.body.getElementsByClassName('Msgs')
-		//let element = documentes[documentes.length - 1]
-		//console.log('element.scrollTop')
-		//console.log(element.scrollTop)
-		//element.scrollIntoView({ block: "end", behavior: "smooth" })
-		//window.scrollTo({ behavior: "smooth", top: element.scrollTop, left: element.scrollLeft })
-		//element.scrollTop = element.scrollTop - 10
+		setTimeout(() => {
+			elemet_chat.scrollTop = elemet_chat.scrollHeight + 20
+		}, 100)
+
 	})
 }
 
@@ -67,7 +65,6 @@ async function ConnectChannel(channelId: number) {
 
 const key = ref<string>()
 async function keyFunc(e: any) {
-	console.log(e.code)
 	if (e.code === 'Enter') {
 		SendMsg(actualChannel.value, sendMsg.value)
 	}
@@ -102,7 +99,7 @@ watch(props, async (newProps) => {
 <template>
 	<div class="Chat" v-if="channelId">
 		<h2>Msg in the channel {{ channelId }}</h2>
-		<div class="Msgs" v-for="msg in msgs?.slice().reverse()">
+		<div class="Msgs" v-for="msg in msgs">
 			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
 					{{ msg.sender_name }}:

@@ -120,7 +120,7 @@ onMounted(async () => {
 		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for=" channel in channels">
 				<li class="channel">
-					<span style="font-size: 21px;"
+					<span style="font-size: 21px; word-wrap: break-word;"
 						@click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
 						{{ channel.chat_name }} </span>
 					<el-button color="red" size="small" v-show="channel.isOwner"
