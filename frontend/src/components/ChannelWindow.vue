@@ -146,7 +146,9 @@ async function Submit() {
 			})
 		}
 		if (props.type === 'settings') {
-
+			await axios.post('chat/updateChannel', data.value).catch((e) => {
+				error.value = e.response.data.message
+			})
 		}
 	}
 	if (!error.value) {
