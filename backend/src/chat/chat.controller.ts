@@ -660,21 +660,14 @@ export class ChatController {
 
     if (!await this.chatMembersService.isOwner(body.chat_id, req.user.id))
       throw new ForbiddenException('you are not owner of this channel');
-    let newChat = await this.chatService.findOneByName(body.chat_id);
-    if (body.chat_name)
-      newChat.chat_name = body.chat_name;
-    if (body.isPrivate != null)
-      newChat.isPrivate = body.isPrivate;
-    if (body.have_password != null) {
-      newChat.have_password = body.have_password;
-      if (newChat.have_password && !body.password)
-        throw new BadRequestException('have no password when have_password is true')
-      if (newChat.have_password)
-        newChat.password = await this.getHashingPass(body.password);
-      else
-        newChat.password = null;
-    }
-    return await this.chatService.updateRawInChat(newChat.id, newChat);
+    const toCmp = await this.chatService.findOneByName(body.chat_name);
+    if (toCmp && toCmp.id != body.chat_id)
+      throw new ForbiddenException('this chat name is unavaible');
+    if (body.chat_name.substring(0, 6) == 'direct')
+      throw new ForbiddenException('you cannot use direct keyword in start of chat_name');
+    if (body.password)
+      body.password = await this.getHashingPass(body.password);
+    return await this.chatService.updateRawInChat(body.chat_id, body);
   }
 
   //delete
