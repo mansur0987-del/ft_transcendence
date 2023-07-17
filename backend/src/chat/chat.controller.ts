@@ -652,6 +652,31 @@ export class ChatController {
     return result;
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/updateChannel')
+  async updateChannel(@Request() req: any, @Body() body: any): Promise<Chat> {
+    if (!body || !body.chat_id)
+      throw new BadRequestException('have no body or chat_id in body');
+
+    if (!await this.chatMembersService.isOwner(body.chat_id, req.user.id))
+      throw new ForbiddenException('you are not owner of this channel');
+    let newChat = await this.chatService.findOneByName(body.chat_id);
+    if (body.chat_name)
+      newChat.chat_name = body.chat_name;
+    if (body.isPrivate != null)
+      newChat.isPrivate = body.isPrivate;
+    if (body.have_password != null) {
+      newChat.have_password = body.have_password;
+      if (newChat.have_password && !body.password)
+        throw new BadRequestException('have no password when have_password is true')
+      if (newChat.have_password)
+        newChat.password = await this.getHashingPass(body.password);
+      else
+        newChat.password = null;
+    }
+    return await this.chatService.updateRawInChat(newChat.id, newChat);
+  }
+
   //delete
   @UseGuards(AuthGuard('jwt'))
   @Post('/deleteChannel')
