@@ -119,7 +119,7 @@ async function AddUser() {
 			style="position: absolute; right: 0%;">
 			Leave
 		</el-button>
-		<h1>Users {{ channelId }}</h1>
+		<h2>Users {{ channelId }}</h2>
 		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for="(user, index) in users">
 				<p>

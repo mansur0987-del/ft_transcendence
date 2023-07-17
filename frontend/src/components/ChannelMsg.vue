@@ -45,11 +45,17 @@ async function GetMsg(channelId: number) {
 		console.log(res)
 		const currentDate = (new Date()).toISOString()
 		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
-		const documentes = document.body.getElementsByClassName('Msgs')
-		const element = documentes[documentes.length - 1]
-		element.scrollIntoView()
+		let document_chat = document.body.getElementsByClassName('Chat')
+		let elemet_chat = document_chat[0]
+		elemet_chat.scrollTo({ behavior: "smooth", top: 0 })
+		//const documentes = document.body.getElementsByClassName('Msgs')
+		//let element = documentes[documentes.length - 1]
+		//console.log('element.scrollTop')
+		//console.log(element.scrollTop)
+		//element.scrollIntoView({ block: "end", behavior: "smooth" })
+		//window.scrollTo({ behavior: "smooth", top: element.scrollTop, left: element.scrollLeft })
+		//element.scrollTop = element.scrollTop - 10
 	})
-
 }
 
 let socket: Socket
@@ -59,8 +65,17 @@ async function ConnectChannel(channelId: number) {
 	await GetMsg(channelId)
 }
 
+const key = ref<string>()
+async function keyFunc(e: any) {
+	console.log(e.code)
+	if (e.code === 'Enter') {
+		SendMsg(actualChannel.value, sendMsg.value)
+	}
+}
+
 onMounted(async () => {
 	socket?.off('msgFromServer')
+	document.addEventListener('keydown', keyFunc)
 	if (props.channelId) {
 		actualChannel.value = props.channelId;
 		await ConnectChannel(actualChannel.value)
@@ -86,8 +101,8 @@ watch(props, async (newProps) => {
 
 <template>
 	<div class="Chat" v-if="channelId">
-		<h1>Msg in the channel {{ channelId }}</h1>
-		<div class="Msgs" v-for="msg in msgs" id="Msgs">
+		<h2>Msg in the channel {{ channelId }}</h2>
+		<div class="Msgs" v-for="msg in msgs?.slice().reverse()">
 			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
 					{{ msg.sender_name }}:
@@ -129,6 +144,8 @@ watch(props, async (newProps) => {
 	border-radius: 10px;
 	z-index: 1;
 	overflow: auto;
+	scroll-margin-top: 0;
+	scroll-padding-top: 0;
 }
 
 .Chat:after {
@@ -148,5 +165,7 @@ watch(props, async (newProps) => {
 	filter: blur(2px);
 	margin: 0px;
 	overflow: auto;
+	scroll-margin-top: 0;
+	scroll-padding-top: 0;
 }
 </style>
