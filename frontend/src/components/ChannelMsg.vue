@@ -12,15 +12,6 @@ const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
 
 async function SendMsg(channelId: number | undefined, msg: string) {
-	//
-	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
-	//	console.log(e)
-	//}).then(() => {
-	//	sendMsg.value = ''
-	//})
-	//if (channelId) {
-	//	GetMsg(channelId)
-	//}
 	socket.emit('msgToServer', { chat_id: channelId, message: msg })
 	sendMsg.value = ''
 	console.log('msgToServer')
@@ -33,29 +24,38 @@ interface Msg {
 	message?: string,
 	sent_ts: string,
 }
+interface GetMsgSocket {
+	sender_name?: string,
+	message: string,
+
+}
 const msgs = ref<Msg[]>()
 
-async function GetMsg() {
-	socket.on('msgFromServer', (res) => {
-		console.log('connect socket')
+async function GetMsg(channelId: number) {
+	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		msgs.value = res.data
+	})
+	socket.on('msgFromServer', (res: GetMsgSocket) => {
 		console.log('res')
 		console.log(res)
+		const currentDate = (new Date()).toISOString()
+		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
+
 	})
-	//await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
-	//	console.log(e)
-	//}).then((res: any) => {
-	//	msgs.value = res.data
-	//})
+
 }
 
+let socket: Socket
 async function ConnectChannel(channelId: number) {
 	socket.emit('connectToChat', { chat_id: channelId })
 	console.log('msgToServer')
-
-	await GetMsg()
+	await GetMsg(channelId)
 }
-let socket: Socket
+
 onMounted(async () => {
+	socket.off('msgFromServer')
 	if (props.channelId) {
 		actualChannel.value = props.channelId;
 		await ConnectChannel(actualChannel.value)
@@ -65,21 +65,13 @@ onMounted(async () => {
 watch(props, async (newProps) => {
 	if (!newProps.channelId) {
 		actualChannel.value = undefined
-		if (socket?.hasListeners('connectToChat')) {
-			socket.off('connectToChat')
-		}
+		socket.off('msgFromServer')
 	}
 	else if (newProps.channelId) {
 		if (newProps.socket) {
 			socket = newProps.socket
 		}
-		console.log('socketMsg')
-		console.log(socket)
-		if (socket.hasListeners('connectToChat')) {
-			console.log('connectToChat = true')
-
-			socket.off('connectToChat')
-		}
+		socket.off('msgFromServer')
 		actualChannel.value = newProps.channelId
 		await ConnectChannel(actualChannel.value)
 	}
