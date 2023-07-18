@@ -299,17 +299,18 @@ export class ChatController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/blockUser')
-  async blockUser(@Request() req: any, @Body() body: any): Promise<Player_blocks>{
+  async blockUser(@Request() req: any, @Body() body: any): Promise<any>{
     if (!body || !body.player_id)
       throw new BadRequestException('INVALID BODY');
     const toBlock = await this.plService.GetPlayerById(body.player_id);
     if (!toBlock)
       throw new NotFoundException('player not found');
-    const blockR = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
+    let blockR: any = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
     if (!blockR)
-      return await this.plBlocks.addRawInPlayerBlocks(req.user.id, body.player_id);
+      blockR = await this.plBlocks.addRawInPlayerBlocks(req.user.id, body.player_id);
     if (!blockR.isBlocked)
-      return await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, true);
+      blockR = await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, true);
+    blockR.name = await this.getUserNameById(blockR.blocked_player_id);
     return (blockR);
   }
 
@@ -321,12 +322,14 @@ export class ChatController {
     const tounBlock = await this.plService.GetPlayerById(body.player_id);
     if (!tounBlock)
       throw new NotFoundException('player not found');
-    const blockR = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
+    let blockR: any = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
     if (!blockR)
       throw new ForbiddenException('player not blocked');
     if (!blockR.isBlocked)
       throw new ForbiddenException('player not blocked');
-    return await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, false);
+    blockR = await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, false);
+    blockR.name = await this.getUserNameById(blockR.blocked_player_id);
+    return blockR;
   }
 
   @UseGuards(AuthGuard('jwt'))
