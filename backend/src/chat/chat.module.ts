@@ -13,12 +13,11 @@ import { PlayerBlocksService } from "./services/players_blocks.service";
 import { Direct_R } from "./entities/directRelationship.entity";
 import { directRService } from "./services/directRelationships.service";
 import { ChatGateway } from "./chat.gateway"
-import { AuthModule } from "src/auth/auth.module";
 import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Chat, Chat_members, Chat_messages, Player_blocks, Direct_R]), PlayerModule, JwtModule],
   controllers: [ChatController],
-  providers: [ChatService, ChatMemberService, ChatMessageService, PlayerBlocksService, directRService, ChatGateway, ChatController]
+  providers: [ChatService, ChatMemberService, ChatMessageService, PlayerBlocksService, directRService, ChatController, ChatGateway]
 })
 export class ChatModule { }

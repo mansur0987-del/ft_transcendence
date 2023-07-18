@@ -8,7 +8,6 @@ import {
 	MessageBody,
 	ConnectedSocket,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import {
 	BadRequestException,
@@ -70,7 +69,7 @@ export class ChatGateway {
 			return (null);
 		try {
 			const user = await this.jwtService.verify(token, { publicKey: process.env.JWT_ACCESS_KEY });
-			console.log('user:\n', user);
+			// console.log('user:\n', user);
 			return user.name42;
 		}
 		catch { return null; }
@@ -79,20 +78,21 @@ export class ChatGateway {
 	// //events
 	@SubscribeMessage('msgToServer')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() body: any): Promise<any> {
-		await this.connectToChat(client, body);
-		//check body
-		if (!body || !body.chat_id || !body.message)
-			throw new BadRequestException('have no body or body is invalid')	
-		const name42 = await this.checkAuth(client);
-		if (!name42)
-			throw new ForbiddenException('AUTH FAILED');
-		const user = await this.plService.GetPlayerByName42(name42);
-		if (!user)
-			throw new NotFoundException('user not found')
+		try {
+			await this.connectToChat(client, body);
+		//check body	
+			const name42 = await this.checkAuth(client);
+			if (!name42)
+				throw new ForbiddenException('AUTH FAILED');
+			const user = await this.plService.GetPlayerByName42(name42);
+			if (!user)
+				throw new NotFoundException('user not found')
 		//add message to database
-		this.chContr.sendMessage({user: {id: user.id}}, body);
-		//send msg to other
-		this.emitToOther(body.chat_id, body.message, user.name);
+			await this.chContr.sendMessage({user: {id: user.id}}, body);
+			this.emitToOther(body.chat_id, body.message, user.name);
+		}
+		catch (e) {}
+		
 	}
 
 	@SubscribeMessage('connectToChat')
