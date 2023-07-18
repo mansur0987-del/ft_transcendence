@@ -7,5 +7,12 @@
     {
       "path": "./tsconfig.app.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "jsx": "preserve",
+    "baseUrl": "./",
+    "paths": {
+      "@nestjs/schedule": ["node_modules/@nestjs/schedule"]
+    }
+  }
 }

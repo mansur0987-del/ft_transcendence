@@ -28,20 +28,24 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: any;
 
-  // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN 
+  // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN
   async handleConnection(client: Socket): Promise<any> {
     try {
-      // THIS IS A RISK ZONE 
+      // THIS IS A RISK ZONE
       const token = client.handshake.query.token as string;
-      // console.log("Token found!", token);
-      if (!token) { return client.disconnect(); }
+      console.log('Token found!', token);
+      if (!token) {
+        return client.disconnect();
+      }
       // THIS IS A RISK ZONE
       const user = await this.authService.callback(token); // MAYBE CALLBACK INSTEAD OF RETRIEVEUSER (authService.retrieveUser(client);)
-      if (!user) { return client.disconnect(); }
+      if (!user) {
+        return client.disconnect();
+      }
 
       client.data.user = user;
       client.emit('info', { user });
-    } catch (ex){
+    } catch (ex) {
       console.log(ex);
     }
   }
@@ -58,12 +62,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   joinQueue(client: Socket): void {
     try {
       if (!client.data.user) {
-          return;
+        return;
       }
       this.roomService.addSock(client);
     } catch {}
   }
- 
+
   @SubscribeMessage('join-room')
   joinRoom(client: Socket, code?: string): void {
     try {
@@ -79,7 +83,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('ready')
   onReady(client: Socket, input: Mode): void {
     try {
-
       if (!client.data.user) return;
 
       const player: Player = this.roomService.findPlayer(client.data.user.id);

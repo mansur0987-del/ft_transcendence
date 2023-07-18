@@ -25,7 +25,6 @@ async function GetGame() {
 async function GetChat() {
 	window.location.assign('http://' + window.location.host + '/chat')
 }
-
 </script>
 
 <template>
