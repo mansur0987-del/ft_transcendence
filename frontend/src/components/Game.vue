@@ -1,8 +1,8 @@
 <script setup lang="ts">
+
 import { onMounted, ref } from "vue";
 import ExitGame from './ExitGame.vue'
-import Menu from './Menu.vue'
-import Pong from './Pong.vue'
+import { io, Socket } from "socket.io-client";
 
 const test = ref<string>()
 let count: number = 10
@@ -33,8 +33,15 @@ async function keyFunc(e: any) {
 }
 
 const input = document;
-onMounted(() => {
-	input.addEventListener('keydown', keyFunc)
+let gameSocket: Socket
+onMounted(async () => {
+	input.addEventListener('keydown', keyFunc);
+	gameSocket = await io(process.env.BASE_URL + 'game', {
+		transportOptions: {
+			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
+		},})
+	console.log('gameSocket')
+	console.log(gameSocket)
 })
 
 </script>

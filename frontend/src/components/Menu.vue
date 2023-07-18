@@ -5,7 +5,7 @@ export default {
     // need to get gameSocket and mode from the other components...
     // Engine?
     props: {
-        gameSocket: Object, // not sure about the type
+        gameSocket: Socket, // not sure about the type
         mode: number
     },
     setup(props) {
