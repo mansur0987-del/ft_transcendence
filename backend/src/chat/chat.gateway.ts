@@ -1,7 +1,7 @@
 import {
 	SubscribeMessage,
 	WebSocketGateway,
-	OnGatewayInit,
+	// OnGatewayInit,
 	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
@@ -11,14 +11,8 @@ import {
 import { Socket, Server } from 'socket.io';
 import {
 	BadRequestException,
-	Body,
-	Controller,
 	ForbiddenException,
-	Get,
-	NotFoundException,
-	Post,
-	Request,
-	UseGuards
+	NotFoundException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ChatController } from "./chat.controller";
@@ -30,7 +24,7 @@ import { PlayerService } from "src/player/service/player.service";
 	},
 	namespace: 'chat'
 })
-export class ChatGateway {
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	constructor(
 		private readonly jwtService: JwtService,
 		private readonly chContr: ChatController,
@@ -38,7 +32,8 @@ export class ChatGateway {
 	) { }
 	@WebSocketServer()
 	server: Server;
-	clients: Map<number, Map<number, Socket>>;
+	clients: Map<number, Map<string, any>>; //<chat_id: <sock_id: Socket>>
+	connectedClients: Map<string, any>; // <sock_id: Socket>
 	//utils
 	async getTockenFromClient(client: Socket): Promise<string> {
 		if (!client || !client.handshake || !client.handshake.headers)
@@ -47,12 +42,18 @@ export class ChatGateway {
 		return token;
 	}
 
+	async errorMessage(e: string, client: Socket) {
+		console.log('exception:\n' + e); 
+		client.emit('msgFromServer', {error: e})
+	}
+
 	async initSrv() {
-		if (!this.server) {
+		if (!this.server)
 			this.server = new Server();
-		}
 		if (!this.clients)
-			this.clients = new Map<number, Map<number, Socket>>;
+			this.clients = new Map<number, Map<string, any>>;
+		if (!this.connectedClients)
+			this.connectedClients = new Map<string, any>;
 	}
 
 	async emitToOther(chat_id: number, msg: string, sender_name: string) {
@@ -69,74 +70,109 @@ export class ChatGateway {
 			return (null);
 		try {
 			const user = await this.jwtService.verify(token, { publicKey: process.env.JWT_ACCESS_KEY });
-			// console.log('user:\n', user);
 			return user.name42;
 		}
 		catch { return null; }
 	}
 
-	// //events
+	@SubscribeMessage('signal')
+	async signalToReload(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		try {
+			console.log('res signal emit =', this.server.emit('callBack', body));
+		}
+		catch (e) { this.errorMessage(e, client); }
+	}
+
+	//events
 	@SubscribeMessage('msgToServer')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() body: any): Promise<any> {
+		console.log('start msgToServer');
 		try {
 			await this.connectToChat(client, body);
-		//check body	
-			const name42 = await this.checkAuth(client);
-			if (!name42)
-				throw new ForbiddenException('AUTH FAILED');
-			const user = await this.plService.GetPlayerByName42(name42);
-			if (!user)
-				throw new NotFoundException('user not found')
-		//add message to database
-			await this.chContr.sendMessage({user: {id: user.id}}, body);
-			this.emitToOther(body.chat_id, body.message, user.name);
+			//add message to database
+			const who = this.connectedClients.get(client.id);
+			if (!who)
+				throw new ForbiddenException('client not connected to socket');
+			await this.chContr.sendMessage({user: {id: who.user_id_in_db}}, body);
+			this.emitToOther(body.chat_id, body.message, who.user_name_in_db);
 		}
-		catch (e) {}
-		
+		catch (e) { this.errorMessage(e, client); }
 	}
 
 	@SubscribeMessage('connectToChat')
 	async connectToChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		//check auth
-		const name42 = await this.checkAuth(client);
-		if (!name42) {
-			console.log('\nAUTH FAILED\n');
-			throw new ForbiddenException('AUTH FAILED');
+		try {
+			//check auth
+			const who = this.connectedClients.get(client.id);
+			if (!who)
+				throw new ForbiddenException('unknown socket connection');
+			//check body
+			if (!body || !body.chat_id)
+				throw new BadRequestException('have no body or body is invalid');
+			if (!this.clients.has(body.chat_id))
+				this.clients.set(body.chat_id, new Map<string, any>);
+			if (this.clients.get(body.chat_id).has(client.id))
+				return;
+			this.clients.get(body.chat_id).set(client.id, who);
+			console.log('\nclient ' + (who ? who.user_name42_in_db : 'unknown') + ' has been connected to chat\n');
 		}
-		console.log(name42, 'AUTH SUCCESS\n');
-		//init server	
-		await this.initSrv();
-		//check body
-		if (!body || !body.chat_id)
-			throw new BadRequestException('have no body or body is invalid');
-		const user = await this.plService.GetPlayerByName42(name42);
-		if (!user)
-			throw new NotFoundException('user whith name ' + name42 + ' not found');
-		if (!this.clients.has(body.chat_id))
-			this.clients.set(body.chat_id, new Map<number, Socket>);
-		this.clients.get(body.chat_id).set(user.id, client);
-		console.log('\nclient ' + name42 + ' has been connected\n');
+		catch (e) { this.errorMessage(e, client); }
 	}
 
 	@SubscribeMessage('disconnectChat')
 	async disconnectChat(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		//check body
-		if (!body || !body.chat_id)
-			throw new BadRequestException('have no body or body is invalid');
-		if (!this.clients.has(body.chat_id))
-			throw new NotFoundException('have no this chat');
-		const name42 = await this.checkAuth(client);
-		if (!name42)
-			client.disconnect(true);
-		const user = await this.plService.GetPlayerByName42(name42);
-		if (!user)
-			throw new NotFoundException('user whith name ' + name42 + ' not found');
-		let chatClients = this.clients.get(body.chat_id);
-		if (!chatClients)
-			throw new NotFoundException('channel not found');
-		if (!chatClients.has(user.id))
-			throw new BadRequestException('client ' + name42 + ' already disconnected')
-		chatClients.delete(user.id);
-		console.log('\nclient ' + name42 + ' has been disconnected\n');
+		try {
+			//check body
+			if (!body || !body.chat_id)
+				throw new BadRequestException('have no body or body is invalid');
+			if (!this.clients.has(body.chat_id))
+				throw new NotFoundException('have no this channel in Map');
+			const who = this.connectedClients.get(client.id);
+			if (!who)
+				throw new NotFoundException('user not found in connected clients');
+			let chatClients = this.clients.get(body.chat_id);
+			if (!chatClients)
+				throw new NotFoundException('channel not found');
+			if (!chatClients.has(client.id))
+				throw new BadRequestException('client ' + who ? who.user_name42_in_db : 'unknown' + ' not in this channel')
+			chatClients.delete(client.id);
+			console.log('\nclient ' + (who ? who.user_name42_in_db : 'unknown') + ' has been disconnected\n');
+		}
+		catch (e) { this.errorMessage(e, client); }
+	}
+
+	async handleConnection(@ConnectedSocket() client: any) {
+		try {
+			this.initSrv();
+			const name42 = await this.checkAuth(client);
+			if (!name42) {
+				client.disconnect();
+				return;
+			}
+			const user = await this.plService.GetPlayerByName42(name42);
+			if (!user) {
+				client.disconnect();
+				throw new ForbiddenException('user ' + name42 + ' not in DB');
+			}
+			console.log('\n' + name42 + ' connected\n');
+			client.user_id_in_db = user.id;
+			client.user_name42_in_db = name42;
+			client.user_name_in_db = user.name;
+			this.connectedClients.set(client.id, client);
+		}
+		catch (e) { this.errorMessage(e, client); }
+	}
+	
+	handleDisconnect(@ConnectedSocket() client: Socket) {
+		try {
+			const userInConnected: any = this.connectedClients.get(client.id);
+			this.clients.forEach(chat => {
+				if (chat.has(client.id))
+					chat.delete(client.id);
+			})
+			this.connectedClients.delete(client.id);
+			console.log('\nclient ' + (userInConnected ? userInConnected.name42 : 'unknown') + ' disconnected\n');
+		}
+		catch (e) { this.errorMessage(e, client); }
 	}
 }
