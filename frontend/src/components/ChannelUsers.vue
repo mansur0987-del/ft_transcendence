@@ -28,7 +28,9 @@ interface User {
 	muted_to_ts: string
 	member_flg: number,
 	admin_flg: number,
-	owner_flg: number
+	owner_flg: number,
+	blocked_player_id?: number,
+	isBlocked?: boolean,
 }
 const PropsUser = ref<User>()
 async function WindowChannel(type: string, user: User) {
@@ -97,14 +99,14 @@ async function UnBanned(userId: number) {
 	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	GetUsers()
+	await GetUsers()
 }
 
-async function UnBlocked(userId: number) {
+async function UnBlocked(userId: number | undefined) {
 	await axios.post('chat/unblockUser', { player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	GetUsers()
+	await GetUsers()
 }
 
 const userName = ref<string>('')
@@ -120,7 +122,7 @@ async function AddUser() {
 		}
 	})
 	userName.value = ''
-	GetUsers()
+	await GetUsers()
 }
 
 async function GetUserInfo(userId: number) {
@@ -136,6 +138,7 @@ async function PostBlockPlayer(userId: number) {
 			errorMsg.value = ''
 		}
 	})
+	await GetUsers()
 }
 
 </script>
@@ -160,22 +163,19 @@ async function PostBlockPlayer(userId: number) {
 									<el-dropdown-item @click="GetUserInfo(user.player_id)">Info</el-dropdown-item>
 									<span v-if="user.player_id === myUser.player_id">
 										<el-dropdown-item disabled>Game</el-dropdown-item>
-										<el-dropdown-item @click="PostBlockPlayer(user.player_id)"
-											disabled>Block</el-dropdown-item>
+										<el-dropdown-item disabled>Block</el-dropdown-item>
 									</span>
 									<span v-else>
 										<el-dropdown-item>Game</el-dropdown-item>
 										<span
-											v-if="blockedUsers?.find(blockUser => blockUser.player_id === user.player_id)">
-											<el-dropdown-item @click="PostBlockPlayer(user.player_id)"
-												disabled>Block</el-dropdown-item>
+											v-if="blockedUsers?.find(blockUser => blockUser.blocked_player_id === user.player_id && blockUser.isBlocked)">
+											<el-dropdown-item disabled>Block</el-dropdown-item>
 										</span>
 										<span v-else>
 											<el-dropdown-item
 												@click="PostBlockPlayer(user.player_id)">Block</el-dropdown-item>
 										</span>
 									</span>
-
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
@@ -209,13 +209,14 @@ async function PostBlockPlayer(userId: number) {
 					</p>
 				</div>
 			</div>
-			<div class="BlockedUsers" v-show="blockedUsers?.length != 0" style="width: 200px">
+			<div class="BlockedUsers" v-show="blockedUsers?.find(blockUser => blockUser.isBlocked)" style="width: 200px">
 				<h3> Blocked users: </h3>
 				<div v-for="(user) in blockedUsers">
-					<span style="font-size: 21px;">
+					<span style="font-size: 21px;" v-if="user.isBlocked">
 						{{ user.name }}
 					</span>
-					<el-button size="small" @click="UnBlocked(user.player_id)" style="position: absolute; right: 0%;">
+					<el-button size="small" @click="UnBlocked(user.blocked_player_id)"
+						style="position: absolute; right: 0%;">
 						UnBlock
 					</el-button>
 				</div>
