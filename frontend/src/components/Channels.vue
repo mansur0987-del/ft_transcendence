@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 watch(props, async (newProps) => {
 	if (newProps.leave === true) {
+		window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
 		await GetAllAccessChannels()
 	}
 })
@@ -96,8 +97,10 @@ async function ChannelSettings(channelId: number, channelName: string, isPrivate
 }
 
 onMounted(async () => {
+	await GetAllAccessChannels()
 	if (route.params.id) {
-		GetChannelIdFromClick(Number(route.params.id), true, false)
+		const channel = channels.value?.find((channel) => channel.id === Number(route.params.id))
+		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)
 	}
 	else {
 		await GetAllAccessChannels()
@@ -141,7 +144,7 @@ onMounted(async () => {
 	top: 2%;
 	left: 11%;
 	width: 22%;
-	height: max-content;
+	height: 95%;
 	max-height: 95%;
 	border-radius: 10px;
 	z-index: 1;
@@ -156,7 +159,7 @@ onMounted(async () => {
 	top: 2%;
 	left: 11%;
 	width: 22%;
-	height: auto;
+	height: 95%;
 	max-height: 95%;
 	right: 0;
 	bottom: 0;

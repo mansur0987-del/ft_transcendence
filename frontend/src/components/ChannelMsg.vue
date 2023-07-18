@@ -118,16 +118,16 @@ watch(props, async (newProps) => {
 				</span>
 			</p>
 		</div>
-		<p style="position: fixed; top: 90%; width: 30%;" v-show="channelId">
-			<el-input style="width: 85%;" type="text" v-model="sendMsg" placeholder="write msg" />
-			<el-button @click="SendMsg(channelId, sendMsg)">
-				Send
-			</el-button>
-		</p>
-		<p style="position: fixed; top: 95%; width: 30%; color: red;">
-			{{ error }}
-		</p>
 	</div>
+	<p style="position: fixed; top: 90%; width: 30%;left: 35%" v-show="channelId">
+		<el-input style="width: 80%;" type="text" v-model="sendMsg" placeholder="write msg" />
+		<el-button @click="SendMsg(channelId, sendMsg)" style="position: absolute; right: 0%;">
+			Send
+		</el-button>
+	</p>
+	<p style="position: fixed; top: 95%; width: 30%; right: 30%; color: red;">
+		{{ error }}
+	</p>
 </template>
 
 <style>

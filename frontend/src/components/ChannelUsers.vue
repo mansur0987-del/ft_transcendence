@@ -57,6 +57,7 @@ const users = ref<any>()
 const myUser = ref<any>()
 const myRole = ref<number>()
 const bannedUsers = ref<User[]>()
+const blockedUsers = ref<User[]>()
 
 async function GetUsers() {
 	if (actualChannelId.value) {
@@ -75,6 +76,12 @@ async function GetUsers() {
 				console.log(e)
 			})
 		}
+
+		await axios.get('/chat/blockedUsers').then((res) => {
+			blockedUsers.value = res.data
+		}).catch((e) => {
+			console.log(e)
+		})
 	}
 }
 
@@ -88,6 +95,13 @@ async function LeaveChannel() {
 
 async function UnBanned(userId: number) {
 	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
+		console.log(e)
+	})
+	GetUsers()
+}
+
+async function UnBlocked(userId: number) {
+	await axios.post('chat/unblockUser', { player_id: userId }).catch((e) => {
 		console.log(e)
 	})
 	GetUsers()
@@ -113,6 +127,17 @@ async function GetUserInfo(userId: number) {
 	window.location.assign('http://' + window.location.host + '/player/' + userId)
 }
 
+async function PostBlockPlayer(userId: number) {
+	await axios.post('chat/blockUser', { player_id: userId }).catch((e) => {
+		console.log(e)
+		errorMsg.value = e.response.data.message
+	}).then((res: any) => {
+		if (res.data) {
+			errorMsg.value = ''
+		}
+	})
+}
+
 </script>
 
 <template>
@@ -135,10 +160,22 @@ async function GetUserInfo(userId: number) {
 									<el-dropdown-item @click="GetUserInfo(user.player_id)">Info</el-dropdown-item>
 									<span v-if="user.player_id === myUser.player_id">
 										<el-dropdown-item disabled>Game</el-dropdown-item>
+										<el-dropdown-item @click="PostBlockPlayer(user.player_id)"
+											disabled>Block</el-dropdown-item>
 									</span>
 									<span v-else>
 										<el-dropdown-item>Game</el-dropdown-item>
+										<span
+											v-if="blockedUsers?.find(blockUser => blockUser.player_id === user.player_id)">
+											<el-dropdown-item @click="PostBlockPlayer(user.player_id)"
+												disabled>Block</el-dropdown-item>
+										</span>
+										<span v-else>
+											<el-dropdown-item
+												@click="PostBlockPlayer(user.player_id)">Block</el-dropdown-item>
+										</span>
 									</span>
+
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
@@ -170,7 +207,17 @@ async function GetUserInfo(userId: number) {
 					<p style="font-size: 18px;">
 						{{ user.banned_to_ts !== '0' ? 'banned: ' + user.banned_to_ts + ' day(s)' : '' }}
 					</p>
-
+				</div>
+			</div>
+			<div class="BlockedUsers" v-show="blockedUsers?.length != 0" style="width: 200px">
+				<h3> Blocked users: </h3>
+				<div v-for="(user) in blockedUsers">
+					<span style="font-size: 21px;">
+						{{ user.name }}
+					</span>
+					<el-button size="small" @click="UnBlocked(user.player_id)" style="position: absolute; right: 0%;">
+						UnBlock
+					</el-button>
 				</div>
 			</div>
 			<div class="AddUser" v-show="myRole && myRole > 1 && actualChannelId">
@@ -179,8 +226,8 @@ async function GetUserInfo(userId: number) {
 				<el-button style="position: absolute; right: 0%;" @click="AddUser()">
 					Add
 				</el-button>
-				<p style=color:red> {{ errorMsg }} </p>
 			</div>
+			<p style=color:red> {{ errorMsg }} </p>
 		</div>
 
 
@@ -195,6 +242,7 @@ async function GetUserInfo(userId: number) {
 	width: 22%;
 	height: max-content;
 	max-height: 95%;
+	height: 95%;
 	border-radius: 10px;
 	z-index: 1;
 	overflow: auto;
@@ -208,7 +256,7 @@ async function GetUserInfo(userId: number) {
 	top: 2%;
 	left: 67%;
 	width: 22%;
-	height: auto;
+	height: 95%;
 	max-height: 95%;
 	right: 0;
 	bottom: 0;
