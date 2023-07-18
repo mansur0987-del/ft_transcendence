@@ -153,7 +153,6 @@ export class ChatController {
       throw new BadRequestException('not enough data for send message');
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('chat not found');
-
     let selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
     if (!selfR || !selfR.member_flg)
       throw new ForbiddenException('you are not member of this channel');
