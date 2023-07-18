@@ -11,6 +11,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import {
 	BadRequestException,
+	ConsoleLogger,
 	ForbiddenException,
 	NotFoundException
 } from '@nestjs/common';
@@ -44,9 +45,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		return token;
 	}
 
-	async errorMessage(e: string, client: Socket) {
-		console.log('exception:\n' + e);
-		client.emit('msgFromServer', {error: e})
+	async errorMessage(response: any, client: Socket) {
+		console.log('exception:\n' + response);
+		client.emit('msgFromServer', {
+			error: (response?.reason + (response.daysExpire ? (': for a ' + response.daysExpire) : ''))
+		})
 	}
 
 	async initSrv() {
@@ -59,19 +62,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async emitToOther(chat_id: number, msg: string, sender_id: number, sender_name: string) {
-		const toSend = this.clients.get(chat_id);
-		for (let i = 0; i < toSend.size; i++){
-			if (!await this.plBlocks.isBlocked(toSend[i].user_id_in_db, sender_id)) {
-				let res = toSend[i].emit('msgFromServer', {sender_name: sender_name, message: msg});
-				console.log('resEmit =', res);
-			}
+		try {
+			const toSend = this.clients.get(chat_id);
+			toSend.forEach(async client => {
+				console.log('user in db', client.user_id_in_db);
+				console.log('sender_id', sender_id);
+				if (!await this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
+					let res = await client.emit('msgFromServer', {sender_name: sender_name, message: msg});
+					console.log('resEmit =', res);
+				}
+			});
 		}
-		// toSend.forEach(client => {
-		// 	if (!await this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
-		// 		let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
-		// 		console.log('resEmit =', res);
-		// 	}
-		// });
+		catch (e) { console.log('EXCEPTION:\n' + e) }
 	}
 
 	async checkAuth(client: Socket): Promise<string> {
@@ -121,7 +123,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			await this.chContr.sendMessage({user: {id: who.user_id_in_db}}, body);
 			this.emitToOther(body.chat_id, body.message, who.user_id_in_db, who.user_name_in_db);
 		}
-		catch (e) { this.errorMessage(e, client); }
+		catch (e) { this.errorMessage(e.response, client); }
 	}
 
 	@SubscribeMessage('connectToChat')
