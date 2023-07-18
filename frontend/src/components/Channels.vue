@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
+import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
 import axios from "axios";
 import { useRoute } from "vue-router";
 import { ElButton } from 'element-plus'
 const props = defineProps<{
-	leave?: boolean
+	leave?: boolean,
+	socket?: Socket
 }>()
 const emit = defineEmits<{
 	(e: 'GetChannelId', chennelId: number | undefined): void
 }>()
 
 watch(props, async (newProps) => {
-	console.log('watch')
 	if (newProps.leave === true) {
 		await GetAllAccessChannels()
 	}
@@ -21,11 +22,14 @@ watch(props, async (newProps) => {
 const WindowForChannel = ref<{
 	isOpen: boolean,
 	type: string,
-	channelId?: number
+	channelId?: number,
+	channelName?: string,
+	isPrivate?: boolean,
+	have_password?: boolean
 }>({ isOpen: false, type: '' });
 
-async function WindowChannel(type: string, channelId?: number) {
-	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId }
+async function WindowChannel(type: string, channelId?: number, channelName?: string, isPrivate?: boolean, have_password?: boolean) {
+	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId, channelName: channelName, isPrivate: isPrivate, have_password: have_password }
 }
 async function EmitCloseWindow() {
 	setTimeout(async () => {
@@ -55,8 +59,6 @@ async function GetAllAccessChannels() {
 let msg: string
 
 async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_password: boolean) {
-	console.log('isMember')
-	console.log(isMember)
 	msg = ''
 	if (!route.params.id || channelId !== Number(route.params.id)) {
 		window.history.pushState('http://' + window.location.host + '/chat/' + channelId, 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/' + channelId)
@@ -66,7 +68,6 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 	}
 	else if (!have_password) {
 		await axios.post('chat/joinToChannel', { chat_id: channelId }).catch((e) => {
-			console.log(e.response.data.message)
 			msg = e.response.data.message
 			WindowChannel('msg', channelId)
 		})
@@ -90,6 +91,10 @@ async function DelChannel(channelId: number) {
 	emit("GetChannelId", undefined)
 }
 
+async function ChannelSettings(channelId: number, channelName: string, isPrivate: boolean, have_password: boolean) {
+	WindowChannel("settings", channelId, channelName, isPrivate, have_password)
+}
+
 onMounted(async () => {
 	if (route.params.id) {
 		GetChannelIdFromClick(Number(route.params.id), true, false)
@@ -103,7 +108,9 @@ onMounted(async () => {
 </script>
 
 <template>
-	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :msg=msg v-if="WindowForChannel.isOpen"
+	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId
+		:have_password=WindowForChannel.have_password :channelName=WindowForChannel.channelName
+		:isPrivate=WindowForChannel.isPrivate :msg=msg v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
 		<el-button style="width: 20%;" color="green" @click="WindowChannel('create')">
@@ -113,11 +120,14 @@ onMounted(async () => {
 		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
 			<div v-for=" channel in channels">
 				<li class="channel">
-					<span style="font-size: 21px;"
+					<span style="font-size: 21px; word-wrap: break-word;"
 						@click="GetChannelIdFromClick(channel.id, channel.isMember, channel.have_password)">
 						{{ channel.chat_name }} </span>
 					<el-button color="red" size="small" v-show="channel.isOwner"
 						@click="DelChannel(channel.id)">Delete</el-button>
+					<el-button size="small" style="right: 15%;" v-show="channel.isOwner"
+						@click="ChannelSettings(channel.id, channel.chat_name, channel.isPrivate, channel.have_password)">Settings
+					</el-button>
 				</li>
 			</div>
 		</div>

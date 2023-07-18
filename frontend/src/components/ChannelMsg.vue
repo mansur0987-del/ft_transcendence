@@ -1,28 +1,23 @@
 <script setup lang="ts">
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
-	channelId?: number
+	channelId?: number,
+	socket?: Socket
 }>()
 
 const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
-
+const error = ref<string>('')
 async function SendMsg(channelId: number | undefined, msg: string) {
-	//
-	//await axios.post('chat/sendMessage', { chat_id: channelId, message: msg }).catch((e) => {
-	//	console.log(e)
-	//}).then(() => {
-	//	sendMsg.value = ''
-	//})
-	//if (channelId) {
-	//	GetMsg(channelId)
-	//}
-	socket.emit('msgToServer', { chat_id: channelId, message: msg })
+
+	error.value = ''
+	socket?.emit('msgToServer', { chat_id: channelId, message: msg })
 	sendMsg.value = ''
 	console.log('msgToServer')
+
 }
 
 interface Msg {
@@ -32,36 +27,52 @@ interface Msg {
 	message?: string,
 	sent_ts: string,
 }
-let socket: Socket
+interface GetMsgSocket {
+	sender_name?: string,
+	message: string,
+
+}
 const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
-	socket.on('msgToServer', (res) => {
-		console.log('connect socket')
+
+	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
+		console.log(e)
+	}).then((res: any) => {
+		msgs.value = res.data
+	})
+	const document_chat = document.body.getElementsByClassName('Chat')
+	const elemet_chat = document_chat[0]
+	elemet_chat.scrollTop = elemet_chat.scrollHeight
+	socket?.on('msgFromServer', (res: GetMsgSocket) => {
 		console.log('res')
 		console.log(res)
+		const currentDate = (new Date()).toISOString()
+		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
+		setTimeout(() => {
+			elemet_chat.scrollTop = elemet_chat.scrollHeight + 20
+		}, 100)
+
 	})
-	//await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
-	//	console.log(e)
-	//}).then((res: any) => {
-	//	msgs.value = res.data
-	//})
 }
 
+let socket: Socket
 async function ConnectChannel(channelId: number) {
-	socket.emit('OpenChannelToServer', { channelId: channelId })
+	socket?.emit('connectToChat', { chat_id: channelId })
 	console.log('msgToServer')
-
 	await GetMsg(channelId)
 }
 
-onMounted(async () => {
-	socket = io(process.env.BASE_URL + 'chat', {
-		transportOptions: {
-			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
-		},
-	})
+const key = ref<string>()
+async function keyFunc(e: any) {
+	if (e.code === 'Enter') {
+		SendMsg(actualChannel.value, sendMsg.value)
+	}
+}
 
+onMounted(async () => {
+	socket?.off('msgFromServer')
+	document.addEventListener('keydown', keyFunc)
 	if (props.channelId) {
 		actualChannel.value = props.channelId;
 		await ConnectChannel(actualChannel.value)
@@ -69,30 +80,27 @@ onMounted(async () => {
 })
 
 watch(props, async (newProps) => {
-	if (newProps.channelId) {
-		if (socket.connected) {
-			socket.disconnect()
+	if (!newProps.channelId) {
+		actualChannel.value = undefined
+		socket?.off('msgFromServer')
+	}
+	else if (newProps.channelId) {
+		if (newProps.socket) {
+			socket = newProps.socket
 		}
+		socket?.off('msgFromServer')
 		actualChannel.value = newProps.channelId
 		await ConnectChannel(actualChannel.value)
 	}
-	else {
-		actualChannel.value = undefined
-		if (socket.connected) {
-			socket.disconnect()
-		}
-	}
 })
-
-
 
 </script>
 
 <template>
 	<div class="Chat" v-if="channelId">
-		<h1>Msg in the channel {{ channelId }}</h1>
+		<h2>Msg in the channel {{ channelId }}</h2>
 		<div class="Msgs" v-for="msg in msgs">
-			<p>
+			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
 					{{ msg.sender_name }}:
 
@@ -110,14 +118,15 @@ watch(props, async (newProps) => {
 				</span>
 			</p>
 		</div>
-		<p style="position: fixed; top: 95%; width: 30%;" v-show="channelId">
+		<p style="position: fixed; top: 90%; width: 30%;" v-show="channelId">
 			<el-input style="width: 85%;" type="text" v-model="sendMsg" placeholder="write msg" />
 			<el-button @click="SendMsg(channelId, sendMsg)">
 				Send
 			</el-button>
 		</p>
-
-
+		<p style="position: fixed; top: 95%; width: 30%; color: red;">
+			{{ error }}
+		</p>
 	</div>
 </template>
 
@@ -128,10 +137,12 @@ watch(props, async (newProps) => {
 	left: 35%;
 	width: 30%;
 	height: max-content;
-	max-height: 95%;
+	max-height: 85%;
 	border-radius: 10px;
 	z-index: 1;
 	overflow: auto;
+	scroll-margin-top: 0;
+	scroll-padding-top: 0;
 }
 
 .Chat:after {
@@ -143,7 +154,7 @@ watch(props, async (newProps) => {
 	left: 35%;
 	width: 30%;
 	height: auto;
-	max-height: 95%;
+	max-height: 85%;
 	right: 0;
 	bottom: 0;
 	border-radius: 10px;
@@ -151,5 +162,7 @@ watch(props, async (newProps) => {
 	filter: blur(2px);
 	margin: 0px;
 	overflow: auto;
+	scroll-margin-top: 0;
+	scroll-padding-top: 0;
 }
 </style>

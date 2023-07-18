@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import axios from "axios";
 import { ref, watch } from "vue";
+import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
-import { ElInput, ElButton } from 'element-plus'
+import { ElInput, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu } from 'element-plus'
 const props = defineProps<{
-	channelId?: number
+	channelId?: number,
+	socket?: Socket
 }>()
 
 const emit = defineEmits<{
@@ -73,15 +75,6 @@ async function GetUsers() {
 				console.log(e)
 			})
 		}
-
-		console.log('bannedUsers.value')
-		console.log(bannedUsers.value)
-
-		console.log('user.value')
-		console.log(myUser.value)
-
-		console.log('users.value')
-		console.log(users.value)
 	}
 }
 
@@ -116,6 +109,10 @@ async function AddUser() {
 	GetUsers()
 }
 
+async function GetUserInfo(userId: number) {
+	window.location.assign('http://' + window.location.host + '/player/' + userId)
+}
+
 </script>
 
 <template>
@@ -126,16 +123,28 @@ async function AddUser() {
 			style="position: absolute; right: 0%;">
 			Leave
 		</el-button>
-		<h1>Users {{ channelId }}</h1>
+		<h2>Users {{ channelId }}</h2>
 		<div style="position: relative; height: 95%; width: 100%; overflow: auto;">
-			<div v-for="(user, index) in users">
-				<p>
-					<span style="font-size: 21px;">
-						{{ user.user_name }}
-						<span style="color: blue;">
+			<div v-for="(user) in users">
+				<p style="padding-bottom: 2px;">
+					<span style="font-size: 21px; width: 60%;word-wrap: break-word;">
+						<el-dropdown size="small" split-button type="primary">
+							{{ user.user_name }}
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item @click="GetUserInfo(user.player_id)">Info</el-dropdown-item>
+									<span v-if="user.player_id === myUser.player_id">
+										<el-dropdown-item disabled>Game</el-dropdown-item>
+									</span>
+									<span v-else>
+										<el-dropdown-item>Game</el-dropdown-item>
+									</span>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
+						<span style="color: blue; padding-left: 5px;">
 							{{ user.owner_flg ? 'owner' : user.admin_flg ? 'admin' : 'user' }}
 						</span>
-
 					</span>
 					<el-button size="small"
 						v-show="(myUser.id != user.id) && (myRole === 3 || (myRole === 2 && !user.owner_flg))"

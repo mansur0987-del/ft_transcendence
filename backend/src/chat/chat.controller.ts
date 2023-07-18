@@ -23,6 +23,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
+// import { ChatGateway } from "./chat.gateway"
 
 @Controller('chat')
 export class ChatController {
@@ -31,7 +32,8 @@ export class ChatController {
     private readonly plService: PlayerService,
     private readonly msgService: ChatMessageService,
     private readonly plBlocks: PlayerBlocksService,
-    private readonly dirR: directRService
+    private readonly dirR: directRService,
+    // private readonly chatGate: ChatGateway
   ) { }
 
   //utils
@@ -157,6 +159,7 @@ export class ChatController {
       const days = this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
+    // this.chatGate.emitToOther(body.chat_id, body.message);
     return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
   }
   //inside chat
@@ -650,6 +653,24 @@ export class ChatController {
     result.banned_to_ts = await this.ts_to_days(result.banned_to_ts);
     result.muted_to_ts = await this.ts_to_days(result.muted_to_ts);
     return result;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/updateChannel')
+  async updateChannel(@Request() req: any, @Body() body: any): Promise<Chat> {
+    if (!body || !body.chat_id)
+      throw new BadRequestException('have no body or chat_id in body');
+
+    if (!await this.chatMembersService.isOwner(body.chat_id, req.user.id))
+      throw new ForbiddenException('you are not owner of this channel');
+    const toCmp = await this.chatService.findOneByName(body.chat_name);
+    if (toCmp && toCmp.id != body.chat_id)
+      throw new ForbiddenException('this chat name is unavaible');
+    if (body.chat_name.substring(0, 6) == 'direct')
+      throw new ForbiddenException('you cannot use direct keyword in start of chat_name');
+    if (body.password)
+      body.password = await this.getHashingPass(body.password);
+    return await this.chatService.updateRawInChat(body.chat_id, body);
   }
 
   //delete

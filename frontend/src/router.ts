@@ -29,8 +29,6 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
-	console.log('to.name')
-	console.log(to.name)
 	let status : number = 0
 	await axios.get('auth/checkplayer')
 	.then((res : any) => {
@@ -40,9 +38,6 @@ router.beforeEach(async (to, from) => {
 	}).catch(() =>{
 		status = 1
 	})
-
-	console.log('status')
-	console.log(status)
 	if (status === 0){
 		if (to.name === 'Login' || to.name === 'QrVerificate'){
 			return Player

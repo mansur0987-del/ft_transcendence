@@ -33,8 +33,6 @@ async function GetUsers() {
 	for (let i = 0; allPlayers[i]; i++) {
 		let needButton = true
 		const tmpPlayer = deleteIdPlayer.find(id => id === allPlayers[i].id)
-		console.log('tmpPlayer')
-		console.log(tmpPlayer)
 		if (tmpPlayer) {
 			needButton = false
 		}
@@ -47,8 +45,6 @@ async function GetUsers() {
 		validatePlayer.push(newPlayer);
 	}
 	players.value = validatePlayer
-	console.log('players.value')
-	console.log(players.value)
 }
 
 onMounted(() => {
@@ -69,7 +65,6 @@ async function Chat(player: any) {
 		console.log(e)
 	}).then((res: any) => {
 		if (res?.data) {
-			console.log(res.data)
 			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
 		}
 	})
