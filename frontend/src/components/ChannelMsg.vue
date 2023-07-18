@@ -12,12 +12,12 @@ const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
 const error = ref<string>('')
 async function SendMsg(channelId: number | undefined, msg: string) {
-
 	error.value = ''
-	socket?.emit('msgToServer', { chat_id: channelId, message: msg })
-	sendMsg.value = ''
-	console.log('msgToServer')
-
+	if (msg) {
+		socket?.emit('msgToServer', { chat_id: channelId, message: msg })
+		sendMsg.value = ''
+		console.log('msgToServer')
+	}
 }
 
 interface Msg {
@@ -29,8 +29,8 @@ interface Msg {
 }
 interface GetMsgSocket {
 	sender_name?: string,
-	message: string,
-
+	message?: string,
+	error?: string
 }
 const msgs = ref<Msg[]>()
 
@@ -45,14 +45,19 @@ async function GetMsg(channelId: number) {
 	const elemet_chat = document_chat[0]
 	elemet_chat.scrollTop = elemet_chat.scrollHeight
 	socket?.on('msgFromServer', (res: GetMsgSocket) => {
+		error.value = ''
 		console.log('res')
-		console.log(res)
-		const currentDate = (new Date()).toISOString()
-		msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
-		setTimeout(() => {
-			elemet_chat.scrollTop = elemet_chat.scrollHeight + 20
-		}, 100)
-
+		console.log(res.error)
+		if (res.error) {
+			error.value = res.error
+		}
+		else {
+			const currentDate = (new Date()).toISOString()
+			msgs.value?.push({ sender_name: res.sender_name, message: res.message, sent_ts: currentDate })
+			setTimeout(() => {
+				elemet_chat.scrollTop = elemet_chat.scrollHeight + 20
+			}, 100)
+		}
 	})
 }
 
@@ -71,7 +76,6 @@ async function keyFunc(e: any) {
 }
 
 onMounted(async () => {
-	socket?.off('msgFromServer')
 	document.addEventListener('keydown', keyFunc)
 	if (props.channelId) {
 		actualChannel.value = props.channelId;

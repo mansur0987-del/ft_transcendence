@@ -7,7 +7,7 @@ import { useRoute } from "vue-router";
 import { ElButton } from 'element-plus'
 const props = defineProps<{
 	leave?: boolean,
-	socket?: Socket
+	socket: Socket
 }>()
 const emit = defineEmits<{
 	(e: 'GetChannelId', chennelId: number | undefined): void
@@ -32,11 +32,14 @@ const WindowForChannel = ref<{
 async function WindowChannel(type: string, channelId?: number, channelName?: string, isPrivate?: boolean, have_password?: boolean) {
 	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId, channelName: channelName, isPrivate: isPrivate, have_password: have_password }
 }
-async function EmitCloseWindow() {
+async function EmitCloseWindow(data: { str: string }) {
 	setTimeout(async () => {
 		channels.value = (await axios.get('chat/')).data
 	}, 500)
 	WindowForChannel.value = { isOpen: false, type: '' }
+	if (data.str !== 'empty') {
+		socket.emit('signal')
+	}
 }
 
 interface Channel {
@@ -75,7 +78,6 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 		if (!msg) {
 			emit("GetChannelId", channelId)
 		}
-
 	}
 	else {
 		WindowChannel('checkPassword', channelId)
@@ -89,6 +91,7 @@ async function DelChannel(channelId: number) {
 	})
 	window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
 	await GetAllAccessChannels()
+	socket.emit('signal')
 	emit("GetChannelId", undefined)
 }
 
@@ -96,15 +99,18 @@ async function ChannelSettings(channelId: number, channelName: string, isPrivate
 	WindowChannel("settings", channelId, channelName, isPrivate, have_password)
 }
 
+let socket: Socket
 onMounted(async () => {
+	socket = props.socket
 	await GetAllAccessChannels()
+	socket.on('signal', async () => {
+		await GetAllAccessChannels()
+	})
 	if (route.params.id) {
 		const channel = channels.value?.find((channel) => channel.id === Number(route.params.id))
 		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)
 	}
-	else {
-		await GetAllAccessChannels()
-	}
+
 
 })
 

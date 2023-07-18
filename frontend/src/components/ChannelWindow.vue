@@ -13,7 +13,7 @@ const props = defineProps<{
 	msg?: string
 }>()
 const emit = defineEmits<{
-	(e: 'ChannelWindowIsClose'): void
+	(e: 'ChannelWindowIsClose', str: string): void
 }>()
 
 interface User {
@@ -56,8 +56,8 @@ const data = ref<{
 
 const error = ref<string>('')
 
-async function Close() {
-	emit('ChannelWindowIsClose')
+async function Close(str: string) {
+	emit('ChannelWindowIsClose', str)
 }
 
 async function Submit() {
@@ -152,7 +152,7 @@ async function Submit() {
 		}
 	}
 	if (!error.value) {
-		Close()
+		Close('changes')
 	}
 }
 
@@ -231,7 +231,7 @@ async function Submit() {
 		</div>
 		<div class="Footer">
 			<p style="width: 220px;">
-				<el-button size="small" @click="Close()" style="position: absolute; left: 0%;">
+				<el-button size="small" @click="Close('empty')" style="position: absolute; left: 0%;">
 					Close
 				</el-button>
 				<el-button size="small" @click="Submit()" style="position: absolute; right: 0%;">
