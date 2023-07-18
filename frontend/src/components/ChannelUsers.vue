@@ -38,9 +38,11 @@ async function WindowChannel(type: string, user: User) {
 	user.role = user.owner_flg + user.admin_flg + user.member_flg
 	PropsUser.value = user
 }
-async function EmitCloseWindow() {
+async function EmitCloseWindow(str: string) {
 	await GetUsers()
-	socket.emit('signal')
+	if (str !== 'empty') {
+		socket.emit('signal')
+	}
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 

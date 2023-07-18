@@ -32,12 +32,14 @@ const WindowForChannel = ref<{
 async function WindowChannel(type: string, channelId?: number, channelName?: string, isPrivate?: boolean, have_password?: boolean) {
 	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId, channelName: channelName, isPrivate: isPrivate, have_password: have_password }
 }
-async function EmitCloseWindow() {
+async function EmitCloseWindow(data: { str: string }) {
 	setTimeout(async () => {
 		channels.value = (await axios.get('chat/')).data
 	}, 500)
 	WindowForChannel.value = { isOpen: false, type: '' }
-	socket.emit('signal')
+	if (data.str !== 'empty') {
+		socket.emit('signal')
+	}
 }
 
 interface Channel {
@@ -100,10 +102,10 @@ async function ChannelSettings(channelId: number, channelName: string, isPrivate
 let socket: Socket
 onMounted(async () => {
 	socket = props.socket
+	await GetAllAccessChannels()
 	socket.on('signal', async () => {
 		await GetAllAccessChannels()
 	})
-	await GetAllAccessChannels()
 	if (route.params.id) {
 		const channel = channels.value?.find((channel) => channel.id === Number(route.params.id))
 		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)

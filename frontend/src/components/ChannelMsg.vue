@@ -12,12 +12,12 @@ const sendMsg = ref<string>('')
 const actualChannel = ref<number>()
 const error = ref<string>('')
 async function SendMsg(channelId: number | undefined, msg: string) {
-
 	error.value = ''
-	socket?.emit('msgToServer', { chat_id: channelId, message: msg })
-	sendMsg.value = ''
-	console.log('msgToServer')
-
+	if (msg) {
+		socket?.emit('msgToServer', { chat_id: channelId, message: msg })
+		sendMsg.value = ''
+		console.log('msgToServer')
+	}
 }
 
 interface Msg {
