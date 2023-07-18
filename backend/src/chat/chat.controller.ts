@@ -139,7 +139,10 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/blockedUsers')
   async getBlockedUsers(@Request() req: any): Promise<any> {
-    return await this.plBlocks.findAllByPlayerId(req.user.id);
+    let result: any[] = await this.plBlocks.findAllByPlayerId(req.user.id);
+    for (let i = 0; i < result.length; i++)
+      result[i].name = await this.getUserNameById(result[i].blocked_player_id);
+    return result;
   }
 
   //inside chat
