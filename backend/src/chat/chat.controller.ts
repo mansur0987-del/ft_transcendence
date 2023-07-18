@@ -23,7 +23,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
-// import { ChatGateway } from "./chat.gateway"
+import { Player_blocks } from "./entities/players_blocks.entity";
 
 @Controller('chat')
 export class ChatController {
@@ -32,8 +32,7 @@ export class ChatController {
     private readonly plService: PlayerService,
     private readonly msgService: ChatMessageService,
     private readonly plBlocks: PlayerBlocksService,
-    private readonly dirR: directRService,
-    // private readonly chatGate: ChatGateway
+    private readonly dirR: directRService
   ) { }
 
   //utils
@@ -296,6 +295,38 @@ export class ChatController {
       new Date(0).toISOString(),
       new Date(0).toISOString());
     return result;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/blockUser')
+  async blockUser(@Request() req: any, @Body() body: any): Promise<Player_blocks>{
+    if (!body || !body.player_id)
+      throw new BadRequestException('INVALID BODY');
+    const toBlock = await this.plService.GetPlayerById(body.player_id);
+    if (!toBlock)
+      throw new NotFoundException('player not found');
+    const blockR = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
+    if (!blockR)
+      return await this.plBlocks.addRawInPlayerBlocks(req.user.id, body.player_id);
+    if (!blockR.isBlocked)
+      return await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, true);
+    return (blockR);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/unblockUser')
+  async unblockUser(@Request() req: any, @Body() body: any): Promise<Player_blocks>{
+    if (!body || !body.player_id)
+      throw new BadRequestException('INVALID BODY');
+    const tounBlock = await this.plService.GetPlayerById(body.player_id);
+    if (!tounBlock)
+      throw new NotFoundException('player not found');
+    const blockR = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
+    if (!blockR)
+      throw new ForbiddenException('player not blocked');
+    if (!blockR.isBlocked)
+      throw new ForbiddenException('player not blocked');
+    return await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, false);
   }
 
   @UseGuards(AuthGuard('jwt'))
