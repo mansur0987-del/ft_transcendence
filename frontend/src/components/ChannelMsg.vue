@@ -34,7 +34,6 @@ interface GetMsgSocket {
 const msgs = ref<Msg[]>()
 
 async function GetMsg(channelId: number) {
-
 	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
 		console.log(e)
 	}).then((res: any) => {

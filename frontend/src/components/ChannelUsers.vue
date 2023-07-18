@@ -41,7 +41,7 @@ async function WindowChannel(type: string, user: User) {
 async function EmitCloseWindow(str: string) {
 	await GetUsers()
 	if (str !== 'empty') {
-		props.socket.emit('signal')
+		props.socket.emit('signalUsers')
 	}
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
@@ -63,13 +63,13 @@ watch(props, async (newProps) => {
 		console.log('newProps.socket')
 		console.log(newProps.socket)
 		await GetUsers()
-		//newProps.socket.on('callBack', async (res) => {
-		//	console.log('SocketUsersRes')
-		//	console.log('SocketRes')
-		//	console.log(res)
-		//
-		//})
 	}
+	props.socket.on('callBackUsers', async (res) => {
+		console.log('SocketUsersRes')
+		console.log('SocketRes')
+		console.log(res)
+		await GetUsers()
+	})
 })
 
 const users = ref<any>()
@@ -110,23 +110,23 @@ async function LeaveChannel() {
 	})
 	users.value = undefined
 	emit('LeaveChannel')
-	props.socket.emit('signal')
+	props.socket.emit('signalUsers')
 }
 
 async function UnBanned(userId: number) {
 	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	props.socket.emit('signal')
-	await GetUsers()
+	props.socket.emit('signalUsers')
+	//await GetUsers()
 }
 
 async function UnBlocked(userId: number | undefined) {
 	await axios.post('chat/unblockUser', { player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	props.socket.emit('signal')
-	await GetUsers()
+	props.socket.emit('signalUsers')
+	//await GetUsers()
 }
 
 const userName = ref<string>('')
@@ -141,9 +141,9 @@ async function AddUser() {
 			errorMsg.value = ''
 		}
 	})
-	props.socket.emit('signal')
+	props.socket.emit('signalUsers')
 	userName.value = ''
-	await GetUsers()
+	//await GetUsers()
 }
 
 async function GetUserInfo(userId: number) {
@@ -159,8 +159,8 @@ async function PostBlockPlayer(userId: number) {
 			errorMsg.value = ''
 		}
 	})
-	props.socket.emit('signal')
-	await GetUsers()
+	props.socket.emit('signalUsers')
+	//await GetUsers()
 }
 
 </script>

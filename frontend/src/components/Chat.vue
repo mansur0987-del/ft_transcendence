@@ -21,19 +21,18 @@ async function FunctionForEmitLeave() {
 }
 
 let socket: Socket
-onMounted(() => {
-	socket = io(process.env.BASE_URL + 'chat', {
+const flag = ref<boolean>(false)
+onMounted(async () => {
+	socket = await io(process.env.BASE_URL + 'chat', {
 		transportOptions: {
 			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
 		},
 	})
+	if (socket) {
+		flag.value = true
+	}
 	console.log('socket')
 	console.log(socket)
-	socket.on('callBack', async (res) => {
-		console.log('get signal')
-		console.log('SocketRes')
-		console.log(res)
-	})
 })
 
 </script>
@@ -41,9 +40,9 @@ onMounted(() => {
 <template>
 	<LeftBar />
 	<Logout />
-	<Channels @GetChannelId="FunctionForEmit" :leave=leave :socket=socket />
-	<ChannelMsg :channelId=channelId :socket=socket />
-	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId :socket=socket />
+	<Channels @GetChannelId="FunctionForEmit" :leave=leave :socket=socket v-if="flag" />
+	<ChannelMsg :channelId=channelId :socket=socket v-if="flag" />
+	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId :socket=socket v-if="flag" />
 </template>
 
 <style scoped>
