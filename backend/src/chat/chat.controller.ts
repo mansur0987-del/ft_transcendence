@@ -157,7 +157,7 @@ export class ChatController {
     if (!selfR || !selfR.member_flg)
       throw new ForbiddenException('you are not member of this channel');
     if (new Date(selfR.muted_to_ts) > new Date()) {
-      const days = this.ts_to_days(selfR.muted_to_ts);
+      const days = await this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
     // this.chatGate.emitToOther(body.chat_id, body.message);
