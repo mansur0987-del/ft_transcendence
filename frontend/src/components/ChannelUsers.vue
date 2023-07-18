@@ -33,15 +33,17 @@ interface User {
 	isBlocked?: boolean,
 }
 const PropsUser = ref<User>()
+
 async function WindowChannel(type: string, user: User) {
 	WindowForChannel.value = { isOpen: true, type: type, channelId: actualChannelId.value }
 	user.role = user.owner_flg + user.admin_flg + user.member_flg
 	PropsUser.value = user
 }
-async function EmitCloseWindow(str: string) {
+async function EmitCloseWindow(str: any) {
 	await GetUsers()
 	if (str !== 'empty') {
 		props.socket.emit('signalUsers')
+		props.socket.emit('signal')
 	}
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
@@ -49,25 +51,17 @@ async function EmitCloseWindow(str: string) {
 const actualChannelId = ref<number>()
 
 watch(props, async (newProps) => {
-	console.log('newProps.user')
-	console.log(newProps)
 	if (newProps.channelId) {
 		actualChannelId.value = newProps.channelId
 		await GetUsers()
 	}
 	else {
-		//props.socket?.off('Signal')
 		actualChannelId.value = undefined
 	}
 	if (newProps.socket) {
-		console.log('newProps.socket')
-		console.log(newProps.socket)
 		await GetUsers()
 	}
-	props.socket.on('callBackUsers', async (res) => {
-		console.log('SocketUsersRes')
-		console.log('SocketRes')
-		console.log(res)
+	props.socket.on('callBackUsers', async () => {
 		await GetUsers()
 	})
 })
@@ -84,6 +78,8 @@ async function GetUsers() {
 			users.value = res.data?.users_info
 			myUser.value = res.data?.rigths_of_user
 		}).catch((e) => {
+			actualChannelId.value = undefined
+			emit('LeaveChannel')
 			console.log(e)
 		})
 		myRole.value = myUser.value.owner_flg + myUser.value.admin_flg + myUser.value.member_flg
@@ -110,6 +106,7 @@ async function LeaveChannel() {
 	})
 	users.value = undefined
 	emit('LeaveChannel')
+	props.socket.emit('signal')
 	props.socket.emit('signalUsers')
 }
 
@@ -118,7 +115,6 @@ async function UnBanned(userId: number) {
 		console.log(e)
 	})
 	props.socket.emit('signalUsers')
-	//await GetUsers()
 }
 
 async function UnBlocked(userId: number | undefined) {
@@ -126,7 +122,6 @@ async function UnBlocked(userId: number | undefined) {
 		console.log(e)
 	})
 	props.socket.emit('signalUsers')
-	//await GetUsers()
 }
 
 const userName = ref<string>('')
@@ -143,7 +138,6 @@ async function AddUser() {
 	})
 	props.socket.emit('signalUsers')
 	userName.value = ''
-	//await GetUsers()
 }
 
 async function GetUserInfo(userId: number) {
@@ -160,7 +154,6 @@ async function PostBlockPlayer(userId: number) {
 		}
 	})
 	props.socket.emit('signalUsers')
-	//await GetUsers()
 }
 
 </script>
@@ -168,8 +161,8 @@ async function PostBlockPlayer(userId: number) {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
 		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
-	<div class="Users" v-if="channelId">
-		<el-button color="yellow" v-show="actualChannelId && !(myUser?.owner_flg)" @click="LeaveChannel()"
+	<div class="Users" v-if="actualChannelId">
+		<el-button color="yellow" v-show="!(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
 			Leave
 		</el-button>

@@ -40,7 +40,7 @@ const WindowForChannel = ref<{
 async function WindowChannel(type: string, channelId?: number, channelName?: string, isPrivate?: boolean, have_password?: boolean) {
 	WindowForChannel.value = { isOpen: true, type: type, channelId: channelId, channelName: channelName, isPrivate: isPrivate, have_password: have_password }
 }
-async function EmitCloseWindow(str: string) {
+async function EmitCloseWindow(str: any) {
 	setTimeout(async () => {
 		channels.value = (await axios.get('chat/')).data
 	}, 500)

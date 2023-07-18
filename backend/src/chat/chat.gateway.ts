@@ -106,7 +106,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	//events
 	@SubscribeMessage('msgToServer')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() body: any): Promise<any> {
-		try {
+		//try {
 			await this.connectToChat(client, body);
 			//add message to database
 			const who = this.connectedClients.get(client.id);
@@ -114,8 +114,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				throw new ForbiddenException('client not connected to socket');
 			await this.chContr.sendMessage({user: {id: who.user_id_in_db}}, body);
 			this.emitToOther(body.chat_id, body.message, who.user_id_in_db, who.user_name_in_db);
-		}
-		catch (e) { this.errorMessage(e, client); }
+		//}
+		//catch (e) { this.errorMessage(e, client); }
 	}
 
 	@SubscribeMessage('connectToChat')
