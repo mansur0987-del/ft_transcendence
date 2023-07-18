@@ -41,26 +41,34 @@ async function WindowChannel(type: string, user: User) {
 async function EmitCloseWindow(str: string) {
 	await GetUsers()
 	if (str !== 'empty') {
-		socket.emit('signal')
+		props.socket.emit('signal')
 	}
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
 const actualChannelId = ref<number>()
 
-let socket: Socket
 watch(props, async (newProps) => {
+	console.log('newProps.user')
+	console.log(newProps)
 	if (newProps.channelId) {
-		socket = newProps.socket
 		actualChannelId.value = newProps.channelId
 		await GetUsers()
-		socket.on('callback', async () => {
-			await GetUsers()
-		})
 	}
 	else {
-		socket?.off('Signal')
+		//props.socket?.off('Signal')
 		actualChannelId.value = undefined
+	}
+	if (newProps.socket) {
+		console.log('newProps.socket')
+		console.log(newProps.socket)
+		await GetUsers()
+		//newProps.socket.on('callBack', async (res) => {
+		//	console.log('SocketUsersRes')
+		//	console.log('SocketRes')
+		//	console.log(res)
+		//
+		//})
 	}
 })
 
@@ -102,14 +110,14 @@ async function LeaveChannel() {
 	})
 	users.value = undefined
 	emit('LeaveChannel')
-	socket.emit('signal')
+	props.socket.emit('signal')
 }
 
 async function UnBanned(userId: number) {
 	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	socket.emit('signal')
+	props.socket.emit('signal')
 	await GetUsers()
 }
 
@@ -117,7 +125,7 @@ async function UnBlocked(userId: number | undefined) {
 	await axios.post('chat/unblockUser', { player_id: userId }).catch((e) => {
 		console.log(e)
 	})
-	socket.emit('signal')
+	props.socket.emit('signal')
 	await GetUsers()
 }
 
@@ -133,7 +141,7 @@ async function AddUser() {
 			errorMsg.value = ''
 		}
 	})
-	socket.emit('signal')
+	props.socket.emit('signal')
 	userName.value = ''
 	await GetUsers()
 }
@@ -151,7 +159,7 @@ async function PostBlockPlayer(userId: number) {
 			errorMsg.value = ''
 		}
 	})
-	socket.emit('signal')
+	props.socket.emit('signal')
 	await GetUsers()
 }
 

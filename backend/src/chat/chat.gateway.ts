@@ -43,7 +43,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async errorMessage(e: string, client: Socket) {
-		console.log('exception:\n' + e); 
+		console.log('exception:\n' + e);
 		client.emit('msgFromServer', {error: e})
 	}
 
@@ -77,7 +77,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@SubscribeMessage('signal')
 	async signalToReload(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		console.log('\nsignal started\n')
 		try {
+			console.log('\this.connectedClients size =\n')
+			console.log(this.connectedClients.size)
 			this.connectedClients.forEach(element => {
 				console.log('res signal emit =', element.emit('callBack', body));
 			});
@@ -89,7 +92,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	//events
 	@SubscribeMessage('msgToServer')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() body: any): Promise<any> {
-		console.log('start msgToServer');
 		try {
 			await this.connectToChat(client, body);
 			//add message to database
@@ -165,7 +167,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
-	
+
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		try {
 			const userInConnected: any = this.connectedClients.get(client.id);

@@ -29,6 +29,11 @@ onMounted(() => {
 	})
 	console.log('socket')
 	console.log(socket)
+	socket.on('callBack', async (res) => {
+		console.log('get signal')
+		console.log('SocketRes')
+		console.log(res)
+	})
 })
 
 </script>

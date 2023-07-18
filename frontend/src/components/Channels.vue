@@ -14,8 +14,15 @@ const emit = defineEmits<{
 }>()
 
 watch(props, async (newProps) => {
+	console.log('newProps.Channels')
+	console.log(newProps)
 	if (newProps.leave === true) {
 		window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
+		await GetAllAccessChannels()
+	}
+	if (newProps.socket) {
+		console.log('newProps.socket')
+		console.log(newProps.socket)
 		await GetAllAccessChannels()
 	}
 })
@@ -38,7 +45,7 @@ async function EmitCloseWindow(data: { str: string }) {
 	}, 500)
 	WindowForChannel.value = { isOpen: false, type: '' }
 	if (data.str !== 'empty') {
-		socket.emit('signal')
+		props.socket.emit('signal')
 	}
 }
 
@@ -91,7 +98,7 @@ async function DelChannel(channelId: number) {
 	})
 	window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
 	await GetAllAccessChannels()
-	socket.emit('signal')
+	props.socket.emit('signal')
 	emit("GetChannelId", undefined)
 }
 
@@ -99,13 +106,9 @@ async function ChannelSettings(channelId: number, channelName: string, isPrivate
 	WindowChannel("settings", channelId, channelName, isPrivate, have_password)
 }
 
-let socket: Socket
+
 onMounted(async () => {
-	socket = props.socket
 	await GetAllAccessChannels()
-	socket.on('signal', async () => {
-		await GetAllAccessChannels()
-	})
 	if (route.params.id) {
 		const channel = channels.value?.find((channel) => channel.id === Number(route.params.id))
 		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)

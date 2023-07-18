@@ -16,7 +16,6 @@ async function SendMsg(channelId: number | undefined, msg: string) {
 	if (msg) {
 		socket?.emit('msgToServer', { chat_id: channelId, message: msg })
 		sendMsg.value = ''
-		console.log('msgToServer')
 	}
 }
 
@@ -64,7 +63,6 @@ async function GetMsg(channelId: number) {
 let socket: Socket
 async function ConnectChannel(channelId: number) {
 	socket?.emit('connectToChat', { chat_id: channelId })
-	console.log('msgToServer')
 	await GetMsg(channelId)
 }
 
