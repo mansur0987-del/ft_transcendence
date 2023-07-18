@@ -79,12 +79,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	async signalToReload(@ConnectedSocket() client: Socket, @MessageBody() body: any){
 		console.log('\nsignal started\n')
 		try {
-			console.log('\this.connectedClients size =\n')
-			console.log(this.connectedClients.size)
+			console.log('\this.connectedClients size =', this.connectedClients.size);
 			this.connectedClients.forEach(element => {
 				console.log('res signal emit =', element.emit('callBack', body));
 			});
-			// console.log('res signal emit =', this.server.emit('callBack', body));
+		}
+		catch (e) { this.errorMessage(e, client); }
+	}
+
+	@SubscribeMessage('signalUsers')
+	async signalToReloadUsers(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		console.log('\nsignalUsers started\n')
+		try {
+			console.log('\this.connectedClients size in signal USers =', this.connectedClients.size);
+			this.connectedClients.forEach(element => {
+				console.log('res signal users emit =', element.emit('callBackUsers', body));
+			});
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
