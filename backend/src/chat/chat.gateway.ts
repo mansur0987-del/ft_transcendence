@@ -60,12 +60,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	async emitToOther(chat_id: number, msg: string, sender_id: number, sender_name: string) {
 		const toSend = this.clients.get(chat_id);
-		toSend.forEach(client => {
-			if (!this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
-				let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
+		for (let i = 0; i < toSend.size; i++){
+			if (!await this.plBlocks.isBlocked(toSend[i].user_id_in_db, sender_id)) {
+				let res = toSend[i].emit('msgFromServer', {sender_name: sender_name, message: msg});
 				console.log('resEmit =', res);
 			}
-		});
+		}
+		// toSend.forEach(client => {
+		// 	if (!await this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
+		// 		let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
+		// 		console.log('resEmit =', res);
+		// 	}
+		// });
 	}
 
 	async checkAuth(client: Socket): Promise<string> {
