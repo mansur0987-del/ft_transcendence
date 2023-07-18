@@ -61,7 +61,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	async emitToOther(chat_id: number, msg: string, sender_id: number, sender_name: string) {
 		const toSend = this.clients.get(chat_id);
 		toSend.forEach(client => {
-			if (this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
+			if (!this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
 				let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
 				console.log('resEmit =', res);
 			}
