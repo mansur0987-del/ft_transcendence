@@ -17,6 +17,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ChatController } from "./chat.controller";
 import { PlayerService } from "src/player/service/player.service";
+import { PlayerBlocksService } from "./services/players_blocks.service";
 
 @WebSocketGateway({
 	cors: {
@@ -28,7 +29,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	constructor(
 		private readonly jwtService: JwtService,
 		private readonly chContr: ChatController,
-		private readonly plService: PlayerService
+		private readonly plService: PlayerService,
+		private readonly plBlocks: PlayerBlocksService
 	) { }
 	@WebSocketServer()
 	server: Server;
@@ -56,11 +58,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			this.connectedClients = new Map<string, any>;
 	}
 
-	async emitToOther(chat_id: number, msg: string, sender_name: string) {
+	async emitToOther(chat_id: number, msg: string, sender_id: number, sender_name: string) {
 		const toSend = this.clients.get(chat_id);
 		toSend.forEach(client => {
-			let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
-			console.log('resEmit =', res);
+			if (this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
+				let res = client.emit('msgFromServer', {sender_name: sender_name, message: msg});
+				console.log('resEmit =', res);
+			}
 		});
 	}
 
@@ -109,7 +113,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			if (!who)
 				throw new ForbiddenException('client not connected to socket');
 			await this.chContr.sendMessage({user: {id: who.user_id_in_db}}, body);
-			this.emitToOther(body.chat_id, body.message, who.user_name_in_db);
+			this.emitToOther(body.chat_id, body.message, who.user_id_in_db, who.user_name_in_db);
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
