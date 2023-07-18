@@ -6,7 +6,7 @@ import ChannelWindow from './ChannelWindow.vue'
 import { ElInput, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu } from 'element-plus'
 const props = defineProps<{
 	channelId?: number,
-	socket?: Socket
+	socket: Socket
 }>()
 
 const emit = defineEmits<{
@@ -40,17 +40,24 @@ async function WindowChannel(type: string, user: User) {
 }
 async function EmitCloseWindow() {
 	await GetUsers()
+	socket.emit('signal')
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
 const actualChannelId = ref<number>()
 
-watch(props, (newProps) => {
+let socket: Socket
+watch(props, async (newProps) => {
 	if (newProps.channelId) {
+		socket = newProps.socket
 		actualChannelId.value = newProps.channelId
-		GetUsers()
+		await GetUsers()
+		socket.on('callback', async () => {
+			await GetUsers()
+		})
 	}
 	else {
+		socket?.off('Signal')
 		actualChannelId.value = undefined
 	}
 })
@@ -93,12 +100,14 @@ async function LeaveChannel() {
 	})
 	users.value = undefined
 	emit('LeaveChannel')
+	socket.emit('signal')
 }
 
 async function UnBanned(userId: number) {
 	await axios.post('chat/unbanUser', { chat_id: actualChannelId.value, player_id: userId }).catch((e) => {
 		console.log(e)
 	})
+	socket.emit('signal')
 	await GetUsers()
 }
 
@@ -106,6 +115,7 @@ async function UnBlocked(userId: number | undefined) {
 	await axios.post('chat/unblockUser', { player_id: userId }).catch((e) => {
 		console.log(e)
 	})
+	socket.emit('signal')
 	await GetUsers()
 }
 
@@ -121,6 +131,7 @@ async function AddUser() {
 			errorMsg.value = ''
 		}
 	})
+	socket.emit('signal')
 	userName.value = ''
 	await GetUsers()
 }
@@ -138,6 +149,7 @@ async function PostBlockPlayer(userId: number) {
 			errorMsg.value = ''
 		}
 	})
+	socket.emit('signal')
 	await GetUsers()
 }
 
