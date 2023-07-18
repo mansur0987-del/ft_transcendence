@@ -114,7 +114,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	//events
 	@SubscribeMessage('msgToServer')
 	async newMessage(@ConnectedSocket() client: Socket, @MessageBody() body: any): Promise<any> {
-		//try {
+		try {
 			await this.connectToChat(client, body);
 			//add message to database
 			const who = this.connectedClients.get(client.id);
