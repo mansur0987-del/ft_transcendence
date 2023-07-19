@@ -31,11 +31,27 @@ interface GetMsgSocket {
 	message?: string,
 	error?: string
 }
-const msgs = ref<Msg[]>()
 
+const WindowForChannel = ref<{
+	isOpen: boolean,
+	type: string,
+}>({ isOpen: false, type: '' });
+
+async function WindowChannel(type: string) {
+	WindowForChannel.value = { isOpen: true, type: type }
+}
+
+async function EmitCloseWindow(str: any) {
+	WindowForChannel.value = { isOpen: false, type: '' }
+}
+
+const msgs = ref<Msg[]>()
+let errorMsg: string
 async function GetMsg(channelId: number) {
+	errorMsg = ''
 	await axios.post('chat/GetChatMessages', { chat_id: channelId }).catch((e) => {
-		console.log(e)
+		errorMsg = e.response.data.message
+		WindowChannel('msg')
 	}).then((res: any) => {
 		msgs.value = res.data
 	})
@@ -98,6 +114,8 @@ watch(props, async (newProps) => {
 </script>
 
 <template>
+	<ChannelWindow :type=WindowForChannel.type :msg=errorMsg v-if="WindowForChannel.isOpen"
+		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class="Chat" v-if="channelId">
 		<h2>Msg in the channel {{ channelId }}</h2>
 		<div class="Msgs" v-for="msg in msgs">
