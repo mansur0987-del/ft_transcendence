@@ -84,10 +84,12 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 			WindowChannel('msg', channelId)
 		})
 		if (!msg) {
+			props.socket.emit('signalUsers')
 			emit("GetChannelId", channelId)
 		}
 	}
 	else {
+		props.socket.emit('signalUsers')
 		WindowChannel('checkPassword', channelId)
 	}
 	await GetAllAccessChannels()
