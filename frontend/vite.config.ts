@@ -11,7 +11,13 @@ export default defineConfig({
     port:8080
   },
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => {return tag.startsWith('ChannelWindow')},
+        }
+      }
+    }),
     ElementPlus({})
   ],
   resolve: {

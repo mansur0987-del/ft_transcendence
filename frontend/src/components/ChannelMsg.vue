@@ -41,7 +41,7 @@ async function WindowChannel(type: string) {
 	WindowForChannel.value = { isOpen: true, type: type }
 }
 
-async function EmitCloseWindow(str: any) {
+async function EmitCloseWindow() {
 	WindowForChannel.value = { isOpen: false, type: '' }
 }
 
@@ -122,7 +122,6 @@ watch(props, async (newProps) => {
 			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
 					{{ msg.sender_name }}:
-
 				</span>
 				{{ msg.message }}
 				<span style="color:red; position: absolute; right: 0px;">

@@ -6,8 +6,11 @@ import { ref, onMounted } from "vue";
 import { ElButton } from 'element-plus'
 
 const friends = ref<any[]>([])
+const currentDate = ref<Date>(new Date())
+const currentDateMinus15Min = ref<Date>(new Date())
 
 async function GetFriends() {
+	currentDateMinus15Min.value.setMinutes(currentDate.value.getMinutes() - 15)
 	await axios.get('player/friends').then((res) => {
 		friends.value = res.data.friends;
 	})
@@ -26,9 +29,14 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+const error = ref<{
+	msg: string
+	player_id?: number
+}>({ msg: '' })
 async function Chat(player: any) {
+	error.value = { msg: '' }
 	await axios.post('chat/enterDirectChannel', { player_name: player.name }).catch((e) => {
-		console.log(e)
+		error.value = { msg: e.response.data.message, player_id: player.id }
 	}).then((res: any) => {
 		if (res?.data) {
 			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
@@ -44,8 +52,9 @@ async function Chat(player: any) {
 	<div class="FriendList">
 		<h1 style="text-align: center;">FriendList</h1>
 		<template v-for="friend in friends">
-			<li v-if="friend.name !== ''">
-				<span v-if="friend.status === 'Online'" style="color: green; font-size: 30px;">
+			<p v-if="friend.name !== ''" style="height: max-content; position: relative;">
+				<span v-if="new Date(friend.update_at) > currentDateMinus15Min && friend.status"
+					style="color: green; font-size: 30px;">
 					{{ friend.name }}
 				</span>
 				<span v-else style="color:firebrick; font-size: 30px;">
@@ -53,9 +62,13 @@ async function Chat(player: any) {
 				</span>
 				<el-button style="position: absolute; right: 16%;" @click="PostDeleteFriend(friend)">
 					Delete</el-button>
-				<el-button style="position: absolute; right: 0%;" @click="RedirectToProfile(friend)">Get info</el-button>
+				<el-button style="position: absolute; right: 0%;" @click="RedirectToProfile(friend)">Get
+					info</el-button>
 				<el-button style="position: absolute; right: 9%;" @click="Chat(friend)"> Chat </el-button>
-			</li>
+				<span style="color: red; position: absolute; right: 25%;" v-if="friend.id === error.player_id">
+					{{ error.msg }}
+				</span>
+			</p>
 		</template>
 
 	</div>

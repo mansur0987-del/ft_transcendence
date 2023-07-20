@@ -98,6 +98,9 @@ export class PlayerService {
 
 	async getQrCode(userId: number){
 		const player = await this.GetPlayerById(userId);
+		if (!player.qrcodeId) {
+			return null
+		}
 		const QrCode = await this.qrCodeServise.getFileById(player.qrcodeId)
 		return QrCode
 	}

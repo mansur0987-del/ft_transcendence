@@ -48,6 +48,11 @@ async function EmitCloseWindow(str: any) {
 	if (str !== 'empty') {
 		props.socket.emit('signal')
 	}
+	if (str !== 'changes' && str !== 'empty') {
+		props.socket.emit('signalUsers')
+		emit("GetChannelId", Number(str))
+
+	}
 }
 
 interface Channel {
@@ -89,7 +94,6 @@ async function GetChannelIdFromClick(channelId: number, isMember: boolean, have_
 		}
 	}
 	else {
-		props.socket.emit('signalUsers')
 		WindowChannel('checkPassword', channelId)
 	}
 	await GetAllAccessChannels()
@@ -129,7 +133,7 @@ onMounted(async () => {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId
 		:have_password=WindowForChannel.have_password :channelName=WindowForChannel.channelName
-		:isPrivate=WindowForChannel.isPrivate :msg=msg v-if="WindowForChannel.isOpen"
+		:isPrivate=WindowForChannel.isPrivate :msg=msg :soket=props.socket v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class='Channels'>
 		<el-button style="width: 20%;" color="green" @click="WindowChannel('create')">

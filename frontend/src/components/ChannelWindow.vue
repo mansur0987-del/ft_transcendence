@@ -2,6 +2,7 @@
 import axios from "axios";
 import { ref } from "vue";
 import { ElInput, ElButton, ElInputNumber, ElRadioGroup, ElRadioButton } from 'element-plus'
+import type { Socket } from "socket.io-client";
 const props = defineProps<{
 	type: string | undefined;
 	chanelId?: number;
@@ -11,6 +12,7 @@ const props = defineProps<{
 	myRole?: number;
 	PropsUser?: User | undefined
 	msg?: string
+	socket?: Socket
 }>()
 const emit = defineEmits<{
 	(e: 'ChannelWindowIsClose', str: string): void
@@ -143,6 +145,13 @@ async function Submit() {
 		if (props.type === 'checkPassword') {
 			await axios.post('chat/joinToChannel', data.value).catch((e) => {
 				error.value = e.response.data.message
+			}).then((res) => {
+				if (res) {
+					if (data.value.chat_id) {
+						Close(data.value.chat_id.toString())
+					}
+
+				}
 			})
 		}
 		if (props.type === 'settings') {
