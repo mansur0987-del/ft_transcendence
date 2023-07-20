@@ -11,7 +11,6 @@ import {
 import { Socket, Server } from 'socket.io';
 import {
 	BadRequestException,
-	ConsoleLogger,
 	ForbiddenException,
 	NotFoundException
 } from '@nestjs/common';
@@ -48,7 +47,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	async errorMessage(response: any, client: Socket) {
 		console.log('exception:\n' + response);
 		client.emit('msgFromServer', {
-			error: (response?.reason + (response.daysExpire ? (': for a ' + response.daysExpire) : ''))
+			error: (response?.reason + (response.daysExpire ? (': for a ' + response.daysExpire + ' days') : ''))
 		})
 	}
 
