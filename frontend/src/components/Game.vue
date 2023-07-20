@@ -1,89 +1,69 @@
+<template>
+	<div>
+		<NavBar />
+		<div class="flex flex-wrap">
+			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Menu v-else :gameSocket="gameSocket" />
+		</div>
+	</div>
+</template>
+
 <script setup lang="ts">
+import { Socket } from "socket.io-client";
+import { onMounted, onUnmounted, ref } from "vue";
+import { watch } from "vue";
+import { io } from 'socket.io-client';
 
-import { onMounted, ref } from "vue";
-import ExitGame from './ExitGame.vue'
-import { io, Socket } from "socket.io-client";
 
-const test = ref<string>()
-let count: number = 10
-
-const score = ref<{
-	first: number,
-	second: number
+const props = defineProps<{
+	isInvited: boolean,
+	invite: boolean,
+	// playerId: number,
 }>()
 
-score.value = { first: 0, second: 0 }
 
-
-const key = ref<string>()
-async function keyFunc(e: any) {
-	console.log(e.code)
-	if (e.code === 'ArrowUp') {
-		key.value = 'UP'
-		count++;
-		test.value = count + 'px'
-		console.log(key.value)
-	}
-	else if (e.code === 'ArrowDown') {
-		key.value = 'DOWN'
-		count--;
-		test.value = count + 'px'
-		console.log(key.value)
-	}
-}
-
-const input = document;
 let gameSocket: Socket
+const isReady = ref(props.isInvited);
+const mode = ref(0);
+const id = ref(0);
+const playerId = ref(0);
+
 onMounted(async () => {
-	input.addEventListener('keydown', keyFunc);
 	gameSocket = await io(process.env.BASE_URL + 'game', {
 		transportOptions: {
 			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
-		},})
+		},
+	})
 	console.log('gameSocket')
 	console.log(gameSocket)
 })
 
+watch(props, async (_oldProps, _newProps, cleanUp) => {
+	isReady.value = props.invite;
+	const cleaner = () => {
+		if (gameSocket) {
+			gameSocket.off("connect");
+			gameSocket.off("info");
+			gameSocket.off("room");
+			gameSocket.off("add");
+			gameSocket.off("disconnect");
+		}
+	};
+	gameSocket.on('connect', () => {
+		console.log('Game Socket connection established!');
+	});
+	if (gameSocket) {
+		gameSocket.on("room", (data) => {
+			console.log("Received a message from the backend room code:", data);
+			isReady.value = true;
+		});
+
+		gameSocket.on("add", (data) => {
+			console.log("Socket add: ", data);
+			playerId.value = data - 1;
+		});
+	}
+	cleanUp(cleaner);
+});
+
 </script>
-
-<template>
-	<ExitGame />
-	<div class="Game">
-		<h1>Game</h1>
-	</div>
-	<div class="firstScore">
-		<h1>{{ score?.first }}</h1>
-	</div>
-	<div class="secondScore">
-		<h1>{{ score?.second }}</h1>
-	</div>
-	<div class="Key">
-		{{ key }}
-	</div>
-</template>
-
-<style scoped>
-.Game {
-	position: absolute;
-	top: 10px;
-	left: 50%;
-}
-
-.firstScore {
-	position: absolute;
-	top: v-bind(test);
-	left: 30%;
-}
-
-.secondScore {
-	position: absolute;
-	top: 10px;
-	left: 75%;
-}
-
-.Key {
-	position: absolute;
-	top: 50%;
-	left: 20%;
-}
-</style>

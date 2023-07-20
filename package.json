@@ -15,7 +15,6 @@
     "@nestjs/websockets": "^10.0.5",
     "@tsconfig/node18": "^18.2.0",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.4.2",
     "@types/passport": "^1.0.12",
     "@vitejs/plugin-vue": "^4.2.3",
     "axios": "^1.4.0",
@@ -38,6 +37,7 @@
     "vue-use-kit": "^2.8.0"
   },
   "devDependencies": {
-    "@types/cron": "^2.0.1"
+    "@types/cron": "^2.0.1",
+    "@types/node": "^20.4.2"
   }
 }

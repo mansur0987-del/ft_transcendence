@@ -165,7 +165,6 @@ onMounted(() => {
                 state.value.paddleL > 0.05) {
                 state.value.paddleL = state.value.paddleL - 0.025;
             }
-
         }
     }
 
