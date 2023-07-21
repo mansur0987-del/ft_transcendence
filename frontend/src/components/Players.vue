@@ -3,16 +3,20 @@ import axios from "axios";
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { ref, onMounted } from "vue";
+import { ElButton } from 'element-plus'
 
 interface PlayersShows {
 	id: number,
 	name: string,
 	status: boolean,
-	needButton: boolean
+	needButton: boolean,
+	update_at: Date
 }
 
 const players = ref<any>()
 const playerId = ref<number>()
+const currentDate = ref<Date>(new Date())
+const currentDateMinus15Min = ref<Date>(new Date())
 
 async function GetUsers() {
 	let deleteIdPlayer: number[] = [];
@@ -32,8 +36,6 @@ async function GetUsers() {
 	for (let i = 0; allPlayers[i]; i++) {
 		let needButton = true
 		const tmpPlayer = deleteIdPlayer.find(id => id === allPlayers[i].id)
-		console.log('tmpPlayer')
-		console.log(tmpPlayer)
 		if (tmpPlayer) {
 			needButton = false
 		}
@@ -41,13 +43,17 @@ async function GetUsers() {
 			id: allPlayers[i].id,
 			name: allPlayers[i].name,
 			status: allPlayers[i].status,
+			update_at: allPlayers[i].update_at,
 			needButton: needButton
 		}
 		validatePlayer.push(newPlayer);
 	}
+	console.log('validatePlayer')
+	console.log(validatePlayer)
 	players.value = validatePlayer
-	console.log('players.value')
-	console.log(players.value)
+
+	currentDateMinus15Min.value.setMinutes(currentDate.value.getMinutes() - 15)
+
 }
 
 onMounted(() => {
@@ -63,12 +69,16 @@ async function RedirectToProfile(player: any) {
 	window.location.href = '/player/' + player.id
 }
 
+const error = ref<{
+	msg: string
+	player_id?: number
+}>({ msg: '' })
 async function Chat(player: any) {
+	error.value = { msg: '' }
 	await axios.post('chat/enterDirectChannel', { player_name: player.name }).catch((e) => {
-		console.log(e)
+		error.value = { msg: e.response.data.message, player_id: player.id }
 	}).then((res: any) => {
 		if (res?.data) {
-			console.log(res.data)
 			window.location.assign('http://' + window.location.host + '/chat/' + res.data.chat_id)
 		}
 	})
@@ -82,46 +92,62 @@ async function Chat(player: any) {
 	<LeftBar />
 	<Logout />
 	<div class="Players">
-		<h1>Players:
-			<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square">
-				<li>
-					{{ player.name }} {{ player.id === playerId ? 'Online' : player.status ? 'Online' : 'Offline' }}
-					<button v-if="player.needButton" @click="PostApplication(player)">Add
-						friend</button>
-					<button v-if="player.id !== playerId" @click="RedirectToProfile(player)">Get info</button>
-					<button v-if="player.id !== playerId" @click="Chat(player)"> Chat </button>
-				</li>
+		<h1 style="text-align: center;">Players</h1>
 
-			</div>
-		</h1>
+		<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square; width: 60%; ">
+			<p>
+				<span v-if="new Date(player.update_at) > currentDateMinus15Min && player.status"
+					style="color: green; font-size: 30px;">
+					{{ player.name }}
+				</span>
+				<span v-else style="color:firebrick; font-size: 30px;">
+					{{ player.name }}
+				</span>
+				<el-button style="position: absolute; right: 16%;" v-if="player.needButton"
+					@click="PostApplication(player)">Add
+					friend</el-button>
+				<el-button style="position: absolute; right: 0%;" v-if="player.id !== playerId"
+					@click="RedirectToProfile(player)">Get info</el-button>
+				<el-button style="position: absolute; right: 9%;" v-if="player.id !== playerId" @click="Chat(player)">
+					Chat </el-button>
+				<span style="color: red; position: absolute; right: 30%;" v-if="player.id === error.player_id">
+					{{ error.msg }}
+				</span>
+			</p>
+		</div>
+
 	</div>
 </template>
 
 <style scoped>
 .Players {
-	position: absolute;
+	position: fixed;
 	top: 5%;
-	left: 30%;
-}
-
-.Players button {
-	background-color: greenyellow;
-	width: 100px;
-	margin-left: auto;
-	margin-right: auto;
-	border: none;
-	color: black;
-	padding: 10px 10px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 16px;
-	transition: transform 500ms ease;
+	left: 15%;
+	width: 70%;
+	height: max-content;
+	max-height: 90%;
 	border-radius: 10px;
-	cursor: pointer;
+	z-index: 1;
+	overflow: auto;
 }
 
-.Players buttonAddFriend button button:hover {
-	transform: scale(1.1) translateY(-5px);
+.Players:after {
+	content: "";
+	position: fixed;
+	background: inherit;
+	z-index: -1;
+	top: 5%;
+	left: 15%;
+	width: 70%;
+	height: auto;
+	max-height: 90%;
+	right: 0;
+	bottom: 0;
+	border-radius: 10px;
+	box-shadow: inset 0 10000px 200px rgba(255, 255, 255, .5);
+	filter: blur(2px);
+	margin: 0px;
+	overflow: auto;
 }
 </style>
