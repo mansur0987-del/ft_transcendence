@@ -5,7 +5,7 @@ import Channels from "./Channels.vue";
 import ChannelMsg from './ChannelMsg.vue'
 import ChannelUsers from './ChannelUsers.vue'
 import { ref, onMounted } from "vue";
-import { io, Socket } from 'socket.io-client';
+import socketChat from '../socketChat'
 
 const channelId = ref<number>()
 const leave = ref<boolean>(false)
@@ -20,19 +20,13 @@ async function FunctionForEmitLeave() {
 	leave.value = true
 }
 
-let socket: Socket
 const flag = ref<boolean>(false)
 onMounted(async () => {
-	socket = await io(process.env.BASE_URL + 'chat', {
-		transportOptions: {
-			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
-		},
-	})
-	if (socket) {
+	if (socketChat) {
 		flag.value = true
 	}
-	console.log('socket')
-	console.log(socket)
+	console.log('socketChat')
+	console.log(socketChat)
 })
 
 </script>
@@ -40,9 +34,9 @@ onMounted(async () => {
 <template>
 	<LeftBar />
 	<Logout />
-	<Channels @GetChannelId="FunctionForEmit" :leave=leave :socket=socket v-if="flag" />
-	<ChannelMsg :channelId=channelId :socket=socket v-if="flag" />
-	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId :socket=socket v-if="flag" />
+	<Channels @GetChannelId="FunctionForEmit" :leave=leave :socket=socketChat v-if="flag" />
+	<ChannelMsg :channelId=channelId :socket=socketChat v-if="flag" />
+	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId :socket=socketChat v-if="flag" />
 </template>
 
 <style scoped>
