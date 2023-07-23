@@ -1,9 +1,9 @@
-*/node_modules
-*/dist
-*/package-lock.json
-./backend/package-lock.json
-#**/node_modules
-#./frontend/dist
-#./frontend/package-lock.json
+backend/dist
+backend/node_modules
+backend/package-lock.json
+frontend/dist
+frontend/node_modules
+frontend/package-lock.json
 PostgeSQL/data
 *.DS_Store
+*.vscode
