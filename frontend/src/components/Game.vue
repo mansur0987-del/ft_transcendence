@@ -1,5 +1,7 @@
 <template>
 	<div>
+		<LeftBar />
+		<Logout />
 		<NavBar />
 		<div class="flex flex-wrap">
 			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
@@ -13,6 +15,11 @@ import { Socket } from "socket.io-client";
 import { onMounted, onUnmounted, ref } from "vue";
 import { watch } from "vue";
 import { io } from 'socket.io-client';
+import LeftBar from './LeftBar.vue'
+import Logout from './Logout.vue'
+import Multiplayer from "./Multiplayer.vue"
+import Menu from './Menu.vue'
+import Pong from './Pong.vue'
 
 
 const props = defineProps<{
