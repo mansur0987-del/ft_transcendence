@@ -88,7 +88,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@SubscribeMessage('signal')
 	async signalToReload(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		console.log('\nsignal started\n')
 		try {
 			console.log('\this.connectedClients size =', this.connectedClients.size);
 			this.connectedClients.forEach(element => {
@@ -100,7 +99,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	@SubscribeMessage('signalUsers')
 	async signalToReloadUsers(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		console.log('\nsignalUsers started\n')
 		try {
 			console.log('\this.connectedClients size in signal USers =', this.connectedClients.size);
 			this.connectedClients.forEach(element => {
@@ -169,7 +167,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	async handleConnection(@ConnectedSocket() client: any) {
 		try {
-			this.initSrv();
+			await this.initSrv();
 			const name42 = await this.checkAuth(client);
 			if (!name42) {
 				client.disconnect();
