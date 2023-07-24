@@ -20,7 +20,7 @@ import { PlayerService } from "src/player/service/player.service";
 	cors: {
 		origin: process.env.FRONT_URL,
 	},
-	namespace: 'chat'
+	namespace: 'invite'
 })
 export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
