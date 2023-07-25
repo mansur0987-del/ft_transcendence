@@ -91,7 +91,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!who)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			this.invites.push(initiator, who);
-			console.log('res invitePlayerInitiator emit =', who.emit('invite', { name: initiator.name }));
+			console.log('res invitePlayerInitiator emit =', who.emit('GetInvite', { name: initiator.name }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
