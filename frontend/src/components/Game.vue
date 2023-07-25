@@ -1,9 +1,13 @@
 <template>
 	<div>
+		<LeftBar />
+		<Logout />
 		<NavBar />
-		<div class="flex flex-wrap">
+		<div class="canvas-container">
+			<canvas ref="canvas" width="800" height="600"></canvas>
 			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
-			<Menu v-else :gameSocket="gameSocket" />
+			<Menu v-if="!isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Pong v-if="isReady" :gameSocket="gameSocket" :id="id" :playerId="playerId" :mode="mode" />
 		</div>
 	</div>
 </template>
@@ -13,6 +17,11 @@ import { Socket } from "socket.io-client";
 import { onMounted, onUnmounted, ref } from "vue";
 import { watch } from "vue";
 import { io } from 'socket.io-client';
+import LeftBar from './LeftBar.vue'
+import Logout from './Logout.vue'
+import Multiplayer from "./Multiplayer.vue"
+import Menu from './Menu.vue'
+import Pong from './Pong.vue'
 
 
 const props = defineProps<{
@@ -67,3 +76,15 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 });
 
 </script>
+
+<style>
+.canvas-container {
+	position: relative;
+}
+
+canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+</style>
