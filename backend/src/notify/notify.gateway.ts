@@ -67,10 +67,15 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async findByName(name: string): Promise<any> {
+		console.log('\nname in FINDBYNAME\n', name);
 		this.allConnected.forEach(element => {
-			if (element.user_name_in_db == name)
+			console.log('\nanouther elem = ', element);
+			if (element.user_name_in_db == name) {
+				console.log('\n\nname has been found!!!!\n', element);
 				return (element);
+			}
 		});
+		console.log('\n\n\nname ' + name + ' NOT FOUND\n\n\n');
 		return null;
 	}
 
