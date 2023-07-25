@@ -5,6 +5,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { onMounted, ref } from "vue";
 import { io, Socket } from "socket.io-client";
 import Menu from "./Menu.vue";
@@ -195,7 +196,6 @@ onMounted(() => {
     }
 
 })
-
 
 
 </script>
