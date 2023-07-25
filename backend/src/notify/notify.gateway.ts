@@ -78,6 +78,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('invitePlayerInitiator')
 	async invitePlayerInitiator(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		try {
+			console.log('body in invitePlayerInitiator:\n', body);
 			if (!body || !body.name)
 				throw new BadRequestException('have no body or player name');
 			const initiator = await this.allConnected.get(client.id);
