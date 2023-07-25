@@ -2,18 +2,24 @@
 import PlayerStatus from './PlayerStatus.vue'
 import { ElButton } from 'element-plus'
 import { Store } from "../pinia";
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import type { Socket } from "socket.io-client";
 import { storeToRefs } from "pinia";
+import axios from "axios";
 
 const store = Store()
 
-let socketInvite: Socket
 const { invitesName } = storeToRefs(store)
-onMounted(() => {
-	socketInvite = store.GetSocketInvite()
+onMounted(async () => {
+	await axios.get('notify/recInvites').catch((e) => {
+		console.log(e)
+	}).then((res) => {
+		if (res) {
+			invitesName.value = res.data
+		}
+	})
 
-	socketInvite.on('GetInvite', (data) => {
+	store.GetSocketInvite().on('GetInvite', (data) => {
 		if (data.name && !(invitesName.value.find(element => element === data.name))) {
 			invitesName.value.push(data.name)
 		}
@@ -21,18 +27,18 @@ onMounted(() => {
 })
 
 async function Cancel(name: string) {
-	socketInvite.emit('declinceInvite', { name: name })
+	store.GetSocketInvite().emit('declinceInvite', { name: name })
 	await UpdateInvites(name)
 }
 
 async function Game(name: string) {
-	socketInvite.emit('acceptInvite', { name: name })
+	store.GetSocketInvite().emit('acceptInvite', { name: name })
 	await UpdateInvites(name)
 }
 
 async function UpdateInvites(name: string) {
 	invitesName.value.filter((element) => {
-		return element !== name
+		return element.initiator_name !== name
 	})
 }
 
@@ -90,13 +96,13 @@ async function GetChat() {
 		</p>
 		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
 			<p style="text-align: center; color: blue;">
-				{{ invite }}
+				{{ invite.initiator_name }}
 			</p>
 			<p>
 				<el-button size="small" style="position: absolute; left: 0%;bottom: 0%"
-					@click="Cancel(invite)">Cancel</el-button>
-				<el-button size="small" style="position: absolute; right: 0%;bottom: 0%;" @click="Game(invite)">Let's
-					play</el-button>
+					@click="Cancel(invite.initiator_name)">Cancel</el-button>
+				<el-button size="small" style="position: absolute; right: 0%;bottom: 0%;"
+					@click="Game(invite.initiator_name)">Let's play</el-button>
 			</p>
 		</div>
 	</div>

@@ -2,9 +2,14 @@ import { defineStore } from 'pinia'
 import { io, Socket } from "socket.io-client"
 import { ref } from "vue"
 
+interface Notify {
+	initiator_name: string,
+	who_name: string
+}
+
 export const Store = defineStore('store', () => {
 	let socketInvite : Socket
-	let invitesName = ref<string[]>([])
+	let invitesName = ref<Notify[]>([])
 
 	function GetSocketInvite(){
 		if (!socketInvite){
