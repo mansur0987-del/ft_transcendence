@@ -146,6 +146,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(@ConnectedSocket() client: any) {
 		try {
+			console.log('\n\nHANDLE CONNECTION START\n\n');
 			await this.initSrv();
 			const name42 = await this.checkAuth(client);
 			if (!name42) {
