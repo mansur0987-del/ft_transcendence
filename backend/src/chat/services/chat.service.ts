@@ -34,10 +34,9 @@ export class ChatService {
 
   async removeRawInChat(chat_id: number) {
     const chatRaw = await this.findOneById(chat_id);
-    if (!chatRaw) { //check condition
-      throw new NotFoundException('Chat not found');
-    }
-    await this.chat_repository.remove([chatRaw])
+    if (!chatRaw)
+      return;
+    this.chat_repository.remove([chatRaw])
   }
 
   async updateRawInChat(id: number, newChatRaw: Chat): Promise<Chat> {
