@@ -159,6 +159,8 @@ async function PostBlockPlayer(userId: number) {
 
 
 async function InviteToGame(name: string) {
+	console.log('Socket Invite')
+	console.log(Store().GetSocketInvite())
 	await Store().GetSocketInvite().emit('invitePlayerInitiator', { name: name })
 }
 
@@ -187,7 +189,7 @@ async function InviteToGame(name: string) {
 										<el-dropdown-item disabled>Block</el-dropdown-item>
 									</span>
 									<span v-else>
-										<el-dropdown-item @click="InviteToGame(user.name)">Game</el-dropdown-item>
+										<el-dropdown-item @click="InviteToGame(user.user_name)">Game</el-dropdown-item>
 										<span
 											v-if="blockedUsers?.find(blockUser => blockUser.blocked_player_id === user.player_id && blockUser.isBlocked)">
 											<el-dropdown-item disabled>Block</el-dropdown-item>

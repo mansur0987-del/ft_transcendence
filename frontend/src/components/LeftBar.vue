@@ -4,20 +4,18 @@ import { ElButton } from 'element-plus'
 import { Store } from "../pinia";
 import { onMounted, ref } from "vue";
 import type { Socket } from "socket.io-client";
+import { storeToRefs } from "pinia";
 
 const store = Store()
 
-interface Invite {
-	name: string
-}
 let socketInvite: Socket
-const invites = ref<Invite[]>()
+const { invitesName } = storeToRefs(store)
 onMounted(() => {
 	socketInvite = store.GetSocketInvite()
 
 	socketInvite.on('GetInvite', (data) => {
-		if (data.name) {
-			invites.value?.push({ name: data.name })
+		if (data.name && !(invitesName.value.find(element => element === data.name))) {
+			invitesName.value.push(data.name)
 		}
 	})
 })
@@ -33,8 +31,8 @@ async function Game(name: string) {
 }
 
 async function UpdateInvites(name: string) {
-	invites.value = invites.value?.filter((element) => {
-		return element.name !== name;
+	invitesName.value.filter((element) => {
+		return element !== name
 	})
 }
 
@@ -86,15 +84,18 @@ async function GetChat() {
 			Chat
 		</el-button>
 	</div>
-	<div class="Invites">
-		<div v-for="invite in invites" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px;">
-			<p style="text-align: center;">
-				{{ invite.name }}
+	<div class="Invites" v-if="invitesName.length">
+		<p style="text-align: center">
+			Invites
+		</p>
+		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
+			<p style="text-align: center; color: blue;">
+				{{ invite }}
 			</p>
 			<p>
-				<el-button size="small" style="position: absolute; left: 0%;"
-					@click="Cancel(invite.name)">Cancel</el-button>
-				<el-button size="small" style="position: absolute; right: 0%;" @click="Game(invite.name)">Let's
+				<el-button size="small" style="position: absolute; left: 0%;bottom: 0%"
+					@click="Cancel(invite)">Cancel</el-button>
+				<el-button size="small" style="position: absolute; right: 0%;bottom: 0%;" @click="Game(invite)">Let's
 					play</el-button>
 			</p>
 		</div>
@@ -131,10 +132,10 @@ async function GetChat() {
 
 .Invites {
 	position: fixed;
-	right: 10%;
-	top: 1%;
-	height: fit-content;
-	max-height: 90%;
+	z-index: 10;
+	right: 1%;
+	top: 10%;
 	overflow: auto;
+	background-color: aliceblue;
 }
 </style>
