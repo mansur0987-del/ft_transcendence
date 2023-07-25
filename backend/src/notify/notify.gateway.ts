@@ -82,7 +82,9 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!body || !body.name)
 				throw new BadRequestException('have no body or player name');
 			const initiator = await this.allConnected.get(client.id);
+			console.log('MAP in invitePlayerInitiator = ', this.allConnected);
 			const who = await this.findByName(body.name);
+			console.log('who in invitePlayerInitiator = ', who);
 			if (!who)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			this.invites.push(initiator, who);
@@ -146,7 +148,6 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleConnection(@ConnectedSocket() client: any) {
 		try {
-			console.log('\n\nHANDLE CONNECTION START\n\n');
 			await this.initSrv();
 			const name42 = await this.checkAuth(client);
 			if (!name42) {
