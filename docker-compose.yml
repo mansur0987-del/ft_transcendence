@@ -1,5 +1,37 @@
 version: "3.8"
 services:
+  backend:
+    container_name: backend
+    build:
+      dockerfile: ./backend/Dockerfile
+    ports:
+    - 3001:3001
+    volumes:
+      - ./backend:/usr/src/app
+    networks:
+      - ft_transcendence
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  frontend:
+    container_name: frontend
+    build:
+      dockerfile: ./frontend/Dockerfile
+    ports:
+    - 8080:8080
+    volumes:
+      - ./frontend:/usr/src/app
+    networks:
+      - ft_transcendence
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    depends_on:
+      - backend
+
   db:
     container_name: ${TYPEORM_CONNECTION}
     image: postgres:alpine
@@ -10,7 +42,7 @@ services:
       TZ: GMT-4
       PGTZ: GMT-4
     volumes:
-      #- ./PostgeSQL/data:/var/lib/postgresql/data
+      - ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - ${TYPEORM_PORT}:${TYPEORM_PORT}
     restart: unless-stopped

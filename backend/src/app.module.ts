@@ -5,6 +5,7 @@ import { PlayerModule } from './player/player.module';
 import { ChatModule } from './chat/chat.module'
 import { AuthModule } from './auth/auth.module';
 import { GameModule } from './game/game.module';
+import {NotifyModule} from './notify/notify.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GameModule } from './game/game.module';
     ChatModule,
     AuthModule,
     GameModule,
+    NotifyModule
   ],
   providers: [],
   controllers: [],

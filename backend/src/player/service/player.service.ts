@@ -40,7 +40,7 @@ export class PlayerService {
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
 		const file: Buffer = await fs.readFileSync(
 			path.resolve(
-				'../user.png',
+				'./user.png',
 			),
 		)
 		const avatar = await this.avatarService.uploadDatabaseFile(file, 'default')

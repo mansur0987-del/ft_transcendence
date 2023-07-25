@@ -3,6 +3,7 @@ import axios from "axios";
 import { ref, watch } from "vue";
 import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
+import { Store } from "../pinia";
 import { ElInput, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu } from 'element-plus'
 const props = defineProps<{
 	channelId?: number,
@@ -156,6 +157,11 @@ async function PostBlockPlayer(userId: number) {
 	props.socket.emit('signalUsers')
 }
 
+
+async function InviteToGame(name: string) {
+	await Store().GetSocketInvite().emit('invitePlayerInitiator', { name: name })
+}
+
 </script>
 
 <template>
@@ -181,7 +187,7 @@ async function PostBlockPlayer(userId: number) {
 										<el-dropdown-item disabled>Block</el-dropdown-item>
 									</span>
 									<span v-else>
-										<el-dropdown-item>Game</el-dropdown-item>
+										<el-dropdown-item @click="InviteToGame(user.name)">Game</el-dropdown-item>
 										<span
 											v-if="blockedUsers?.find(blockUser => blockUser.blocked_player_id === user.player_id && blockUser.isBlocked)">
 											<el-dropdown-item disabled>Block</el-dropdown-item>

@@ -2,6 +2,7 @@
 import axios from "axios";
 import { onMounted, ref, watch } from "vue";
 import { Socket } from 'socket.io-client';
+import ChannelWindow from './ChannelWindow.vue'
 import { ElInput, ElButton } from 'element-plus'
 const props = defineProps<{
 	channelId?: number,
