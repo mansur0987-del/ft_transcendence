@@ -157,12 +157,12 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				client.disconnect();
 				throw new ForbiddenException('user ' + name42 + ' not in DB');
 			}
-			console.log('\n' + name42 + ' connected\n');
+			console.log('\n' + 'handle connection in INVITE ' + name42 + ' connected\n');
 			client.user_id_in_db = user.id;
 			client.user_name_in_db = user.name;
 			this.allConnected.set(client.id, client);
 		}
-		catch (e) { this.errorMessage(e, client); }
+		catch (e) { console.log('\nexception in INVITE:\n', e); this.errorMessage(e, client); }
 	}
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
