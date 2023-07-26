@@ -16,6 +16,10 @@
 import { Socket } from "socket.io-client";
 import { onMounted, onUnmounted, ref } from "vue";
 import { watch } from "vue";
+<script setup lang = "ts" >
+import { Socket } from "socket.io-client";
+import { onMounted, onUnmounted, ref } from "vue";
+import { watch } from "vue";
 import { io } from 'socket.io-client';
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
@@ -36,6 +40,8 @@ const isReady = ref(props.isInvited);
 const mode = ref(0);
 const id = ref(0);
 const playerId = ref(0);
+const id = ref(0);
+const playerId = ref(0);
 
 onMounted(async () => {
 	gameSocket = await io(process.env.BASE_URL + 'game', {
@@ -47,35 +53,39 @@ onMounted(async () => {
 	console.log(gameSocket)
 })
 
-watch(props, async (_oldProps, _newProps, cleanUp) => {
-	isReady.value = props.invite;
-	const cleaner = () => {
-		if (gameSocket) {
-			gameSocket.off("connect");
-			gameSocket.off("info");
-			gameSocket.off("room");
-			gameSocket.off("add");
-			gameSocket.off("disconnect");
-		}
-	};
-	gameSocket.on('connect', () => {
-		console.log('Game Socket connection established!');
+if (GameGateway.value) {
+	GameGateway.value.on('room', (data) => {
+		console.log('Received a message from the backend room code:', data);
+		isReady.value = true;
 	});
-	if (gameSocket) {
-		gameSocket.on("room", (data) => {
-			console.log("Received a message from the backend room code:", data);
-			isReady.value = true;
-		});
 
-		gameSocket.on("add", (data) => {
-			console.log("Socket add: ", data);
-			playerId.value = data - 1;
-		});
+	gameSocket.on("add", (data) => {
+		console.log("Socket add: ", data);
+		playerId.value = data - 1;
+	});
+}
+cleanUp(cleaner);
+gameSocket.on("add", (data) => {
+	console.log("Socket add: ", data);
+	playerId.value = data - 1;
+});
 	}
-	cleanUp(cleaner);
+cleanUp(cleaner);
 });
 
 </script>
+
+<style>
+.canvas-container {
+	position: relative;
+}
+
+canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+</style>
 
 <style>
 .canvas-container {

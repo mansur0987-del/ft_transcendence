@@ -61,10 +61,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('add')
   joinQueue(client: Socket): void {
     try {
+      console.log('client.data.user');
+      console.log(client.data.user);
       if (!client.data.user) {
         return;
       }
       this.roomService.addSock(client);
+      console.log('add_back');
     } catch {}
   }
 
