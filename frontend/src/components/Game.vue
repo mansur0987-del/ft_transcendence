@@ -2,12 +2,10 @@
 	<div>
 		<LeftBar />
 		<Logout />
-		<NavBar />
 		<div class="canvas-container">
-			<canvas ref="canvas" width="800" height="600"></canvas>
-			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
-			<Menu v-if="!isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
-			<Pong v-if="isReady" :gameSocket="gameSocket" :id="id" :playerId="playerId" :mode="mode" />
+			<Multiplayer v-if="isReady && isSocket" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Menu v-if="!isReady && isSocket" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Pong v-if="isReady && isSocket" :gameSocket="gameSocket" :id="id" :playerId="playerId" :mode="mode" />
 		</div>
 	</div>
 </template>
@@ -26,36 +24,44 @@ import Pong from './Pong.vue'
 
 const props = defineProps<{
 	isInvited: boolean,
-	invite: boolean,
+	// invite: boolean,
 	// playerId: number,
 }>()
 
 
 let gameSocket: Socket
 const isReady = ref(props.isInvited);
+const isSocket = ref(false);
 const mode = ref(0);
 const id = ref(0);
 const playerId = ref(0);
 
 onMounted(async () => {
-	gameSocket = await io(process.env.BASE_URL + 'game', {
+	console.log('process.env.BASE_URL')
+	console.log(process.env.BASE_URL)
+	gameSocket = await io(process.env.BASE_URL + 'pong', {
 		transportOptions: {
 			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
 		},
 	})
-	console.log('gameSocket')
-	console.log(gameSocket)
+	if (gameSocket) {
+		isSocket.value = true;
+		console.log('gameSocket')
+		console.log(gameSocket)
+	}
 })
 
 watch(props, async (_oldProps, _newProps, cleanUp) => {
-	isReady.value = props.invite;
+	isReady.value = true;
 	const cleaner = () => {
 		if (gameSocket) {
+			console.log('OFF_1')
 			gameSocket.off("connect");
 			gameSocket.off("info");
 			gameSocket.off("room");
 			gameSocket.off("add");
 			gameSocket.off("disconnect");
+			console.log('OFF_2')
 		}
 	};
 	gameSocket.on('connect', () => {

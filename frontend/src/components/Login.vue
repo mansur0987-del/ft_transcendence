@@ -82,4 +82,25 @@ async function Redirect42() {
 .button button:hover {
 	transform: scale(1.1) translateY(-5px);
 }
+.button button {
+	background-color: greenyellow;
+	/* Green */
+	width: 100px;
+	margin-left: auto;
+	margin-right: auto;
+	border: none;
+	color: blueviolet;
+	padding: 20px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 20px;
+	transition: transform 500ms ease;
+	border-radius: 20px;
+	cursor: pointer;
+}
+
+.button button:hover {
+	transform: scale(1.1) translateY(-5px);
+}
 </style>
