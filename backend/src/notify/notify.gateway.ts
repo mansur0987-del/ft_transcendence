@@ -16,6 +16,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PlayerService } from "src/player/service/player.service";
 import { NotifyService } from "./notify.services";
+import { Notify } from "./notify.entity"
 
 @WebSocketGateway({
 	cors: {
@@ -33,6 +34,32 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	server: Server;
 	allConnected: Map<string, any>;
 	//utils
+	async cancelOtherInvitesInitiator(all: Notify[], initiator_name: string) {
+		for (let i = 0; i < all.length; i++) {
+			//send cancel
+			await this.allConnected.forEach(element => {
+				if (element.user_name_in_db == all[i].who_name) {
+					element.emit('cancelInvite', { name: initiator_name });
+				}
+			});
+			//deletefrom BD
+			await this.notifyService.removeAllNotify(all);
+		}
+	}
+
+	async cancelOtherInvitesWho(all: Notify[], who_name: string) {
+		for (let i = 0; i < all.length; i++) {
+			//send cancel
+			await this.allConnected.forEach(element => {
+				if (element.user_name_in_db == all[i].initiator_name) {
+					element.emit('declinceInvite', { name: who_name });
+				}
+			});
+			//deletefrom BD
+			await this.notifyService.removeAllNotify(all);
+		}
+	}
+
 	async getTockenFromClient(client: Socket): Promise<string> {
 		if (!client || !client.handshake || !client.handshake.headers)
 			return null;
@@ -89,6 +116,8 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			console.log('who in invitePlayerInitiator = ', who);
 			if (!who)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
+			const invites = await this.notifyService.findAllByInitiatorId(initiator.user_id_in_db);
+			await this.cancelOtherInvitesInitiator(invites, initiator.user_name_in_db);
 			this.notifyService.addRawToNotify({
 				initiator_id: initiator.user_id_in_db,
 				initiator_name: initiator.user_name_in_db,
@@ -108,10 +137,10 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new BadRequestException('have no body or player name');
 			const initiator = await this.allConnected.get(client.id);
 			const who = await this.findByName(body.name);
-			
+
 			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
-			
+
 			console.log('res cancelInviteInitiator emit =', who.emit('cancelInvite', { name: initiator.name }));
 		}
 		catch (e) { this.errorMessage(e, client); }
@@ -128,9 +157,11 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { name: who.name }));
 			console.log('res acceptInvite who emit =', who.emit('startGame', { name: initiator.name }));
-			
+
 			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
+			const invites = await this.notifyService.findAllByWhoId(who.user_id_in_db);
+			this.cancelOtherInvitesWho(invites, who.user_name_in_db);
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -145,7 +176,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!initiator)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			console.log('res declince initiator emit =', initiator.emit('declince', { name: who.name }));
-			
+
 			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
 		}
