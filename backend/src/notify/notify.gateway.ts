@@ -160,8 +160,10 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
-			const invites = await this.notifyService.findAllByWhoId(who.user_id_in_db);
-			this.cancelOtherInvitesWho(invites, who.user_name_in_db);
+			let invites = await this.notifyService.findAllByWhoId(who.user_id_in_db);
+			await this.cancelOtherInvitesWho(invites, who.user_name_in_db);
+			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
+			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
