@@ -16,10 +16,6 @@
 import { Socket } from "socket.io-client";
 import { onMounted, onUnmounted, ref } from "vue";
 import { watch } from "vue";
-<script setup lang = "ts" >
-import { Socket } from "socket.io-client";
-import { onMounted, onUnmounted, ref } from "vue";
-import { watch } from "vue";
 import { io } from 'socket.io-client';
 import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
@@ -38,8 +34,6 @@ const props = defineProps<{
 let gameSocket: Socket
 const isReady = ref(props.isInvited);
 const mode = ref(0);
-const id = ref(0);
-const playerId = ref(0);
 const id = ref(0);
 const playerId = ref(0);
 
@@ -68,9 +62,6 @@ cleanUp(cleaner);
 gameSocket.on("add", (data) => {
 	console.log("Socket add: ", data);
 	playerId.value = data - 1;
-});
-	}
-cleanUp(cleaner);
 });
 
 </script>
