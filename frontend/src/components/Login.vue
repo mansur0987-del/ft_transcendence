@@ -22,8 +22,8 @@ async function Redirect42() {
 .button {
 	position: fixed;
 	top: 20%;
-	left: 38%;
-	width: 30rem;
+	left: 25%;
+	width: 50%;
 	height: 8rem;
 	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
 	border-radius: 5px;

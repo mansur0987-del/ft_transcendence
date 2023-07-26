@@ -1,6 +1,47 @@
 <script setup lang="ts">
 import PlayerStatus from './PlayerStatus.vue'
 import { ElButton } from 'element-plus'
+import { Store } from "../pinia";
+import { onMounted } from "vue";
+import type { Socket } from "socket.io-client";
+import { storeToRefs } from "pinia";
+import axios from "axios";
+
+const store = Store()
+
+const { invitesName } = storeToRefs(store)
+onMounted(async () => {
+	await axios.get('notify/recInvites').catch((e) => {
+		console.log(e)
+	}).then((res) => {
+		if (res) {
+			invitesName.value = res.data
+		}
+	})
+
+	store.GetSocketInvite().on('GetInvite', (data) => {
+		if (data.name && !(invitesName.value.find(element => element === data.name))) {
+			invitesName.value.push(data.name)
+		}
+	})
+})
+
+async function Cancel(name: string) {
+	store.GetSocketInvite().emit('declinceInvite', { name: name })
+	await UpdateInvites(name)
+}
+
+async function Game(name: string) {
+	store.GetSocketInvite().emit('acceptInvite', { name: name })
+	await UpdateInvites(name)
+}
+
+async function UpdateInvites(name: string) {
+	invitesName.value.filter((element) => {
+		return element.initiator_name !== name
+	})
+}
+
 
 async function GetPlayer() {
 	window.location.assign('http://' + window.location.host + '/player')
@@ -49,6 +90,22 @@ async function GetChat() {
 			Chat
 		</el-button>
 	</div>
+	<div class="Invites" v-if="invitesName.length">
+		<p style="text-align: center">
+			Invites
+		</p>
+		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
+			<p style="text-align: center; color: blue;">
+				{{ invite.initiator_name }}
+			</p>
+			<p>
+				<el-button size="small" style="position: absolute; left: 0%;bottom: 0%"
+					@click="Cancel(invite.initiator_name)">Cancel</el-button>
+				<el-button size="small" style="position: absolute; right: 0%;bottom: 0%;"
+					@click="Game(invite.initiator_name)">Let's play</el-button>
+			</p>
+		</div>
+	</div>
 </template>
 
 <style scoped>
@@ -77,5 +134,14 @@ async function GetChat() {
 	font-size: 16px;
 	border-radius: 10px;
 	height: 55px;
+}
+
+.Invites {
+	position: fixed;
+	z-index: 10;
+	right: 1%;
+	top: 10%;
+	overflow: auto;
+	background-color: aliceblue;
 }
 </style>

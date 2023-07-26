@@ -4,189 +4,198 @@
     </div>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            paddleHeight: 0.05,
-            paddleWidth: 0.005,
-            paddleL: 0.5,
-            paddleR: 0.5,
-            ballX: 0.5,
-            ballY: 0.5,
-            ballW: 0.01,
-            ballSpeed: 0.005,
-            deltaY: -0.01 + Math.random() * 0.02,
-            deltaX: 0.005,
-            pause: false,
-            displayMenu: true,
-            mode: 1,
-            scoreL: 0,
-            scoreR: 0
-        };
-    },
-    mounted() {
-        const div = this.$refs.divRef;
-        const canvas = this.$refs.canvasRef;
-        const ctx = canvas.getContext("2d");
+<script setup lang="ts">
 
-        if (!this.isPreview) {
-            const socket = useContext(GameContext);
-            this.gameSocket = socket;
-        }
+import { onMounted, ref } from "vue";
+import { io, Socket } from "socket.io-client";
+import Menu from "./Menu.vue";
 
-        this.mode = this.isPreview ? 1 : 3;
+const props = defineProps<{
+    isPreview: boolean,
+    gameSocket: Socket
+}>()
 
-        if (!this.isPreview) {
-            this.resetGame(this.mode !== 1);
-        }
+const canvasRef = ref<HTMLCanvasElement>()
+const divRef = ref<HTMLDivElement>()
 
-        this.animationId = requestAnimationFrame(loop.bind(this));
-        window.addEventListener("keydown", this.keyInput);
+const state = ref({
+    /* Paddle Array */
+    paddleHeight: 0.05,
+    paddleWidth: 0.005,
+    paddleL: 0.5,
+    paddleR: 0.5,
+    /* ball */
+    ballX: 0.5,
+    ballY: 0.5,
+    ballW: 0.01,
+    ballSpeed: 0.005,   // speed of ball
+    deltaY: -0.01 + Math.random() * 0.02, // change ball in  X AXIS
+    deltaX: 0.005, // change ball in  X AXIS
+    /* pause */
+    pause: false, // pause the game
+    /* menu */
+    displayMenu: true,
+    /* Score */
+    mode: 1,
+    scoreL: 0,
+    scoreR: 0,
+    /* game */
+    gameSocket: null as Socket | null,
+})
 
-        function loop() {
-            canvas.width = div.offsetWidth;
-            canvas.height = div.offsetHeight;
-            this.draw(ctx, canvas);
-            this.animationId = requestAnimationFrame(loop.bind(this));
-        }
-    },
-    beforeUnmount() {
-        cancelAnimationFrame(this.animationId);
-    },
-    methods: {
-        resetGame(pause) {
-            this.ballX = 0.5;
-            this.ballY = 0.5;
-            this.deltaY = -0.01 + Math.random() * 0.02;
-            this.deltaX = Math.random() > 0.5 ? 0.005 : -0.005;
-            this.ballSpeed = 0.005;
-            this.pause = false;
-            this.paddleL = 0.5;
-            this.paddleR = 0.5;
-        },
-        moveOpponent(opponent) {
-            if (opponent === "L" && this.deltaX > 0) {
-                if (
-                    this.ballY > this.paddleR + this.paddleHeight &&
-                    this.paddleR < 0.95
-                ) {
-                    this.paddleR += 0.025;
-                } else if (
-                    this.ballY < this.paddleR - this.paddleHeight &&
-                    this.paddleR > 0.05
-                ) {
-                    this.paddleR -= 0.025;
-                }
-            } else if (opponent === "R" && this.deltaX < 0) {
-                if (
-                    this.ballY > this.paddleL + this.paddleHeight &&
-                    this.paddleL < 0.95
-                ) {
-                    this.paddleL += 0.025;
-                } else if (
-                    this.ballY < this.paddleL - this.paddleHeight &&
-                    this.paddleL > 0.05
-                ) {
-                    this.paddleL -= 0.025;
-                }
-            }
-        },
-        touchingEdge() {
-            if (
-                (this.ballY + this.ballW >= 1 && this.deltaY > 0) ||
-                (this.ballY - this.ballW <= 0 && this.deltaY < 0)
-            ) {
-                this.deltaY *= -1;
-            }
-        },
-        touchingPaddle(canvas) {
-            if (
-                this.ballX + this.ballW >= 1 - this.paddleWidth &&
-                this.ballY - this.ballW <= this.paddleR + this.paddleHeight &&
-                this.ballY + this.ballW >= this.paddleR - this.paddleHeight &&
-                this.deltaX > 0
-            ) {
-                this.deltaX = -1 * this.ballSpeed;
-                this.deltaY = (this.ballY - this.paddleR) / 5;
-                this.ballSpeed += 0.0001;
-            } else if (
-                this.ballX - this.ballW * 2 <= this.paddleWidth &&
-                this.ballY - this.ballW <= this.paddleL + this.paddleHeight &&
-                this.ballY + this.ballW >= this.paddleL - this.paddleHeight &&
-                this.deltaX < 0
-            ) {
-                this.deltaX = this.ballSpeed;
-                this.deltaY = (this.ballY - this.paddleL) / 5;
-                this.ballSpeed += 0.0001;
-            } else if (this.ballX > 1) {
-                this.resetGame(this.mode !== 1);
-                this.scoreL++;
-            } else if (this.ballX < 0) {
-                this.resetGame(this.mode !== 1);
-                this.scoreR++;
-            }
-        },
-        drawScore(ctx, canvas) {
-            const text = `${this.scoreL} : ${this.scoreR}`;
-            ctx.font = "42px Arial";
-            const textWidth = ctx.measureText(text).width;
-            const textX = (canvas.width - textWidth) / 2;
-            const textY = canvas.height * 0.1;
-            ctx.fillText(text, textX, textY);
-        },
-        bounceBall(ctx, canvas) {
-            if (!this.pause) {
-                this.ballX += this.deltaX;
-                this.ballY += this.deltaY;
-            } else {
-                const text = `PAUSE`;
-                ctx.font = "42px Arial";
-                const textWidth = ctx.measureText(text).width;
-                const textX = (canvas.width - textWidth) / 2;
-                const textY = canvas.height * 0.45;
-                ctx.fillText(text, textX, textY);
-            }
-            const ballR = canvas.width * this.ballW;
-            const ballX = canvas.width * this.ballX;
-            const ballY = canvas.height * this.ballY;
-            ctx.arc(ballX - ballR / 2, ballY - ballR / 2, ballR, 0, 2 * Math.PI);
-            ctx.fill();
-        },
-        paddles(ctx, canvas) {
-            const paddleH = this.paddleHeight * canvas.height;
-            const paddleW = this.paddleWidth * canvas.width;
-            const paddleL = this.paddleL * canvas.height - paddleH;
-            const paddleR = this.paddleR * canvas.height - paddleH;
-            ctx.fillRect(0, paddleL, paddleW * 2, paddleH * 2);
-            ctx.fillRect(
-                canvas.width - paddleW * 2,
-                paddleR,
-                paddleW * 2,
-                paddleH * 2
-            );
-        },
-        draw(ctx, canvas) {
-            ctx.fillStyle = "white";
-            this.drawScore(ctx, canvas);
-            this.bounceBall(ctx, canvas);
-            this.touchingPaddle(canvas);
-            this.touchingEdge();
-            if (this.mode === 1) {
-                this.moveOpponent("R");
-                this.moveOpponent("L");
-            } else if (this.mode === 2) {
-                this.moveOpponent("L");
-            } else if (this.mode === 3) {
-                // Multiplayer
-            }
-            this.paddles(ctx, canvas);
-        },
-        handleMatchmaking(num) {
-            this.mode = num;
-            this.displayMenu = false;
-            this.resetGame(true);
+const animationId = ref(0);
+
+
+const resetGame = (pause: any) => {
+    state.value.ballX = 0.5;
+    state.value.ballY = 0.5;
+
+    state.value.deltaY = -0.01 + Math.random() * 0.02; // change ball in  X AXIS
+    state.value.deltaX = Math.random() > 0.5 ? 0.005 : -0.005; // change ball in  X AXIS
+    state.value.ballSpeed = 0.005;
+    state.value.pause = false; // pause the game
+    state.value.paddleL = 0.5;
+    state.value.paddleR = 0.5;
+};
+
+onMounted(() => {
+    const div = divRef.value;
+    const canvas = canvasRef.value;
+    const ctx = canvas?.getContext('2d');
+    if (!props.isPreview) {
+        const socket = props.gameSocket;
+        state.value.gameSocket = socket;
+    }
+    state.value.mode = props.isPreview ? 1 : 3;
+
+    if (!props.isPreview) resetGame(state.value.mode != 1);
+
+    animationId.value = requestAnimationFrame(loop.bind(this));
+    // !!!!!!!!!
+    //window.addEventListener('keydown', keyInput);
+    // !!!!!!!
+
+    const drawScore = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+        var text = `${state.value.scoreL} : ${state.value.scoreR}`;
+        ctx.font = '42px Arial';
+        const textWidth = ctx.measureText(text).width;
+        const textX = (canvas.width - textWidth) / 2;
+        const textY = (canvas.height * 0.1);
+        ctx.fillText(text, textX, textY);
+    }
+
+    const touchingEdge = () => {
+        if (state.value.ballY + state.value.ballW >= 1 && state.value.deltaY > 0 ||
+            state.value.ballY - state.value.ballW <= 0 && state.value.deltaY < 0) {
+            state.value.deltaY = -1 * state.value.deltaY;
         }
     }
-};
+
+    const bounceBall = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+        if (!state.value.pause) {
+            state.value.ballX = state.value.ballX + state.value.deltaX;
+            state.value.ballY = state.value.ballY + state.value.deltaY;
+        } else {
+            var text = `PAUSE`;
+            ctx.font = '42px Arial';
+            const textWidth = ctx.measureText(text).width;
+            const textX = (canvas.width - textWidth) / 2;
+            const textY = (canvas.height * 0.45);
+            ctx.fillText(text, textX, textY);
+        }
+        const ballR = canvas.width * state.value.ballW;
+        const ballX = canvas.width * state.value.ballX;
+        const ballY = canvas.height * state.value.ballY;
+        // ctx.fillRect(ballX - ballWidth/2, ballY - ballWidth/2, ballWidth, ballWidth);
+        ctx.arc(ballX - ballR / 2, ballY - ballR / 2, ballR, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    const touchingPaddle = (canvas: HTMLCanvasElement) => {
+        if (
+            state.value.ballX + state.value.ballW >= 1 - state.value.paddleWidth &&
+            state.value.ballY - state.value.ballW <= state.value.paddleR + state.value.paddleHeight &&
+            state.value.ballY + state.value.ballW >= state.value.paddleR - state.value.paddleHeight &&
+            state.value.deltaX > 0
+        ) {
+            state.value.deltaX = -1 * state.value.ballSpeed;
+            state.value.deltaY = (state.value.ballY - state.value.paddleR) / 5;
+            state.value.ballSpeed = state.value.ballSpeed + 0.0001;
+        } else if (
+            state.value.ballX - state.value.ballW * 2 <= state.value.paddleWidth &&
+            state.value.ballY - state.value.ballW <= state.value.paddleL + state.value.paddleHeight &&
+            state.value.ballY + state.value.ballW >= state.value.paddleL - state.value.paddleHeight &&
+            state.value.deltaX < 0
+        ) {
+            state.value.deltaX = state.value.ballSpeed,
+                state.value.deltaY = (state.value.ballY - state.value.paddleL) / 5,
+                state.value.ballSpeed = state.value.ballSpeed + 0.0001
+        } else if (state.value.ballX > 1) {
+            resetGame(state.value.mode != 1);
+            state.value.scoreL = state.value.scoreL + 1;
+        } else if (state.value.ballX < 0) {
+            resetGame(state.value.mode != 1);
+            state.value.scoreR = state.value.scoreR + 1;
+        }
+
+    }
+
+    const paddles = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+        const paddleH = state.value.paddleHeight * canvas.height;
+        const paddleW = state.value.paddleWidth * canvas.width;
+        const paddleL = state.value.paddleL * canvas.height - paddleH;
+        const paddleR = state.value.paddleR * canvas.height - paddleH;
+        ctx.fillRect(0, paddleL, paddleW * 2, paddleH * 2);
+        ctx.fillRect(canvas.width - paddleW * 2, paddleR, paddleW * 2, paddleH * 2);
+    }
+
+    const moveOpponent = (opponent: any) => {
+        if (opponent === 'L' && state.value.deltaX > 0) {
+            if (state.value.ballY > state.value.paddleR + state.value.paddleHeight &&
+                state.value.paddleR < 0.95) {
+                state.value.paddleR = state.value.paddleR + 0.025;
+            } else if (state.value.ballY < state.value.paddleR - state.value.paddleHeight &&
+                state.value.paddleR > 0.05) {
+                state.value.paddleR = state.value.paddleR - 0.025;
+            }
+        } else if (opponent === 'R' && state.value.deltaX < 0) {
+            if (state.value.ballY > state.value.paddleL + state.value.paddleHeight &&
+                state.value.paddleL < 0.95) {
+                state.value.paddleL = state.value.paddleL + 0.025;
+            } else if (state.value.ballY < state.value.paddleL - state.value.paddleHeight &&
+                state.value.paddleL > 0.05) {
+                state.value.paddleL = state.value.paddleL - 0.025;
+            }
+        }
+    }
+
+    const draw = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+        ctx.fillStyle = 'white';
+        drawScore(ctx, canvas);
+        bounceBall(ctx, canvas);
+        touchingPaddle(canvas);
+        touchingEdge();
+        if (state.value.mode == 1) { // Auto game 
+            moveOpponent('R');
+            moveOpponent('L');
+        } else if (state.value.mode == 2) { // Single player
+            moveOpponent('L');
+        } else if (state.value.mode == 3) { // Multiplayer
+
+        }
+        paddles(ctx, canvas);
+    }
+
+    function loop() {
+        if (canvas == null || div == null || ctx == null)
+            return;
+        canvas.width = div.offsetWidth;
+        canvas.height = div.offsetHeight;
+        draw(ctx, canvas);
+        animationId.value = requestAnimationFrame(loop.bind(null));  // used to be bind(this)
+    }
+
+})
+
+
 </script>

@@ -34,23 +34,20 @@ export class ChatService {
 
   async removeRawInChat(chat_id: number) {
     const chatRaw = await this.findOneById(chat_id);
-    if (!chatRaw) { //check condition
-      throw new NotFoundException('Chat not found');
-    }
-    await this.chat_repository.remove([chatRaw])
+    if (!chatRaw)
+      return;
+    this.chat_repository.remove([chatRaw])
   }
 
   async updateRawInChat(id: number, newChatRaw: Chat): Promise<Chat> {
     try {
-      this.removeRawInChat(id);
-      return await this.chat_repository.save({
-        id: id,
-        isPrivate: newChatRaw.isPrivate,
-        isDirect: newChatRaw.isDirect,
+      return (await this.chat_repository.update({ id: id}, {
         chat_name: newChatRaw.chat_name,
+        isPrivate: newChatRaw.isPrivate,
+        isDirect: false,
         have_password: newChatRaw.have_password,
         password: newChatRaw.password
-      });
+      })).raw;
     }
     catch (ex) {
       throw new Error(`addRawToChat error: ${ex.message}.`);

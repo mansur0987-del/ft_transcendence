@@ -1,95 +1,54 @@
-version: "3.3"
+version: "3.8"
 services:
-  db:
+  backend:
+    container_name: backend
+    build:
+      dockerfile: ./backend/Dockerfile
+    ports:
+    - 3001:3001
+    volumes:
+      - ./backend:/usr/src/app
+    networks:
+      - ft_transcendence
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    depends_on:
+      - db
 
+  frontend:
+    container_name: frontend
+    build:
+      dockerfile: ./frontend/Dockerfile
+    ports:
+    - 8080:8080
+    volumes:
+      - ./frontend:/usr/src/app
+    networks:
+      - ft_transcendence
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  db:
     container_name: ${TYPEORM_CONNECTION}
     image: postgres:alpine
-
-    env_file:
-      - .env
-
     environment:
       POSTGRES_DB: ${TYPEORM_DATABASE}
       POSTGRES_USER: ${TYPEORM_USERNAME}
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
       TZ: GMT-4
       PGTZ: GMT-4
-    
     volumes:
-      - "./PostgeSQL/data:/var/lib/postgresql/data"
-  
+      - ./PostgeSQL/data:/var/lib/postgresql/data
     ports:
       - ${TYPEORM_PORT}:${TYPEORM_PORT}
-
     restart: unless-stopped
-
     networks:
       - ft_transcendence
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: always
-    volumes:
-      - "./frontend:/frontend"
-      - "/frontend/node_modules"
-    depends_on:
-      - backend
-    ports:
-      - "3001:3001"
-      
-    networks:
-      - frontend
-      - backend
-
-    env_file:
-      - .env
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    restart: always
-    volumes:
-      - "./backend:/backend"
-      - "/backend/node_modules"
-    depends_on:
-      - db
-    ports: 
-      - "8080:8080"
-    networks:
-      - frontend
-      - backend
-      - ft_transcendence
-
-    env_file:
-      - .env
-
-    environment:
-      POSTGRES_DB: ${TYPEORM_DATABASE}
-      POSTGRES_USER: ${TYPEORM_USERNAME}
-      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
-
-#???
-volumes:
-  database:
-    driver: PostgreSQL
-    driver_opts:
-      type: none
-      o: bind
-      device: ./backend/database
-
-# bridge - usual driver  ( https://habr.com/ru/companies/otus/articles/730798/ )
 networks:
-
-  frontend:
-    driver: bridge
-  
-  backend:
-    driver: bridge
-    
   ft_transcendence:
     driver: bridge

@@ -1,78 +1,90 @@
 <template>
-    <div>
-        <LeftBar />
-        <div class="flex flex-wrap">
-            <template v-if="isReady">
-                <Multiplayer :GameGateway="GameGateway" :id="id" :setId="setId" :mode="mode" />
-            </template>
-            <template v-else>
-                <Menu :GameGateway="GameGateway" :setMode="setMode" />
-            </template>
-        </div>
-    </div>
+	<div>
+		<LeftBar />
+		<Logout />
+		<NavBar />
+		<div class="canvas-container">
+			<canvas ref="canvas" width="800" height="600"></canvas>
+			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Menu v-if="!isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
+			<Pong v-if="isReady" :gameSocket="gameSocket" :id="id" :playerId="playerId" :mode="mode" />
+		</div>
+	</div>
 </template>
 
-<script>
-import LeftBar from './LeftBar.vue';
-import Pong from './Pong.vue';
-import Multiplayer from './Multiplayer.vue';
-import Menu from './Menu.vue';
-import { ref, onMounted, onUnmounted } from 'vue';
-import MultiplayerVue from "./Multiplayer.vue";
+<script setup lang="ts">
+import { Socket } from "socket.io-client";
+import { onMounted, onUnmounted, ref } from "vue";
+import { watch } from "vue";
 import { io } from 'socket.io-client';
-import { useLocation } from 'vue-use-kit'
-import { GameGateway } from '../../../backend/src/Game/game.gateway'
+import LeftBar from './LeftBar.vue'
+import Logout from './Logout.vue'
+import Multiplayer from "./Multiplayer.vue"
+import Menu from './Menu.vue'
+import Pong from './Pong.vue'
 
-// export default {
-//     components: {
-//         LeftBar,
-//         Pong,
-//         Multiplayer,
-//         Menu
-//     },
-//     setup() 
 
-// const GameGateway = ref(null);
-const isInvite = ref(false);
-const isReady = ref(isInvite.value);
-const id = ref(0);
+const props = defineProps<{
+	isInvited: boolean,
+	invite: boolean,
+	// playerId: number,
+}>()
+
+
+let gameSocket: Socket
+const isReady = ref(props.isInvited);
 const mode = ref(0);
-const { invite, setPlayerId } = handleConnection(GameGateway); //useContext(GameGateway);
+const id = ref(0);
+const playerId = ref(0);
 
-onMounted(() => {
-    isReady.value = invite;
+onMounted(async () => {
+	gameSocket = await io(process.env.BASE_URL + 'game', {
+		transportOptions: {
+			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
+		},
+	})
+	console.log('gameSocket')
+	console.log(gameSocket)
+})
 
-    if (GameGateway.value) {
-        GameGateway.value.on('room', (data) => {
-            console.log('Received a message from the backend room code:', data);
-            isReady.value = true;
-        });
+watch(props, async (_oldProps, _newProps, cleanUp) => {
+	isReady.value = props.invite;
+	const cleaner = () => {
+		if (gameSocket) {
+			gameSocket.off("connect");
+			gameSocket.off("info");
+			gameSocket.off("room");
+			gameSocket.off("add");
+			gameSocket.off("disconnect");
+		}
+	};
+	gameSocket.on('connect', () => {
+		console.log('Game Socket connection established!');
+	});
+	if (gameSocket) {
+		gameSocket.on("room", (data) => {
+			console.log("Received a message from the backend room code:", data);
+			isReady.value = true;
+		});
 
-        GameGateway.value.on('add', (data) => {
-            console.log('Gateway add: ', data);
-            setPlayerId(data - 1);
-        });
-    }
-
-    return () => {
-        if (GameGateway.value) {
-            GameGateway.value.off('connect');
-            GameGateway.value.off('info');
-            GameGateway.value.off('room');
-            GameGateway.value.off('add');
-            GameGateway.value.off('disconnect');
-        }
-    }
+		gameSocket.on("add", (data) => {
+			console.log("Socket add: ", data);
+			playerId.value = data - 1;
+		});
+	}
+	cleanUp(cleaner);
 });
 
-        // return {
-        //     GameGateway,
-        //     isReady,
-        //     id,
-        //     setId,
-        //     mode,
-        //     setMode
-        // };
-//     }
-// };
 </script>
+
+<style>
+.canvas-container {
+	position: relative;
+}
+
+canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+</style>
