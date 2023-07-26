@@ -40,19 +40,16 @@ export class PlayerService {
 	async create(playerDto: CreatePlayerDto): Promise<PlayerEntity> {
 		const file: Buffer = await fs.readFileSync(
 			path.resolve(
-				'./user.png',
+				'../user.png',
 			),
 		)
 		const avatar = await this.avatarService.uploadDatabaseFile(file, 'default')
-		const result = await this.player_repository.save({
-			name: 'guest_',
+		return await this.player_repository.save({
+			name: playerDto.name42,
         	name42: playerDto.name42,
 			avatarId: avatar.id,
 			status: PlayerStatus.ONLINE
-		});
-		let Upd = result;
-		Upd.name += result.id.toString();
-		return await this.update(result, Upd);
+		})
 	}
 
 	async update(
@@ -101,9 +98,6 @@ export class PlayerService {
 
 	async getQrCode(userId: number){
 		const player = await this.GetPlayerById(userId);
-		if (!player.qrcodeId) {
-			return null
-		}
 		const QrCode = await this.qrCodeServise.getFileById(player.qrcodeId)
 		return QrCode
 	}

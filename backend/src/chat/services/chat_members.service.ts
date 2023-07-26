@@ -41,6 +41,14 @@ export class ChatMemberService {
     await this.chat_members_repository.remove(toRemove);
   }
 
+  // async removeRawInChatMembers(chat_id: number, player_id: number) {
+  //   const toRemove = this.findOneByIds(chat_id, player_id);
+  //   if (!toRemove) {
+  //     throw new HttpException('Chat_member not found', HttpStatus.NOT_FOUND);
+  //   }
+  //   await this.chat_members_repository.remove(await toRemove);
+  // }
+
   async updateRawInChatMembers(actualV: Chat_members, updDto: UpdateChatDto): Promise<Chat_members> {
     if (!updDto.owner_flg)
       updDto.owner_flg = actualV.owner_flg;
@@ -62,6 +70,10 @@ export class ChatMemberService {
   async findOneByIds(chat_id: number, player_id: number): Promise<Chat_members> {
     return await this.chat_members_repository.findOne({ where: { chat_id: chat_id, player_id: player_id } })
   }
+
+  // async findAllByIds(chat_id: number, player_id: number): Promise<Chat_members[]> {
+  //   return await this.chat_members_repository.find({ where: { chat_id: chat_id, player_id: player_id } })
+  // }
 
   async findAllByChatId(chat_id: number): Promise<Chat_members[]> {
     return await this.chat_members_repository.find({ where: { chat_id: chat_id } })

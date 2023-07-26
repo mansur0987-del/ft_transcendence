@@ -42,13 +42,15 @@ export class ChatService {
 
   async updateRawInChat(id: number, newChatRaw: Chat): Promise<Chat> {
     try {
-      return (await this.chat_repository.update({ id: id}, {
-        chat_name: newChatRaw.chat_name,
+      this.removeRawInChat(id);
+      return await this.chat_repository.save({
+        id: id,
         isPrivate: newChatRaw.isPrivate,
-        isDirect: false,
+        isDirect: newChatRaw.isDirect,
+        chat_name: newChatRaw.chat_name,
         have_password: newChatRaw.have_password,
         password: newChatRaw.password
-      })).raw;
+      });
     }
     catch (ex) {
       throw new Error(`addRawToChat error: ${ex.message}.`);

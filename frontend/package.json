@@ -15,6 +15,7 @@
     "buffer": "^6.0.3",
     "dotenv": "^16.3.1",
     "element-plus": "^2.3.8",
+    "paper": "^0.12.17",
     "pinia": "^2.1.4",
     "socket.io-client": "^4.7.1",
     "vue": "^3.3.4",

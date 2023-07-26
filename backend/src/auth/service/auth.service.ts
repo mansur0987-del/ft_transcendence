@@ -65,13 +65,17 @@ export class AuthService {
 		}
 
 		const getPlayerToken = await this.httpService.post(url_42, body);
+		console.log('111111')
 		const lastValuePlayerToken = await lastValueFrom(getPlayerToken)
+		console.log('111111')
 
 		const header = {
 			'Content-Type': 'application/json',
 			'Authorization': 'Bearer ' + lastValuePlayerToken.data.access_token,
 		}
+		console.log('111111')
 		const GetPlayerInfo = await this.httpService.get('https://api.intra.42.fr/v2/me', {headers: header})
+		console.log('111111')
 		const lastValuePlayerInfo = await lastValueFrom(GetPlayerInfo)
 
 		const playerInDB = await this.CreatePlayer({name42: lastValuePlayerInfo.data.login});
@@ -169,6 +173,8 @@ export class AuthService {
 			return qrCode
 		}
 		const { secret, otpAuthUrl } = await this.generateTwoFactorAuthenticationSecret(player);
+		console.log('secret')
+		console.log(secret)
 		await this.playerService.update(
 			player,
 			{twoFactorAuthenticationSecret: secret}
@@ -199,14 +205,20 @@ export class AuthService {
 		if (twoFactorAuthenticationCode == null){
 			throw new BadRequestException('twoFactorAuthenticationCode is null');
 		}
+		console.log('twoFactorAuthenticationCode')
+		console.log(twoFactorAuthenticationCode)
+		console.log('player.twoFactorAuthenticationSecret')
+		console.log(player.twoFactorAuthenticationSecret)
 		const isCodeValid = authenticator.verify({
 			token: twoFactorAuthenticationCode,
 			secret: player.twoFactorAuthenticationSecret,
 		});
+		console.log("22222")
 		if (!isCodeValid) {
 			throw new BadRequestException('Wrong authentication code');
 		}
 
+		console.log("33333")
 		await this.playerService.update(
 			player,
 			{isTwoFactorAuthenticationEnabled: true, isLoginFactorAuthentication: false}

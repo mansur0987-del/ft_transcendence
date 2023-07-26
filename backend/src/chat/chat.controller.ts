@@ -12,10 +12,12 @@ import {
 import { Chat } from './entities/chat.entity';
 import { Chat_members } from "./entities/chat_members.entity";
 import { Chat_messages } from "./entities/chat_messages.entity";
+import { Player_blocks } from "./entities/players_blocks.entity";
 import { ChatService } from './services/chat.service'
 import { ChatMemberService } from "./services/chat_members.service";
 import { ChatMessageService } from "./services/chat_message.service";
 import { PlayerBlocksService } from "./services/players_blocks.service";
+import { Direct_R } from "./entities/directRelationship.entity";
 import { directRService } from "./services/directRelationships.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { AuthGuard } from '@nestjs/passport';
@@ -23,7 +25,7 @@ import { UpdateChatDto } from "./dto/update-chat.dto";
 import * as bcrypt from 'bcrypt';
 import { PlayerService } from "src/player/service/player.service";
 import { getChatInfoDto } from "./dto/getChatInfo.dto";
-import { Player_blocks } from "./entities/players_blocks.entity";
+import { QueryRunnerProviderAlreadyReleasedError } from "typeorm";
 
 @Controller('chat')
 export class ChatController {
@@ -108,6 +110,12 @@ export class ChatController {
     return pl.name;
   }
 
+  //fix me: delete this
+  @Post('/sqlAddUser')
+  async execSql(@Body() body: any) {
+    await this.chatMembersService.addRawToChatMembers(body.chat_id, body.player_id, body.owner_flg, body.admin_flg, body.member_flg, body.banned_to_ts, body.muted_to_ts);
+  }
+
   //get
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
@@ -123,9 +131,8 @@ export class ChatController {
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
-      console.log('allPrivate:\n', allPrivate[i].id);
       const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].id, req.user.id);
-      if (selfR && selfR.member_flg) {
+      if (selfR ?.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);
         allPrivate[i].isMember = true;
         allPrivate[i].isAdmin = await selfR.admin_flg;
@@ -139,11 +146,9 @@ export class ChatController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/blockedUsers')
   async getBlockedUsers(@Request() req: any): Promise<any> {
-    let result: any[] = await this.plBlocks.findAllByPlayerId(req.user.id);
-    for (let i = 0; i < result.length; i++)
-      result[i].name = await this.getUserNameById(result[i].blocked_player_id);
-    return result;
+    return await this.plBlocks.findAllByPlayerId(req.user.id);
   }
+
 
   //inside chat
   @UseGuards(AuthGuard('jwt'))
@@ -153,14 +158,14 @@ export class ChatController {
       throw new BadRequestException('not enough data for send message');
     if (!(await this.chatService.findOneById(body.chat_id)))
       throw new NotFoundException('chat not found');
+
     let selfR = await this.chatMembersService.findOneByIds(body.chat_id, req.user.id);
     if (!selfR || !selfR.member_flg)
       throw new ForbiddenException('you are not member of this channel');
     if (new Date(selfR.muted_to_ts) > new Date()) {
-      const days = await this.ts_to_days(selfR.muted_to_ts);
+      const days = this.ts_to_days(selfR.muted_to_ts);
       throw new ForbiddenException({ reason: 'muted', daysExpire: days });
     }
-    // this.chatGate.emitToOther(body.chat_id, body.message);
     return await this.msgService.addRawToChatMessage(body.chat_id, req.user.id, body.message, new Date());
   }
   //inside chat
@@ -297,41 +302,6 @@ export class ChatController {
       new Date(0).toISOString(),
       new Date(0).toISOString());
     return result;
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/blockUser')
-  async blockUser(@Request() req: any, @Body() body: any): Promise<any>{
-    if (!body || !body.player_id)
-      throw new BadRequestException('INVALID BODY');
-    const toBlock = await this.plService.GetPlayerById(body.player_id);
-    if (!toBlock)
-      throw new NotFoundException('player not found');
-    let blockR: any = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
-    if (!blockR)
-      blockR = await this.plBlocks.addRawInPlayerBlocks(req.user.id, body.player_id);
-    if (!blockR.isBlocked)
-      blockR = await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, true);
-    blockR.name = await this.getUserNameById(blockR.blocked_player_id);
-    return (blockR);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/unblockUser')
-  async unblockUser(@Request() req: any, @Body() body: any): Promise<Player_blocks>{
-    if (!body || !body.player_id)
-      throw new BadRequestException('INVALID BODY');
-    const tounBlock = await this.plService.GetPlayerById(body.player_id);
-    if (!tounBlock)
-      throw new NotFoundException('player not found');
-    let blockR: any = await this.plBlocks.findOneByIds(req.user.id, body.player_id);
-    if (!blockR)
-      throw new ForbiddenException('player not blocked');
-    if (!blockR.isBlocked)
-      throw new ForbiddenException('player not blocked');
-    blockR = await this.plBlocks.updateRaw(blockR.id, req.user.id, body.player_id, false);
-    blockR.name = await this.getUserNameById(blockR.blocked_player_id);
-    return blockR;
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -645,6 +615,24 @@ export class ChatController {
     return result;
   }
 
+  //fix me: delete this
+  // @Get('/addUserTest')
+  // async addUserATest(): Promise<Chat_members>{
+  //   const pl = await this.plService.GetPlayerByName('www');
+  //   if (!pl)
+  //     throw new NotFoundException('User not found');
+  //   let actualR: Chat_members = await this.chatMembersService.findOneByIds(body.chat_id, pl.id);
+  //   if (!actualR)
+  //     return await this.chatMembersService.addRawToChatMembers(
+  //       1,
+  //       body.player_id,
+  //       false,
+  //       false,
+  //       true,
+  //       new Date(0).toISOString(),
+  //       new Date(0).toISOString());
+  // }
+
   @UseGuards(AuthGuard('jwt'))
   @Post('/addUser')
   async addMember(@Request() req: any, @Body() body: any): Promise<Chat_members> {
@@ -689,24 +677,6 @@ export class ChatController {
     result.banned_to_ts = await this.ts_to_days(result.banned_to_ts);
     result.muted_to_ts = await this.ts_to_days(result.muted_to_ts);
     return result;
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/updateChannel')
-  async updateChannel(@Request() req: any, @Body() body: any): Promise<Chat> {
-    if (!body || !body.chat_id)
-      throw new BadRequestException('have no body or chat_id in body');
-
-    if (!await this.chatMembersService.isOwner(body.chat_id, req.user.id))
-      throw new ForbiddenException('you are not owner of this channel');
-    const toCmp = await this.chatService.findOneByName(body.chat_name);
-    if (toCmp && toCmp.id != body.chat_id)
-      throw new ForbiddenException('this chat name is unavaible');
-    if (body.chat_name.substring(0, 6) == 'direct')
-      throw new ForbiddenException('you cannot use direct keyword in start of chat_name');
-    if (body.password)
-      body.password = await this.getHashingPass(body.password);
-    return await this.chatService.updateRawInChat(body.chat_id, body);
   }
 
   //delete

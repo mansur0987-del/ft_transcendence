@@ -14,11 +14,7 @@ export class PlayerBlocksService {
   }
 
   async updateRaw(id: number, player_id: number, blocked_player_id: number, isBlocked: boolean): Promise<Player_blocks>{
-    return (await this.players_blocks_repository.update({ id: id}, {
-        player_id: player_id,
-        blocked_player_id: blocked_player_id,
-        isBlocked: isBlocked
-      })).raw;
+    return await this.players_blocks_repository.save({id: id, player_id: player_id, blocked_player_id: blocked_player_id, isBlocked: isBlocked})
   }
 
   async findOneByIds(player_id: number, blocked_player_id: number): Promise<Player_blocks> {
