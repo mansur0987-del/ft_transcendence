@@ -6,6 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/service/auth.service';
 import { Mode } from './interfaces/mode.interface';
 import { RoomService } from './services/room.service';
@@ -15,12 +16,15 @@ import { PlayerService } from 'src/player/service/player.service';
 import { PlayerStatus } from 'src/player/enums/playerStatus.enum';
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: {
+		origin: process.env.FRONT_URL,
+	},
   namespace: 'pong',
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
     private readonly userService: PlayerService,
     private readonly roomService: RoomService,
     private readonly MatchService: PlayerService,
@@ -32,13 +36,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket): Promise<any> {
     try {
       // THIS IS A RISK ZONE
-      const token = client.handshake.query.token as string;
-      console.log('Token found!', token);
+      const token = client.request.headers.authorization && client.request.headers.authorization.split(' ')[1];
       if (!token) {
         return client.disconnect();
+      } else {
+        console.log('Token found!', token);
       }
+      let user: any;
       // THIS IS A RISK ZONE
-      const user = await this.authService.callback(token); // MAYBE CALLBACK INSTEAD OF RETRIEVEUSER (authService.retrieveUser(client);)
+      const user42 = await this.jwtService.verify(token, { publicKey: process.env.JWT_ACCESS_KEY }); // MAYBE CALLBACK INSTEAD OF RETRIEVEUSER (authService.retrieveUser(client);)
+      if (!user42.name42) {
+        return client.disconnect();
+      } else {
+        user = await this.MatchService.GetPlayerByName42(user42.name42);
+      }
       if (!user) {
         return client.disconnect();
       }

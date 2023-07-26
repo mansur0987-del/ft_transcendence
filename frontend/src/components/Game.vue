@@ -38,31 +38,32 @@ const id = ref(0);
 const playerId = ref(0);
 
 onMounted(async () => {
-	gameSocket = await io(process.env.BASE_URL + 'game', {
+	gameSocket = await io(process.env.BASE_URL + 'pong', {
 		transportOptions: {
 			polling: { extraHeaders: { Authorization: 'Bearer ' + localStorage.getItem('token') } },
 		},
 	})
 	console.log('gameSocket')
 	console.log(gameSocket)
+
 })
 
-if (GameGateway.value) {
-	GameGateway.value.on('room', (data) => {
-		console.log('Received a message from the backend room code:', data);
-		isReady.value = true;
-	});
+// if (gameSocket.value) {
+// 	gameSocket.value.on('room', (data) => {
+// 		console.log('Received a message from the backend room code:', data);
+// 		isReady.value = true;
+// 	});
 
-	gameSocket.on("add", (data) => {
-		console.log("Socket add: ", data);
-		playerId.value = data - 1;
-	});
-}
-cleanUp(cleaner);
-gameSocket.on("add", (data) => {
-	console.log("Socket add: ", data);
-	playerId.value = data - 1;
-});
+// 	gameSocket.on("add", (data) => {
+// 		console.log("Socket add: ", data);
+// 		playerId.value = data - 1;
+// 	});
+// }
+// cleanUp(cleaner);
+// gameSocket.on("add", (data) => {
+// 	console.log("Socket add: ", data);
+// 	playerId.value = data - 1;
+// });
 
 </script>
 
