@@ -52,8 +52,6 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server = new Server();
 		if (!this.allConnected)
 			this.allConnected = new Map<string, any>();
-		if (!this.invites)
-			this.invites = [];
 	}
 
 	async checkAuth(client: Socket): Promise<string> {
