@@ -17,6 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PlayerService } from "src/player/service/player.service";
 import { NotifyService } from "./notify.services";
 import { Notify } from "./notify.entity"
+import { awaitExpression } from "@babel/types";
 
 @WebSocketGateway({
 	cors: {
@@ -155,17 +156,21 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const who = await this.allConnected.get(client.id);
 			if (!initiator)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
-			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { name: who.name }));
-			console.log('res acceptInvite who emit =', who.emit('startGame', { name: initiator.name }));
 
-			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
+			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
+
 			let invites = await this.notifyService.findAllByWhoId(who.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, who.user_name_in_db);
+
 			invites = await this.notifyService.findAllByInitiatorId(who.user_id_in_db);
 			await this.cancelOtherInvitesInitiator(invites, who.user_name_in_db);
+			
 			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
+
+			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { name: who.name }));
+			console.log('res acceptInvite who emit =', who.emit('startGame', { name: initiator.name }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -181,10 +186,30 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			console.log('res declince initiator emit =', initiator.emit('declince', { name: who.name }));
 
-			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, body.name);
+			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.name);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
 		}
 		catch (e) { this.errorMessage(e, client); }
+	}
+
+	@SubscribeMessage('changeName')
+	async changeUserName(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		try {
+			if (!body || !body.name)
+				throw new BadRequestException('have no body or player name');
+			const user = await this.allConnected.get(client.id);
+			if (user)
+				this.allConnected.get(client.id).user_name_in_db = body.name;
+			await this.notifyService.changeUserName(user.user_id_in_db, body.name);
+		}
+		catch (e) {
+			await this.errorMessage(e, client);
+			let nots: Notify[] = await this.notifyService.findAllByInitiatorId((await this.allConnected.get(client.id).user_id_in_db));
+			await this.cancelOtherInvitesInitiator(nots, (await this.allConnected.get(client.id).user_id_in_db).user_name_in_db);
+			nots = await this.notifyService.findAllByWhoId((await this.allConnected.get(client.id).user_id_in_db));
+			await this.cancelOtherInvitesInitiator(nots, (await this.allConnected.get(client.id).user_id_in_db).user_name_in_db);
+			client.disconnect();
+		}
 	}
 
 	async handleConnection(@ConnectedSocket() client: any) {
