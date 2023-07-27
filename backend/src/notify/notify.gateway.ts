@@ -155,7 +155,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			if (!initiator)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 
-			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.name);
+			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.user_name_in_db);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
 
 			let invites = await this.notifyService.findAllByWhoId(who.user_id_in_db);
@@ -167,8 +167,8 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
 
-			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { name: who.name }));
-			console.log('res acceptInvite who emit =', who.emit('startGame', { name: initiator.name }));
+			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { name: who.user_name_in_db }));
+			console.log('res acceptInvite who emit =', who.emit('startGame', { name: initiator.user_name_in_db }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -183,9 +183,9 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const who = await this.allConnected.get(client.id);
 			if (!initiator)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
-			console.log('res declince initiator emit =', initiator.emit('declince', { name: who.name }));
+			console.log('res declince initiator emit =', initiator.emit('declince', { name: who.user_name_in_db }));
 
-			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.name);
+			const inviteObj = await this.notifyService.findOneByNames(initiator.user_name_in_db, who.user_name_in_db);
 			this.notifyService.deleteRawNotifyByIdRaw(inviteObj.id);
 		}
 		catch (e) { this.errorMessage(e, client); }
