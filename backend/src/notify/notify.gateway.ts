@@ -53,7 +53,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			//send cancel
 			await this.allConnected.forEach(element => {
 				if (element.user_id_in_db == all[i].initiator_id) {
-					element.emit('declinceInvite', { id: who_id });
+					element.emit('declince', { id: who_id });
 				}
 			});
 			//deletefrom BD
@@ -127,13 +127,30 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				throw new NotFoundException(body.id + ' not avaible rigth now');
 			const invites = await this.notifyService.findAllByInitiatorId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesInitiator(invites, initiator.user_id_in_db);
-			const newRawInvite = await this.notifyService.addRawToNotify({
-				initiator_id: initiator.user_id_in_db,
-				initiator_name: initiator.user_name_in_db,
-				who_id: who.user_id_in_db,
-				who_name: who.user_name_in_db
-			})
-			console.log('res invitePlayerInitiator emit =', who.emit('GetInvite', { newRawInvite }));
+			const toFaceInvite = await this.notifyService.findOneByIds(who.user_id_in_db, initiator.user_id_in_db);
+			if (!toFaceInvite) {
+					const newRawInvite = await this.notifyService.addRawToNotify({
+					initiator_id: initiator.user_id_in_db,
+					initiator_name: initiator.user_name_in_db,
+					who_id: who.user_id_in_db,
+					who_name: who.user_name_in_db
+				})
+				console.log('res invitePlayerInitiator emit =', who.emit('GetInvite', { newRawInvite }));
+				return;
+			}
+			this.notifyService.deleteRawNotifyByIdRaw(toFaceInvite.id);
+
+			let invitesToFace = await this.notifyService.findAllByWhoId(who.user_id_in_db);
+			await this.cancelOtherInvitesWho(invitesToFace, who.user_id_in_db);
+
+			invitesToFace = await this.notifyService.findAllByInitiatorId(who.user_id_in_db);
+			await this.cancelOtherInvitesInitiator(invitesToFace, who.user_id_in_db);
+
+			invitesToFace = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
+			await this.cancelOtherInvitesWho(invitesToFace, initiator.user_id_in_db);
+
+			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { id: who.user_id_in_db }));
+			console.log('res acceptInvite who emit =', who.emit('startGame', { id: initiator.user_id_in_db }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
