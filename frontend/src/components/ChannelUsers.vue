@@ -191,9 +191,12 @@ onMounted(async () => {
 			await GetInvites()
 		}, 100)
 	})
+	document.addEventListener('visibilitychange', checkVisible)
 })
 
+const getInvieId = ref<number>()
 async function InviteToGame(id: number) {
+	getInvieId.value = id;
 	await store.GetSocketInvite().emit('invitePlayerInitiator', { id: id })
 	setTimeout(async () => {
 		await GetInvites()
@@ -206,6 +209,12 @@ async function Cancel(id?: number) {
 	setTimeout(async () => {
 		await GetInvites()
 	}, 100)
+}
+
+async function checkVisible() {
+	if (document.visibilityState !== "visible" && getInvieId.value) {
+		store.GetSocketInvite().emit('cancelInviteInitiator', { id: getInvieId.value })
+	}
 }
 
 </script>
