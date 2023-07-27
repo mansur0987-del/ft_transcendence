@@ -3,8 +3,8 @@ import { io, Socket } from "socket.io-client"
 import { ref } from "vue"
 
 interface Notify {
-	initiator_name: string,
-	who_name: string
+	initiator_name?: string,
+	who_name?: string
 }
 
 export const Store = defineStore('store', () => {

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import axios from "axios";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { Socket } from 'socket.io-client';
 import ChannelWindow from './ChannelWindow.vue'
 import { Store } from "../pinia";
 import { ElInput, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu } from 'element-plus'
+import { storeToRefs } from "pinia";
 const props = defineProps<{
 	channelId?: number,
 	socket: Socket
@@ -157,11 +158,41 @@ async function PostBlockPlayer(userId: number) {
 	props.socket.emit('signalUsers')
 }
 
+const store = Store()
 
-async function InviteToGame(name: string) {
-	console.log('Socket Invite')
-	console.log(Store().GetSocketInvite())
-	await Store().GetSocketInvite().emit('invitePlayerInitiator', { name: name })
+const { invitesName } = storeToRefs(store)
+
+async function GetInvites() {
+	await axios.get('notify/sendInvites').catch((e) => {
+		console.log(e)
+	}).then((res) => {
+		if (res) {
+			invitesName.value = res.data
+		}
+	})
+}
+
+onMounted(async () => {
+	await GetInvites()
+	await store.GetSocketInvite().on('declince', async () => {
+		console.log('1111')
+		await GetInvites()
+	})
+})
+
+async function InviteToGame(who: string) {
+	await store.GetSocketInvite().emit('invitePlayerInitiator', { name: who })
+	setTimeout(async () => {
+		await GetInvites()
+	}, 100)
+
+}
+
+async function Cancel(name: string) {
+	store.GetSocketInvite().emit('cancelInviteInitiator', { name: name })
+	setTimeout(async () => {
+		await GetInvites()
+	}, 100)
 }
 
 </script>
@@ -169,6 +200,20 @@ async function InviteToGame(name: string) {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
 		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
+	<div class="Invites" v-if="invitesName.length">
+		<p style="text-align: center">
+			Invites
+		</p>
+		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
+			<p style="text-align: center; color: blue;">
+				<span>
+					<el-button size="small" style="position: absolute; left: 0%;"
+						@click="Cancel(invite.who_name)">Cancel</el-button>
+				</span>
+				{{ invite.who_name }}
+			</p>
+		</div>
+	</div>
 	<div class="Users" v-if="actualChannelId">
 		<el-button color="yellow" v-show="!(myUser?.owner_flg)" @click="LeaveChannel()"
 			style="position: absolute; right: 0%;">
@@ -289,5 +334,14 @@ async function InviteToGame(name: string) {
 	filter: blur(2px);
 	margin: 0px;
 	overflow: auto;
+}
+
+.Invites {
+	position: fixed;
+	z-index: 10;
+	right: 1%;
+	top: 10%;
+	overflow: auto;
+	background-color: aliceblue;
 }
 </style>

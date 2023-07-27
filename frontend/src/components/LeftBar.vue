@@ -3,43 +3,49 @@ import PlayerStatus from './PlayerStatus.vue'
 import { ElButton } from 'element-plus'
 import { Store } from "../pinia";
 import { onMounted } from "vue";
-import type { Socket } from "socket.io-client";
 import { storeToRefs } from "pinia";
 import axios from "axios";
 
-const store = Store()
+const storeLeftBar = Store()
 
-const { invitesName } = storeToRefs(store)
-onMounted(async () => {
+
+const invitesNameLeftBar = storeToRefs(storeLeftBar).invitesName
+
+async function GetInvitesLeftBar() {
 	await axios.get('notify/recInvites').catch((e) => {
 		console.log(e)
 	}).then((res) => {
 		if (res) {
-			invitesName.value = res.data
+			invitesNameLeftBar.value = res.data
+		}
+	})
+}
+
+onMounted(async () => {
+	await GetInvitesLeftBar()
+
+	storeLeftBar.GetSocketInvite().on('GetInvite', (data) => {
+		console.log(data.newRawInvite)
+		console.log(data.newRawInvite.initiator_name)
+		if (data.newRawInvite.initiator_name && !(invitesNameLeftBar.value.find((element) => element.initiator_name === data.newRawInvite.initiator_name))) {
+			invitesNameLeftBar.value.push({ initiator_name: data.newRawInvite.initiator_name, who_name: data.newRawInvite.who_name })
 		}
 	})
 
-	store.GetSocketInvite().on('GetInvite', (data) => {
-		if (data.name && !(invitesName.value.find(element => element === data.name))) {
-			invitesName.value.push(data.name)
-		}
+	storeLeftBar.GetSocketInvite().on('cancelInvite', async () => {
+		await GetInvitesLeftBar()
 	})
 })
 
-async function Cancel(name: string) {
-	store.GetSocketInvite().emit('declinceInvite', { name: name })
-	await UpdateInvites(name)
+async function CancelLeftBar(name?: string) {
+	console.log('11111')
+	console.log('declinceInvite =', storeLeftBar.GetSocketInvite().emit('declinceInvite', { name: name }))
+	await GetInvitesLeftBar()
 }
 
-async function Game(name: string) {
-	store.GetSocketInvite().emit('acceptInvite', { name: name })
-	await UpdateInvites(name)
-}
-
-async function UpdateInvites(name: string) {
-	invitesName.value.filter((element) => {
-		return element.initiator_name !== name
-	})
+async function GameLeftBar(name?: string) {
+	storeLeftBar.GetSocketInvite().emit('acceptInvite', { name: name })
+	await GetInvitesLeftBar()
 }
 
 
@@ -90,19 +96,22 @@ async function GetChat() {
 			Chat
 		</el-button>
 	</div>
-	<div class="Invites" v-if="invitesName.length">
+	<div class="InvitesLeftBar" v-if="invitesNameLeftBar.length">
 		<p style="text-align: center">
 			Invites
 		</p>
-		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
+		<div v-for=" inviteLeftBar in invitesNameLeftBar"
+			style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
 			<p style="text-align: center; color: blue;">
-				{{ invite.initiator_name }}
-			</p>
-			<p>
-				<el-button size="small" style="position: absolute; left: 0%;bottom: 0%"
-					@click="Cancel(invite.initiator_name)">Cancel</el-button>
-				<el-button size="small" style="position: absolute; right: 0%;bottom: 0%;"
-					@click="Game(invite.initiator_name)">Let's play</el-button>
+				<span>
+					<el-button size="small" style="position: absolute; left: 0%;"
+						@click="CancelLeftBar(inviteLeftBar.initiator_name)">Cancel</el-button>
+				</span>
+				{{ inviteLeftBar.initiator_name }}
+				<span>
+					<el-button size="small" style="position: absolute; right: 0%;"
+						@click="GameLeftBar(inviteLeftBar.initiator_name)">Let's play</el-button>
+				</span>
 			</p>
 		</div>
 	</div>
@@ -136,7 +145,7 @@ async function GetChat() {
 	height: 55px;
 }
 
-.Invites {
+.InvitesLeftBar {
 	position: fixed;
 	z-index: 10;
 	right: 1%;
