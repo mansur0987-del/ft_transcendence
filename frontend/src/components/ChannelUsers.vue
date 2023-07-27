@@ -160,14 +160,14 @@ async function PostBlockPlayer(userId: number) {
 
 const store = Store()
 
-const { invitesName } = storeToRefs(store)
+const { invitesSend } = storeToRefs(store)
 
 async function GetInvites() {
 	await axios.get('notify/sendInvites').catch((e) => {
 		console.log(e)
 	}).then((res) => {
 		if (res) {
-			invitesName.value = res.data
+			invitesSend.value = res.data
 		}
 	})
 }
@@ -175,21 +175,34 @@ async function GetInvites() {
 onMounted(async () => {
 	await GetInvites()
 	await store.GetSocketInvite().on('declince', async () => {
-		console.log('1111')
-		await GetInvites()
+		setTimeout(async () => {
+			await GetInvites()
+		}, 100)
+	})
+
+	await store.GetSocketInvite().on('cancelInvite', async () => {
+		setTimeout(async () => {
+			await GetInvites()
+		}, 100)
+	})
+
+	await store.GetSocketInvite().on('startGame', async () => {
+		setTimeout(async () => {
+			await GetInvites()
+		}, 100)
 	})
 })
 
-async function InviteToGame(who: string) {
-	await store.GetSocketInvite().emit('invitePlayerInitiator', { name: who })
+async function InviteToGame(id: number) {
+	await store.GetSocketInvite().emit('invitePlayerInitiator', { id: id })
 	setTimeout(async () => {
 		await GetInvites()
 	}, 100)
 
 }
 
-async function Cancel(name: string) {
-	store.GetSocketInvite().emit('cancelInviteInitiator', { name: name })
+async function Cancel(id?: number) {
+	store.GetSocketInvite().emit('cancelInviteInitiator', { id: id })
 	setTimeout(async () => {
 		await GetInvites()
 	}, 100)
@@ -200,15 +213,15 @@ async function Cancel(name: string) {
 <template>
 	<ChannelWindow :type=WindowForChannel.type :chanelId=WindowForChannel.channelId :myRole=myRole :PropsUser=PropsUser
 		v-if="WindowForChannel.isOpen" @ChannelWindowIsClose='EmitCloseWindow' />
-	<div class="Invites" v-if="invitesName.length">
+	<div class="Invites" v-if="invitesSend.length">
 		<p style="text-align: center">
 			Invites
 		</p>
-		<div v-for=" invite in invitesName" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
+		<div v-for=" invite in invitesSend" style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
 			<p style="text-align: center; color: blue;">
 				<span>
 					<el-button size="small" style="position: absolute; left: 0%;"
-						@click="Cancel(invite.who_name)">Cancel</el-button>
+						@click="Cancel(invite.who_id)">Cancel</el-button>
 				</span>
 				{{ invite.who_name }}
 			</p>
@@ -234,7 +247,7 @@ async function Cancel(name: string) {
 										<el-dropdown-item disabled>Block</el-dropdown-item>
 									</span>
 									<span v-else>
-										<el-dropdown-item @click="InviteToGame(user.user_name)">Game</el-dropdown-item>
+										<el-dropdown-item @click="InviteToGame(user.player_id)">Game</el-dropdown-item>
 										<span
 											v-if="blockedUsers?.find(blockUser => blockUser.blocked_player_id === user.player_id && blockUser.isBlocked)">
 											<el-dropdown-item disabled>Block</el-dropdown-item>

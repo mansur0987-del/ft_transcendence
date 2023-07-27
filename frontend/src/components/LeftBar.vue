@@ -8,15 +8,15 @@ import axios from "axios";
 
 const storeLeftBar = Store()
 
-
-const invitesNameLeftBar = storeToRefs(storeLeftBar).invitesName
+const { invitesGet } = storeToRefs(storeLeftBar)
 
 async function GetInvitesLeftBar() {
 	await axios.get('notify/recInvites').catch((e) => {
 		console.log(e)
 	}).then((res) => {
 		if (res) {
-			invitesNameLeftBar.value = res.data
+			invitesGet.value = res.data
+			console.log(invitesGet.value)
 		}
 	})
 }
@@ -24,28 +24,44 @@ async function GetInvitesLeftBar() {
 onMounted(async () => {
 	await GetInvitesLeftBar()
 
-	storeLeftBar.GetSocketInvite().on('GetInvite', (data) => {
-		console.log(data.newRawInvite)
-		console.log(data.newRawInvite.initiator_name)
-		if (data.newRawInvite.initiator_name && !(invitesNameLeftBar.value.find((element) => element.initiator_name === data.newRawInvite.initiator_name))) {
-			invitesNameLeftBar.value.push({ initiator_name: data.newRawInvite.initiator_name, who_name: data.newRawInvite.who_name })
-		}
+	storeLeftBar.GetSocketInvite().on('GetInvite', async () => {
+		setTimeout(async () => {
+			await GetInvitesLeftBar()
+		}, 100)
+	})
+
+	storeLeftBar.GetSocketInvite().on('declince', async () => {
+		setTimeout(async () => {
+			await GetInvitesLeftBar()
+		}, 100)
 	})
 
 	storeLeftBar.GetSocketInvite().on('cancelInvite', async () => {
-		await GetInvitesLeftBar()
+		setTimeout(async () => {
+			await GetInvitesLeftBar()
+		}, 100)
+	})
+
+	await storeLeftBar.GetSocketInvite().on('startGame', async () => {
+		setTimeout(async () => {
+			await GetInvitesLeftBar()
+		}, 100)
 	})
 })
 
-async function CancelLeftBar(name?: string) {
-	console.log('11111')
-	console.log('declinceInvite =', storeLeftBar.GetSocketInvite().emit('declinceInvite', { name: name }))
-	await GetInvitesLeftBar()
+async function CancelLeftBar(id?: number) {
+	storeLeftBar.GetSocketInvite().emit('declinceInvite', { id: id })
+	setTimeout(async () => {
+		await GetInvitesLeftBar()
+	}, 100)
+
 }
 
-async function GameLeftBar(name?: string) {
-	storeLeftBar.GetSocketInvite().emit('acceptInvite', { name: name })
-	await GetInvitesLeftBar()
+async function GameLeftBar(id?: number) {
+	storeLeftBar.GetSocketInvite().emit('acceptInvite', { id: id })
+	setTimeout(async () => {
+		await GetInvitesLeftBar()
+	}, 100)
 }
 
 
@@ -96,21 +112,21 @@ async function GetChat() {
 			Chat
 		</el-button>
 	</div>
-	<div class="InvitesLeftBar" v-if="invitesNameLeftBar.length">
+	<div class="InvitesLeftBar" v-if="invitesGet.length">
 		<p style="text-align: center">
 			Invites
 		</p>
-		<div v-for=" inviteLeftBar in invitesNameLeftBar"
+		<div v-for=" inviteLeftBar in invitesGet"
 			style="margin-top: 5px; color: rgb(255, 255, 255); width: 200px; height: 45px;">
 			<p style="text-align: center; color: blue;">
 				<span>
 					<el-button size="small" style="position: absolute; left: 0%;"
-						@click="CancelLeftBar(inviteLeftBar.initiator_name)">Cancel</el-button>
+						@click="CancelLeftBar(inviteLeftBar.initiator_id)">Cancel</el-button>
 				</span>
 				{{ inviteLeftBar.initiator_name }}
 				<span>
 					<el-button size="small" style="position: absolute; right: 0%;"
-						@click="GameLeftBar(inviteLeftBar.initiator_name)">Let's play</el-button>
+						@click="GameLeftBar(inviteLeftBar.initiator_id)">Let's play</el-button>
 				</span>
 			</p>
 		</div>
@@ -149,7 +165,7 @@ async function GetChat() {
 	position: fixed;
 	z-index: 10;
 	right: 1%;
-	top: 10%;
+	top: 20%;
 	overflow: auto;
 	background-color: aliceblue;
 }
