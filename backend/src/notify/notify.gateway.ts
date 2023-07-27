@@ -108,25 +108,23 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('invitePlayerInitiator')
 	async invitePlayerInitiator(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		try {
-			console.log('body in invitePlayerInitiator:\n', body);
 			if (!body || !body.name)
 				throw new BadRequestException('have no body or player name');
 			const initiator = await this.allConnected.get(client.id);
-			console.log('MAP in invitePlayerInitiator = ', this.allConnected);
 			const who = await this.findByName(body.name);
-			console.log('who in invitePlayerInitiator = ', who);
 			if (!who)
 				throw new NotFoundException(body.name + ' not avaible rigth now');
 			const invites = await this.notifyService.findAllByInitiatorId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesInitiator(invites, initiator.user_name_in_db);
-			this.notifyService.addRawToNotify({
+			const newRawInvite = await this.notifyService.addRawToNotify({
 				initiator_id: initiator.user_id_in_db,
 				initiator_name: initiator.user_name_in_db,
 				who_id: who.user_id_in_db,
 				who_name: who.user_name_in_db
 			})
+			console.log('newRawInvite = ', newRawInvite);
 			console.log('initiator: ', initiator.user_name_in_db);
-			console.log('res invitePlayerInitiator emit =', who.emit('GetInvite', { name: initiator.user_name_in_db }));
+			console.log('res invitePlayerInitiator emit =', who.emit('GetInvite', { newRawInvite }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -165,7 +163,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 			invites = await this.notifyService.findAllByInitiatorId(who.user_id_in_db);
 			await this.cancelOtherInvitesInitiator(invites, who.user_name_in_db);
-			
+
 			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
 
@@ -178,6 +176,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@SubscribeMessage('declinceInvite')
 	async declinesInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		try {
+			console.log('body in declince: ', body);
 			if (!body || !body.name)
 				throw new BadRequestException('have no body or player name');
 			const initiator = await this.findByName(body.name);
@@ -235,9 +234,8 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleDisconnect(@ConnectedSocket() client: Socket) {
 		try {
-			const userInConnected: any = await this.allConnected.get(client.id);
+			await console.log('\nclient in INVITE disconnected\n');
 			this.allConnected.delete(client.id);
-			console.log('\nclient ' + (userInConnected ? userInConnected.name : 'unknown') + ' disconnected\n');
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
