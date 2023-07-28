@@ -4,6 +4,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  ConnectedSocket
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
@@ -70,7 +71,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('add')
-  joinQueue(client: Socket): void {
+  joinQueue(@ConnectedSocket() client: Socket): void {
     try {
       console.log('client.data.user');
       console.log(client.data.user);
