@@ -10,8 +10,8 @@ import { GameModule } from "src/game/game.module";
 import { RoomService } from "src/game/services/room.service";
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, GameModule, RoomService],
+	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, GameModule],
 	controllers: [NotifyConroller],
-	providers: [NotifyService, NotifyConroller, notifyGateway]
+	providers: [NotifyService, NotifyConroller, notifyGateway, RoomService]
 })
 export class NotifyModule { }
