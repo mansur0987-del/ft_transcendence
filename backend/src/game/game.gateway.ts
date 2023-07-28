@@ -76,14 +76,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('client.data.user');
       console.log(client.data.user);
       if (!client.data.user) {
+        console.log("CHECK_IF_DADA_USER")
         return;
+
       }
       // if (this.roomService.findPlayer(Socket.data.player.id) == ) return;
       this.roomService.addSock(client);
       console.log('add_back');
       console.log(client);
 
-    } catch {}
+    } catch (e){console.log("EXEPTION_88:\n", e)}
   }
 
   @SubscribeMessage('join-room')
