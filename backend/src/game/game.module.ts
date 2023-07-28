@@ -25,5 +25,6 @@ import { HttpModule } from '@nestjs/axios';
   ],
   controllers: [GameController],
   providers: [GameService, RoomService, GameGateway, MatchService, AuthService],
+  exports: [RoomService]
 })
 export class GameModule {}
