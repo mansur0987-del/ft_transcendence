@@ -291,4 +291,11 @@ export class RoomService {
       mode: thisRoom.options.mode
     })
   }
+
+  createRoomForTwoPlayers(initiator: Socket, who: Socket): string {
+    const room2: Room = this.createRoom();
+    this.joinRoom(initiator, room2);
+    this.joinRoom(who, room2);
+    return room2.code;
+  }
 }

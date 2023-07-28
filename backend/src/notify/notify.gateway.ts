@@ -18,6 +18,7 @@ import { PlayerService } from "src/player/service/player.service";
 import { NotifyService } from "./notify.services";
 import { Notify } from "./notify.entity"
 import { awaitExpression } from "@babel/types";
+import { RoomService } from "../game/services/room.service"
 
 @WebSocketGateway({
 	cors: {
@@ -29,7 +30,8 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly jwtService: JwtService,
 		private readonly plService: PlayerService,
-		private readonly notifyService: NotifyService
+		private readonly notifyService: NotifyService,
+		private readonly roomService: RoomService
 	) { }
 	@WebSocketServer()
 	server: Server;
@@ -38,7 +40,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async cancelOtherInvitesInitiator(all: Notify[], initiator_id: number) {
 		for (let i = 0; i < all.length; i++) {
 			//send cancel
-			await this.allConnected.forEach(element => {
+			this.allConnected.forEach(element => {
 				if (element.user_id_in_db == all[i].who_id) {
 					element.emit('cancelInvite', { id: initiator_id });
 				}
@@ -51,7 +53,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async cancelOtherInvitesWho(all: Notify[], who_id: number) {
 		for (let i = 0; i < all.length; i++) {
 			//send cancel
-			await this.allConnected.forEach(element => {
+			this.allConnected.forEach(element => {
 				if (element.user_id_in_db == all[i].initiator_id) {
 					element.emit('declince', { id: who_id });
 				}
@@ -193,8 +195,12 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
 
-			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { id: who.user_id_in_db }));
-			console.log('res acceptInvite who emit =', who.emit('startGame', { id: initiator.user_id_in_db }));
+			//create room
+			initiator.data.player.id = initiator.user_id_in_db;
+			who.data.player.name = who.user_name_in_db;
+			const roomCode = this.roomService.createRoomForTwoPlayers(initiator, who);
+			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { code: roomCode }));
+			console.log('res acceptInvite who emit =', who.emit('startGame', { code: roomCode }));
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}

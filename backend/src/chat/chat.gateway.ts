@@ -1,7 +1,6 @@
 import {
 	SubscribeMessage,
 	WebSocketGateway,
-	// OnGatewayInit,
 	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
@@ -18,6 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ChatController } from "./chat.controller";
 import { PlayerService } from "src/player/service/player.service";
 import { PlayerBlocksService } from "./services/players_blocks.service";
+
 
 @WebSocketGateway({
 	cors: {
