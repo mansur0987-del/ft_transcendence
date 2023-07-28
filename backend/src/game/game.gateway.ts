@@ -39,13 +39,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: any;
 
-  errorMessage(response: any, client: Socket, event: string) {
-		console.log('exception:\n' + response);
-		client.emit(event, {
-			error: (response?.reason)
-		})
-	}
-
   // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN
   async handleConnection(@ConnectedSocket() client: Socket): Promise<any> {
     try {
@@ -79,7 +72,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!client.data.player) return;
 
       await this.roomService.deleteSock(client);
-    } catch {}
+    } catch (e) { console.log(e); }
   }
 
   @SubscribeMessage('add')
@@ -112,8 +105,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return ;
       }
       const roomInfo = this.roomService.getRoomInfo(code);
-      if (!roomInfo)
-        throw new NotFoundException('no room or wrong number of players')
+      if (!roomInfo) {
+          client.emit('roomInfoServer', {error: 'no room or wrong number of players'});
+          return;
+      }
       const toSend = {
         id: roomInfo.id,
         firstPlayerId: roomInfo.firstPlayerId,
@@ -124,14 +119,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       roomInfo.firstPlSock.emit('roomInfoServer', toSend);
       roomInfo.secondPlSock.emit('roomInfoServer', toSend);
-    } catch (e){console.log("EXCEPTION:\n", e), this.errorMessage(e.response, client, 'roomInfoServer')}
+    } catch (e) {console.log("EXEPTION:\n", e)}
   }
 
   @SubscribeMessage('changeMode')
   changeMode(@ConnectedSocket()client: Socket, @MessageBody() body: any) {
     try {
-      if (body.newMode < 0 || body.newMode > 2)
-        throw new BadRequestException('BAD newMode');
+      if (body.newMode < 0 || body.newMode > 2) {
+        client.emit('roomInfoServer', {error: 'BAD newMode'});
+        return;
+      }
       let newRoom = this.roomService.changeRoomMode(client, body.code, body.newMode);
       const toSend = {
         id: newRoom.code,
@@ -144,25 +141,29 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       newRoom.players[0].socket.emit('roomInfoServer', toSend);
       newRoom.players[1].socket.emit('roomInfoServer', toSend);
     }
-    catch (e) { this.errorMessage(e.response, client, 'roomInfoServer'); }
+    catch (e) {console.log("EXEPTION:\n", e)}
   }
 
   @SubscribeMessage('join-room')
   joinRoom(client: Socket, code?: string): void {
     try {
-      if (!client.data.player) 
-        throw new ForbiddenException('Bad client: Socket')
+      if (!client.data.player) {
+        client.emit('roomInfoServer', {error: 'BAD client: Socket'});
+        return;
+      }
 
       let room: Room = this.roomService.findRoom(code);
       console.log('findRoom');
       console.log(room);
       
-      if (!room)
-        throw new NotFoundException('room ' + code + 'not found');
+      if (!room) {
+        client.emit('roomInfoServer', {error: 'room not found'});
+        return;
+      }
 
       this.roomService.joinRoom(client, room);
 
-    } catch (e) { this.errorMessage(e.response, client, 'roomInfoServer'); }
+    } catch (e) {console.log("EXEPTION:\n", e)}
   }
 
   @SubscribeMessage('ready')
@@ -174,7 +175,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!player) return;
 
       this.roomService.ready(player, input);
-    } catch {}
+    } catch (e) {console.log("EXEPTION:\n", e)}
   }
 
 
@@ -188,7 +189,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!player || !player.room) return;
 
       this.roomService.startCalc(player.room);
-    } catch {}
+    } catch (e) {console.log("EXEPTION:\n", e)}
   }
 
   @SubscribeMessage('update-paddle')
@@ -202,6 +203,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       player.paddle = paddle * player.room.options.playground.height;
       const playerIndex = player.room.players.indexOf(player);
       RoomService.emit(player.room, 'paddle', playerIndex, paddle);
-    } catch {}
+    } catch (e) {console.log("EXEPTION:\n", e)}
   }
 }
