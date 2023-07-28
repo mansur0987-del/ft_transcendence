@@ -1,9 +1,35 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
+import type { Socket } from "socket.io-client";
+import { onMounted } from "vue";
+
+const props = defineProps<{
+	gameSocket: Socket
+	code?: string
+}>()
 
 async function Exit() {
+	if (props.code) {
+		props.gameSocket.emit('exitGame', props.code)
+	}
 	window.location.assign('http://' + window.location.host + '/player')
 }
+
+async function checkVisible() {
+	if (document.visibilityState !== "visible") {
+		if (props.code) {
+			props.gameSocket.emit('exitGame', props.code)
+		}
+		window.location.assign('http://' + window.location.host + '/player')
+	}
+}
+
+onMounted(() => {
+	props.gameSocket.on('exit', () => {
+		window.location.assign('http://' + window.location.host + '/player')
+	})
+	document.addEventListener('visibilitychange', checkVisible)
+})
 
 </script>
 

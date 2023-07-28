@@ -53,8 +53,22 @@ async function OnGetRoomInfo() {
 	gameSocket.on('roomInfoServer', (data) => {
 		console.log('roomInfoServer')
 		console.log(data)
-		RoomInfo.value = data
+		if (data.error) {
+			room.value = ''
+			window.history.pushState(
+				'http://' + window.location.host + '/game' + room.value,
+				'http://' + window.location.host + '/game',
+				'http://' + window.location.host + '/game' + room.value
+			)
+		}
+		else {
+			RoomInfo.value = data
+		}
 	})
+}
+
+async function EmitJoinRoom() {
+	gameSocket.emit('join-room', room.value)
 }
 
 const route = useRoute();
@@ -62,6 +76,7 @@ onMounted(async () => {
 	console.log('gameSocket')
 	console.log(gameSocket)
 
+	await axios.post('player/profile', { updateData: { status: 2 } })
 	await axios.get('player/profile').catch((e) => {
 		console.log(e)
 	}).then((res) => {
@@ -69,14 +84,21 @@ onMounted(async () => {
 			myUser.value = res.data
 		}
 	})
-	if (route.params.room) {
-		room.value = route.params.room.toString()
 
+
+	if (gameSocket) {
+		if (route.params.id) {
+			console.log('route.params.room')
+			console.log(route.params.id)
+			room.value = route.params.id.toString()
+			await EmitJoinRoom()
+		}
+		else {
+			await EmitSearchingPlayer()
+			await GetRoom()
+		}
 	}
-	else {
-		await EmitSearchingPlayer()
-		await GetRoom()
-	}
+
 })
 
 async function LetsPlay() {
@@ -89,6 +111,10 @@ watch(room, async (newRoom) => {
 		await EmitGetRoomInfo()
 		await OnGetRoomInfo()
 	}
+	else {
+		await EmitSearchingPlayer()
+		await GetRoom()
+	}
 })
 
 
@@ -96,7 +122,7 @@ watch(room, async (newRoom) => {
 
 <template>
 	<div>
-		<ExitGame />
+		<ExitGame v-if="gameSocket" :gameSocket='gameSocket' :code="RoomInfo?.id" />
 		<div class="Users">
 			<h1>
 				Users:

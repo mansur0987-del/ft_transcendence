@@ -194,7 +194,7 @@ onMounted(async () => {
 		}, 100)
 		console.log('startGame')
 		console.log(data)
-		window.location.assign('http://' + window.location.host + '/game/' + data)
+		window.location.assign('http://' + window.location.host + '/game/' + data.code)
 	})
 	document.addEventListener('visibilitychange', checkVisible)
 })
