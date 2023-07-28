@@ -1,4 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	ForbiddenException,
+	NotFoundException
+} from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Socket } from 'socket.io';
 import { MatchEntity } from 'src/player/entities/match.entity';
@@ -37,6 +42,22 @@ export class RoomService {
    */
   static emit(room: Room, event: string, ...args: any): void {
     for (const player of room.players) player.socket.emit(event, ...args);
+  }
+
+  changeRoomMode(client: Socket, code: string, newMode: number): Room {
+    let thisRoom = this.findRoom(code);
+    if (!thisRoom)
+      throw new NotFoundException('room not found');
+    let accessFlg = false;
+    for (let i = 0; i < thisRoom.players.length; i++) {
+      if (client.data.player.id == thisRoom.players[i].socket.data.player.id)
+        accessFlg = true;
+    }
+    if (!accessFlg)
+      throw new ForbiddenException('player not in this room');
+    thisRoom.options.mode = newMode;
+    this.rooms.set(code, thisRoom);
+    return thisRoom;
   }
 
   createRoom(code: string = null): Room {

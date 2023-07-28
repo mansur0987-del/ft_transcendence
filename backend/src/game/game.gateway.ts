@@ -7,6 +7,11 @@ import {
   ConnectedSocket,
   MessageBody
 } from '@nestjs/websockets';
+import {
+	BadRequestException,
+	ForbiddenException,
+	NotFoundException
+} from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/service/auth.service';
@@ -33,6 +38,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
   @WebSocketServer()
   server: any;
+
+  errorMessage(response: any, client: Socket) {
+		console.log('exception:\n' + response);
+		client.emit('msgFromServer', {
+			error: (response?.reason)
+		})
+	}
 
   // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN
   async handleConnection(@ConnectedSocket() client: Socket): Promise<any> {
@@ -96,7 +108,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('roomInfo')
   roomInfo(@ConnectedSocket()client: Socket, @MessageBody() code?: string)
   {
-    if (!Socket)
+    if (!client)
     {
       console.log('NoSocket')
       return ;
@@ -117,6 +129,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     roomInfo.firstPlSock.emit('roomInfoServer', toSend);
     roomInfo.secondPlSock.emit('roomInfoServer', toSend);
+  }
+
+  @SubscribeMessage('changeMode')
+  changeMode(@ConnectedSocket()client: Socket, @MessageBody() body: any) {
+    try {
+      if (!client || !body || !body.newMode || !body.code)
+        throw new BadRequestException('no client or no newMode');
+      if (body.newMode < 0 || body.newMode > 2)
+        throw new BadRequestException('BAD newMode');
+      let newRoom = this.roomService.changeRoomMode(client, body.code, body.newMode);
+      const toSend = {
+        id: newRoom.code,
+        firstPlayerId: newRoom.players[0].player.id,
+        firstPlayerName: newRoom.players[0].player.name,
+        secondPlayerId: newRoom.players[1].player.id,
+        secondPlayerName: newRoom.players[1].player.name,
+        mode: newRoom.options.mode
+      }
+      newRoom.players[0].socket.emit('roomInfoServer', toSend);
+      newRoom.players[1].socket.emit('roomInfoServer', toSend);
+    }
+    catch (e) { this.errorMessage(e.response, client); }
   }
 
   @SubscribeMessage('join-room')
@@ -149,6 +183,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomService.ready(player, input);
     } catch {}
   }
+
+
 
   @SubscribeMessage('start')
   onStart(client: Socket): void {
