@@ -51,6 +51,8 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async startGameForTwo(initiator: any, who: any) {
+		console.log('initiator:\n', initiator, '\n\n');
+		console.log('wwho:\n', who, '\n\n');
 		initiator.data.player.id = initiator.user_id_in_db;
 		who.data.player.name = who.user_name_in_db;
 		const roomCode = this.roomService.createRoomForTwoPlayers(initiator, who);
