@@ -278,8 +278,8 @@ export class RoomService {
   getRoomInfo(code?: string): any
   {
     const thisRoom = this.findRoom(code);
-    thisRoom.players[0].player.id;
-
+    if (!thisRoom || thisRoom.players.length != 2)
+      return null;
     return ({
       id: code,
       firstPlayerId: thisRoom.players[0].player.id,

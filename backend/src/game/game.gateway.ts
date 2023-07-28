@@ -107,27 +107,31 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('roomInfo')
   roomInfo(@ConnectedSocket()client: Socket, @MessageBody() code?: string)
   {
-    if (!client)
-    {
-      console.log('NoSocket')
-      return ;
-    }
-    if (!code)
-    {
-      console.log('NoCode')
-      return ;
-    }
-    const roomInfo = this.roomService.getRoomInfo(code);
-    const toSend = {
-      id: roomInfo.id,
-      firstPlayerId: roomInfo.firstPlayerId,
-      firstPlayerName: roomInfo.firstPlayerName,
-      secondPlayerId: roomInfo.secondPlayerId,
-      secondPlayerName: roomInfo.secondPlayerName,
-      mode: roomInfo.mode
-    }
-    roomInfo.firstPlSock.emit('roomInfoServer', toSend);
-    roomInfo.secondPlSock.emit('roomInfoServer', toSend);
+    try {
+      if (!client)
+      {
+        console.log('NoSocket')
+        return ;
+      }
+      if (!code)
+      {
+        console.log('NoCode')
+        return ;
+      }
+      const roomInfo = this.roomService.getRoomInfo(code);
+      if (!roomInfo)
+        throw new NotFoundException('no room or wrong number of players')
+      const toSend = {
+        id: roomInfo.id,
+        firstPlayerId: roomInfo.firstPlayerId,
+        firstPlayerName: roomInfo.firstPlayerName,
+        secondPlayerId: roomInfo.secondPlayerId,
+        secondPlayerName: roomInfo.secondPlayerName,
+        mode: roomInfo.mode
+      }
+      roomInfo.firstPlSock.emit('roomInfoServer', toSend);
+      roomInfo.secondPlSock.emit('roomInfoServer', toSend);
+    } catch (e){console.log("EXCEPTION:\n", e)}
   }
 
   @SubscribeMessage('changeMode')
@@ -153,16 +157,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('join-room')
   joinRoom(client: Socket, code?: string): void {
     try {
-      console.log('START_JOIN-ROOM');
-      if (!client.data.player) return;
+      if (!client.data.player) 
+        throw new ForbiddenException('Bad client: Socket')
 
       let room: Room = this.roomService.findRoom(code);
       console.log('findRoom');
       console.log(room);
       
-      if (!room) room = this.roomService.createRoom(code);
-      console.log('createRoom');
-      console.log(room);
+      if (!room)
+        throw new NotFoundException('room ' + code + 'not found');
 
       this.roomService.joinRoom(client, room);
 
