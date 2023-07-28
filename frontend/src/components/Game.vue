@@ -90,23 +90,7 @@ watch(room, async (newRoom) => {
 		await OnGetRoomInfo()
 	}
 })
-
-// if (gameSocket.value) {
-// 	gameSocket.value.on('room', (data) => {
-// 		console.log('Received a message from the backend room code:', data);
-// 		isReady.value = true;
-// 	});
-
-// 	gameSocket.on("add", (data) => {
-// 		console.log("Socket add: ", data);
-// 		playerId.value = data - 1;
-// 	});
-// }
-// cleanUp(cleaner);
-// gameSocket.on("add", (data) => {
-// 	console.log("Socket add: ", data);
-// 	playerId.value = data - 1;
-// });
+//
 
 </script>
 
