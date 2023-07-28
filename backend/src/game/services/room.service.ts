@@ -23,7 +23,7 @@ export class RoomService {
     ball: { speed: 20, radius: 20 },
     paddle: { width: 20, height: 200, x: 50 },
     score: { y: 15, max: 10 },
-    mode: null,
+    mode: 0,
   });
 
   /**
@@ -65,8 +65,8 @@ export class RoomService {
   }
 
   joinRoom(socket: Socket, room: Room): void {
-    console.log("-------joinRoom started!--------")
-    console.log(socket.data.player.id)
+    // console.log("-------joinRoom started!--------")
+    // console.log(socket.data.player.id)
     if (room.state == State.WAITING) {
       // create player instance
       const player: Player = {
