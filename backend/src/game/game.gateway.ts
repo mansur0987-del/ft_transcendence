@@ -34,7 +34,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: any;
 
   // THIS ONE IS HANDLING CONNECTION BASED ON THE TOKEN THAT GIVEN
-  async handleConnection(client: Socket): Promise<any> {
+  async handleConnection(@ConnectedSocket() client: Socket): Promise<any> {
     try {
       // THIS IS A RISK ZONE
       const token = client.request.headers.authorization && client.request.headers.authorization.split(' ')[1];
@@ -80,6 +80,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       this.roomService.addSock(client);
       console.log('add_back');
+      console.log(client);
+
     } catch {}
   }
 
