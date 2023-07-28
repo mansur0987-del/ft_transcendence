@@ -15,8 +15,14 @@ const error = ref<string>('')
 async function SendMsg(channelId: number | undefined, msg: string) {
 	error.value = ''
 	if (msg) {
-		socket?.emit('msgToServer', { chat_id: channelId, message: msg })
-		sendMsg.value = ''
+		if (msg.length > 200) {
+			error.value = 'msg too long'
+		}
+		else {
+			socket?.emit('msgToServer', { chat_id: channelId, message: msg })
+			sendMsg.value = ''
+		}
+
 	}
 }
 

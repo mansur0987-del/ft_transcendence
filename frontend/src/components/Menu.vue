@@ -4,55 +4,45 @@
 
 
 <script setup lang="ts">
-import Engine from './Engine.vue'
 import { Socket } from "socket.io-client";
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { ElButton } from "element-plus"
 
 const props = defineProps<{
     gameSocket: Socket,
     mode: number,
+    code: string,
 }>()
-const isLoading = ref("Find Game");
-const isHardcore = ref(false);
 
-const searchOpponent = () => {
-    try {
-        isLoading.value = "Searching...";
-        console.log('props.gameSocket');
-        console.log(props.gameSocket);
-        props.gameSocket.emit('add');
-        console.log('adding');
-    } catch (err) {
-        isLoading.value = "Error";
-        console.error(err);
+const isHardcore = ref<number>(props.mode);
+
+async function toggleMode() {
+    if (isHardcore.value === 2) {
+        isHardcore.value = 0;
     }
+    else {
+        isHardcore.value++;
+    }
+    props.gameSocket.emit('changeMode', { newMode: isHardcore.value, code: props.code })
 }
 
-const toggleMode = () => {
-    isHardcore.value = !isHardcore.value;
-    if (isHardcore.value) { }
-    //  props.mode = 0; // WHY IS READONL
-    // else
-    //  props.mode = 1;
-}
+watch(props, (newProps) => {
+    if (newProps) {
+        isHardcore.value = newProps.mode
+    }
+})
 </script>
-
-
-
 
 
 <template>
     <div class="button">
-        <h1 class="button-text">Welcome to the Mighty Pong game!</h1>
-        <button @click="searchOpponent()">
-            {{ isLoading }}
-        </button>
-
-        <button
-            :class="isHardcore ? 'bg-red-700 hover:bg-red-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4' : 'bg-gray-700 hover:bg-gray-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4'"
-            @Click="toggleMode()">
-            {{ isHardcore ? "Hardcore" : "Standard" }}
-        </button>
+        <h1 class="button-text">Welcome to the Mighty Pong game! </h1>
+        <el-button size="large" color="red" @click="toggleMode">
+            {{ !isHardcore ? "Standard" : isHardcore === 1 ? "Fast" : 'Small_padle' }}
+        </el-button>
+        <el-button size="large" color="red">
+            Let's play
+        </el-button>
     </div>
 </template>
 
@@ -99,79 +89,5 @@ const toggleMode = () => {
     color: rgb(0, 0, 0);
 
 }
-
-.button button {
-    background-color: greenyellow;
-    /* Green */
-    width: auto;
-    margin-left: auto;
-    margin-right: auto;
-    border: none;
-    color: blueviolet;
-    padding: 21px 42px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 20px;
-    transition: transform 500ms ease;
-    border-radius: 20px;
-    cursor: pointer;
-}
-
-.button button:hover {
-    transform: scale(1.1) translateY(-5px);
-}
-
-.button button {
-    background-color: greenyellow;
-    /* Green */
-    width: auto;
-    margin-left: auto;
-    margin-right: auto;
-    border: none;
-    color: blueviolet;
-    padding: 21px 42px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 20px;
-    transition: transform 500ms ease;
-    border-radius: 20px;
-    cursor: pointer;
-}
-
-.button button:hover {
-    transform: scale(1.1) translateY(-5px);
-}
 </style>
 
-
-
-<!-- <template>
-    <div class='w-screen h-screen justify-center relative'>
-        <div class='scene w-full h-full absolute' >
-            <Engine :isPreview="true" />
-        </div>
-        <div class='w-screen h-screen flex justify-center items-center'>
-            <div
-                class="w-1/2 h-fit flex flex-col justify-center items-center bg-gray-400 bg-opacity-70 rounded-lg p-8 relative z-10">
-                <h1 class="text-2xl font-bold text-center mb-4">Pong Game</h1>
-                <button class="bg-gray-700 hover:bg-gray-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4"
-                    @click="searchOpponent()">
-                    {{ isLoading }}
-                </button>
-
-                <button
-                    :class="isHardcore ? 'bg-red-700 hover:bg-red-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4' : 'bg-gray-700 hover:bg-gray-950 text-white font-bold py-2 px-4 rounded w-1/2 mb-4'"
-                    @Click="toggleMode()">
-                    {{ isHardcore ? "Hardcore" : "Standard" }}
-                </button>
-                <p class="text-center">Instructions:</p>
-                <ul class="list-disc list-inside mt-2">
-                    <li>Use the W and S keys to move your paddle up and down</li>
-                    <li>Use the space bar to pause the game</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</template> -->

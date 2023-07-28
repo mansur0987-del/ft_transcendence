@@ -1,23 +1,24 @@
 <script setup lang="ts">
+import { ElButton } from 'element-plus'
 
 async function Exit() {
-	window.location.href = 'Player'
+	window.location.assign('http://' + window.location.host + '/player')
 }
 
 </script>
 
 <template>
 	<div class="button">
-		<button @click="Exit()">
+		<el-button color="#b25252" size="large" plain @click="Exit()">
 			Exit
-		</button>
+		</el-button>
 	</div>
 </template>
 
 <style scoped>
 .button {
 	position: absolute;
-	left: 5px;
+	right: 5px;
 	top: 5px;
 	border: none;
 	color: rgb(60, 2, 55);
@@ -29,23 +30,16 @@ async function Exit() {
 }
 
 .button button {
-	background-color: red;
 	width: 100px;
 	margin-left: auto;
 	margin-right: auto;
 	border: none;
-	color: white;
-	padding: 10px 10px;
+	padding: 20px 20px;
 	text-align: center;
 	text-decoration: none;
 	display: inline-block;
 	font-size: 16px;
-	transition: transform 500ms ease;
 	border-radius: 10px;
-	cursor: pointer;
-}
-
-.button button:hover {
-	transform: scale(1.1) translateY(-5px);
+	height: 55px;
 }
 </style>

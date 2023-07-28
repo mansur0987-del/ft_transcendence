@@ -214,6 +214,9 @@ async function Cancel(id?: number) {
 async function checkVisible() {
 	if (document.visibilityState !== "visible" && getInvieId.value) {
 		store.GetSocketInvite().emit('cancelInviteInitiator', { id: getInvieId.value })
+		setTimeout(async () => {
+			await GetInvites()
+		}, 100)
 	}
 }
 

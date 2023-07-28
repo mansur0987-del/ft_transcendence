@@ -44,7 +44,7 @@ const router = createRouter({
 			name: 'Chat'
 		},
 		{
-			path: '/chat/:id',
+			path: '/chat/:room',
 			component: () => import('./components/Chat.vue'),
 			name: 'ChatDir'
 		},
@@ -52,6 +52,11 @@ const router = createRouter({
 			path: '/game',
 			component: () => import('./components/Game.vue'),
 			name: 'Game'
+		},
+		{
+			path: '/game/:id',
+			component: () => import('./components/Game.vue'),
+			name: 'GameRoom'
 		},
 		{
 			path: '/',
