@@ -39,9 +39,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: any;
 
-  errorMessage(response: any, client: Socket) {
+  errorMessage(response: any, client: Socket, event: string) {
 		console.log('exception:\n' + response);
-		client.emit('msgFromServer', {
+		client.emit(event, {
 			error: (response?.reason)
 		})
 	}
@@ -94,14 +94,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       // if (this.roomService.findPlayer(Socket.data.player.id) == ) return;
       this.roomService.addSock(client);
-      console.log('add_back');
-      console.log(client.data);
-      console.log('client.data.PLAYER');
-      console.log(client.data.player);
-      console.log('client.data.player.ID');
-      console.log(client.data.player.id);
-
-    } catch (e){console.log("EXEPTION_88:\n", e)}
+    } catch (e){console.log("EXEPTION:\n", e)}
   }
 
   @SubscribeMessage('roomInfo')
@@ -131,7 +124,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       roomInfo.firstPlSock.emit('roomInfoServer', toSend);
       roomInfo.secondPlSock.emit('roomInfoServer', toSend);
-    } catch (e){console.log("EXCEPTION:\n", e)}
+    } catch (e){console.log("EXCEPTION:\n", e), this.errorMessage(e.response, client, 'roomInfoServer')}
   }
 
   @SubscribeMessage('changeMode')
@@ -151,7 +144,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       newRoom.players[0].socket.emit('roomInfoServer', toSend);
       newRoom.players[1].socket.emit('roomInfoServer', toSend);
     }
-    catch (e) { this.errorMessage(e.response, client); }
+    catch (e) { this.errorMessage(e.response, client, 'roomInfoServer'); }
   }
 
   @SubscribeMessage('join-room')
@@ -169,7 +162,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.roomService.joinRoom(client, room);
 
-    } catch (e) { this.errorMessage(e.response, client); }
+    } catch (e) { this.errorMessage(e.response, client, 'roomInfoServer'); }
   }
 
   @SubscribeMessage('ready')
