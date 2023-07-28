@@ -42,10 +42,13 @@ onMounted(async () => {
 		}, 100)
 	})
 
-	await storeLeftBar.GetSocketInvite().on('startGame', async () => {
+	await storeLeftBar.GetSocketInvite().on('startGame', async (data) => {
 		setTimeout(async () => {
 			await GetInvitesLeftBar()
 		}, 100)
+		console.log('startGame')
+		console.log(data)
+		window.location.assign('http://' + window.location.host + '/game/' + data)
 	})
 })
 

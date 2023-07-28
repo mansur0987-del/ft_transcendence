@@ -178,18 +178,23 @@ onMounted(async () => {
 		setTimeout(async () => {
 			await GetInvites()
 		}, 100)
+		store.GetSocketInvite().off('')
 	})
 
 	await store.GetSocketInvite().on('cancelInvite', async () => {
 		setTimeout(async () => {
 			await GetInvites()
 		}, 100)
+		store.GetSocketInvite().off('')
 	})
 
-	await store.GetSocketInvite().on('startGame', async () => {
+	await store.GetSocketInvite().on('startGame', async (data) => {
 		setTimeout(async () => {
 			await GetInvites()
 		}, 100)
+		console.log('startGame')
+		console.log(data)
+		window.location.assign('http://' + window.location.host + '/game/' + data)
 	})
 	document.addEventListener('visibilitychange', checkVisible)
 })
@@ -209,6 +214,7 @@ async function Cancel(id?: number) {
 	setTimeout(async () => {
 		await GetInvites()
 	}, 100)
+	store.GetSocketInvite().off('')
 }
 
 async function checkVisible() {
@@ -217,7 +223,9 @@ async function checkVisible() {
 		setTimeout(async () => {
 			await GetInvites()
 		}, 100)
+		store.GetSocketInvite().off('')
 	}
+
 }
 
 </script>
