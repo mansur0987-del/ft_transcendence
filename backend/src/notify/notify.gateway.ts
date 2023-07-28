@@ -51,15 +51,9 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	async startGameForTwo(initiator: any, who: any) {
-		console.log('initiator.data1:\n', initiator.data)
-		console.log('who.data1:\n', who.data)
-		initiator.data.player = {id: initiator.user_id_in_db, name: initiator.user_name_in_db}
-		who.data.player = {id: who.user_id_in_db, name: who.user_name_in_db}
-		console.log('initiator.data2:\n', initiator.data);
-		console.log('who.data2:\n', who.data)
-		const roomCode = this.roomService.createRoomForTwoPlayers(initiator, who);
-		console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { code: roomCode }));
-		console.log('res acceptInvite who emit =', who.emit('startGame', { code: roomCode }));
+		const newRoom = this.roomService.createRoom();
+		console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { code: newRoom.code }));
+		console.log('res acceptInvite who emit =', who.emit('startGame', { code: newRoom.code }));
 	}
 
 	async cancelOtherInvitesWho(all: Notify[], who_id: number) {
