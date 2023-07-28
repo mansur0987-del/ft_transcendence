@@ -94,11 +94,12 @@ export class RoomService {
 
   addSock(socket: Socket): void {
     console.log('STARTED_SOCK')
-    console.log(socket.data.player)
+    console.log(socket)
+    console.log(socket.data)
     // ensure the player isn't already in the queue
     for (const sock of this.queue)
     {
-      console.log('FOR_LOOP')
+      console.log('FOR_')
       console.log(sock.data.player)
       
       if (sock.data.player.id == socket.data.player.id) return;
