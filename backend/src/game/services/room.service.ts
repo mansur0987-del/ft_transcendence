@@ -65,6 +65,8 @@ export class RoomService {
   }
 
   joinRoom(socket: Socket, room: Room): void {
+    console.log("-------joinRoom started!--------")
+    console.log(socket.data.player.uid)
     if (room.state == State.WAITING) {
       // create player instance
       const player: Player = {
@@ -84,6 +86,7 @@ export class RoomService {
         room.options,
         room.players.map((player) => player.player) /* player entity array */,
       );
+
     }
 
     socket.emit('room', room.code);
