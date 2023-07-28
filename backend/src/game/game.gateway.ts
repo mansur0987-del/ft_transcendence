@@ -91,7 +91,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('roomInfo')
-  roomInfo(@ConnectedSocket()client: Socket, @MessageBody() code?: string)
+  roomInfo(@ConnectedSocket() client: Socket, @MessageBody() code?: string)
   {
     try {
       if (!client)
@@ -123,7 +123,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('changeMode')
-  changeMode(@ConnectedSocket()client: Socket, @MessageBody() body: any) {
+  changeMode(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
     try {
       if (body.newMode < 0 || body.newMode > 2) {
         client.emit('roomInfoServer', {error: 'BAD newMode'});
@@ -145,7 +145,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join-room')
-  joinRoom(client: Socket, code?: string): void {
+  joinRoom(@ConnectedSocket() client: Socket, @MessageBody() code?: string): void {
     try {
       if (!client.data.player) {
         client.emit('roomInfoServer', {error: 'BAD client: Socket'});
@@ -167,7 +167,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('ready')
-  onReady(client: Socket, input: Mode): void {
+  onReady(@ConnectedSocket() client: Socket, input: Mode): void {
     try {
       if (!client.data.player) return;
 
@@ -181,7 +181,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 
   @SubscribeMessage('start')
-  onStart(client: Socket): void {
+  onStart(@ConnectedSocket() client: Socket): void {
     try {
       if (!client.data.player) return;
 
@@ -193,7 +193,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('update-paddle')
-  updatePaddle(client: Socket, paddle: number): void {
+  updatePaddle(@ConnectedSocket() client: Socket, paddle: number): void {
     try {
       if (!client.data.player) return;
 
@@ -204,5 +204,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const playerIndex = player.room.players.indexOf(player);
       RoomService.emit(player.room, 'paddle', playerIndex, paddle);
     } catch (e) {console.log("EXEPTION:\n", e)}
+  }
+
+   @SubscribeMessage('exitGame')
+   exitGame(@ConnectedSocket() client: Socket, @MessageBody() code: string) {
+    if (!client.data.player) {
+      console.log('no such client');
+      return;
+    }
+    if (!code) {
+      console.log('NULL code');
+      return;
+    }
+    const thisRoom = this.roomService.findRoom(code);
+    if (!thisRoom) {
+      console.log('no such room');
+      return;
+    }
+    
+    for (let i = 0; i < thisRoom.players.length; i++) {
+      thisRoom.players[i].socket.emit('exit');
+    }
   }
 }
