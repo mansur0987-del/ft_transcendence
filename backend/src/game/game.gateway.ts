@@ -4,7 +4,8 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  ConnectedSocket
+  ConnectedSocket,
+  MessageBody
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
@@ -93,7 +94,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('roomInfo')
-  roomInfo(@ConnectedSocket()client: Socket, code?: string)
+  roomInfo(@ConnectedSocket()client: Socket, @MessageBody() code?: string)
   {
     if (!Socket)
     {
