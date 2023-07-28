@@ -50,6 +50,14 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	async startGameForTwo(initiator: any, who: any) {
+		initiator.data.player.id = initiator.user_id_in_db;
+		who.data.player.name = who.user_name_in_db;
+		const roomCode = this.roomService.createRoomForTwoPlayers(initiator, who);
+		console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { code: roomCode }));
+		console.log('res acceptInvite who emit =', who.emit('startGame', { code: roomCode }));
+	}
+
 	async cancelOtherInvitesWho(all: Notify[], who_id: number) {
 		for (let i = 0; i < all.length; i++) {
 			//send cancel
@@ -151,8 +159,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			invitesToFace = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invitesToFace, initiator.user_id_in_db);
 
-			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { id: who.user_id_in_db }));
-			console.log('res acceptInvite who emit =', who.emit('startGame', { id: initiator.user_id_in_db }));
+			this.startGameForTwo(initiator, who);
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -195,12 +202,7 @@ export class notifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			invites = await this.notifyService.findAllByWhoId(initiator.user_id_in_db);
 			await this.cancelOtherInvitesWho(invites, initiator.user_id_in_db);
 
-			//create room
-			initiator.data.player.id = initiator.user_id_in_db;
-			who.data.player.name = who.user_name_in_db;
-			const roomCode = this.roomService.createRoomForTwoPlayers(initiator, who);
-			console.log('res acceptInvite initiator emit =', initiator.emit('startGame', { code: roomCode }));
-			console.log('res acceptInvite who emit =', who.emit('startGame', { code: roomCode }));
+			this.startGameForTwo(initiator, who);
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
