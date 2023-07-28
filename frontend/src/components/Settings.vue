@@ -10,12 +10,24 @@ const errorInputName = ref<string>()
 const newName = ref<string>()
 
 async function ChangeName(newName?: string) {
-	await axios.post('player/profile/rename', { "newName": newName })
-		.then(() => {
-			errorInputName.value = "SUCCESS!!"
-		}).catch((res) => {
-			errorInputName.value = res.response.data.message;
-		})
+	if (!newName) {
+		errorInputName.value = 'Input name'
+	}
+	else if (newName.length > 15) {
+		errorInputName.value = 'Enter a name of less than 15 characters'
+	}
+	else if (newName.includes('guest_', 0)) {
+		errorInputName.value = "You cannot choose a 'guest_...' name"
+	}
+	else {
+		await axios.post('player/profile/rename', { "newName": newName })
+			.then(() => {
+				errorInputName.value = "SUCCESS!!"
+			}).catch((res) => {
+				errorInputName.value = res.response.data.message;
+			})
+	}
+
 }
 
 const file = ref<string>('')

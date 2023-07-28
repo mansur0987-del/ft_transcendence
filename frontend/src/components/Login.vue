@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import axios from 'axios'
+import { ref } from "vue";
 
+const error = ref<string>('')
 async function Redirect42() {
+	error.value = ''
 	axios.get('auth/login')
-		.then((res) => (
-			window.location.href = res.data)
-		)
+		.catch(() => {
+			error.value = 'But backend is not ready'
+		})
+		.then((res) => {
+			if (res) {
+				window.location.href = res.data
+			}
+		})
+	setTimeout(() => {
+		error.value = ''
+	}, 3000);
 }
 </script>
 
@@ -15,6 +26,7 @@ async function Redirect42() {
 		<button @click="Redirect42()">
 			Yes!
 		</button>
+		<h1 style="color: red;">{{ error }}</h1>
 	</div>
 </template>
 
@@ -24,7 +36,7 @@ async function Redirect42() {
 	top: 20%;
 	left: 25%;
 	width: 50%;
-	height: 8rem;
+	height: 25%;
 	box-shadow: 0 0 1rem 0 rgba(0, 0, 0, .2);
 	border-radius: 5px;
 	z-index: 1;
@@ -82,6 +94,7 @@ async function Redirect42() {
 .button button:hover {
 	transform: scale(1.1) translateY(-5px);
 }
+
 .button button {
 	background-color: greenyellow;
 	/* Green */
