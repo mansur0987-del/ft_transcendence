@@ -79,6 +79,10 @@ onMounted(async () => {
 	}
 })
 
+async function LetsPlay() {
+	console.log('start game')
+}
+
 watch(room, async (newRoom) => {
 	if (newRoom) {
 		room.value = newRoom
@@ -133,7 +137,8 @@ watch(room, async (newRoom) => {
 		</div>
 		<div class="canvas-container">
 			<canvas ref="canvas" width="800" height="600"></canvas>
-			<Menu :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id" v-if="RoomInfo" />
+			<Menu @LetsPlay="LetsPlay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id"
+				v-if="RoomInfo" />
 		</div>
 
 		<!--<div class="canvas-container">

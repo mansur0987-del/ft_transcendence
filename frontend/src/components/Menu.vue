@@ -14,6 +14,10 @@ const props = defineProps<{
     code: string,
 }>()
 
+const emit = defineEmits<{
+    (e: 'LetsPlay'): void
+}>()
+
 const isHardcore = ref<number>(props.mode);
 
 async function toggleMode() {
@@ -24,6 +28,10 @@ async function toggleMode() {
         isHardcore.value++;
     }
     props.gameSocket.emit('changeMode', { newMode: isHardcore.value, code: props.code })
+}
+
+async function letsplay() {
+    emit("LetsPlay");
 }
 
 watch(props, (newProps) => {
@@ -40,7 +48,7 @@ watch(props, (newProps) => {
         <el-button size="large" color="red" @click="toggleMode">
             {{ !isHardcore ? "Standard" : isHardcore === 1 ? "Fast" : 'Small_padle' }}
         </el-button>
-        <el-button size="large" color="red">
+        <el-button size="large" color="red" @click="letsplay">
             Let's play
         </el-button>
     </div>
