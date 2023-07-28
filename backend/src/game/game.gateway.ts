@@ -134,8 +134,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('changeMode')
   changeMode(@ConnectedSocket()client: Socket, @MessageBody() body: any) {
     try {
-      if (!client || !body || !body.newMode || !body.code)
-        throw new BadRequestException('no client or no newMode');
       if (body.newMode < 0 || body.newMode > 2)
         throw new BadRequestException('BAD newMode');
       let newRoom = this.roomService.changeRoomMode(client, body.code, body.newMode);
