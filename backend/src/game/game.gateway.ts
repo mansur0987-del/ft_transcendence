@@ -67,7 +67,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!user) {
         return client.disconnect();
       }
-
       client.data.player = user;
       client.emit('info', { user });
     } catch (ex) {
