@@ -7,9 +7,10 @@ import { Notify } from "./notify.entity";
 import { NotifyService } from "./notify.services";
 import { NotifyConroller } from "./notify.controller";
 import { GameModule } from "src/game/game.module";
+import { RoomService } from "src/game/services/room.service";
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, GameModule],
+	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, GameModule, RoomService],
 	controllers: [NotifyConroller],
 	providers: [NotifyService, NotifyConroller, notifyGateway]
 })
