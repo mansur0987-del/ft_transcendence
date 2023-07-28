@@ -3,13 +3,16 @@ import { io, Socket } from "socket.io-client"
 import { ref } from "vue"
 
 interface Notify {
-	initiator_name: string,
-	who_name: string
+	initiator_name?: string,
+	initiator_id?: number,
+	who_name?: string,
+	who_id?: number
 }
 
 export const Store = defineStore('store', () => {
 	let socketInvite : Socket
-	let invitesName = ref<Notify[]>([])
+	let invitesGet = ref<Notify[]>([])
+	let invitesSend = ref<Notify[]>([])
 
 	function GetSocketInvite(){
 		if (!socketInvite){
@@ -28,6 +31,6 @@ export const Store = defineStore('store', () => {
 		}
 	}
 
-  return { invitesName, GetSocketInvite, DisconnectSocketInvite }
+  return { invitesGet, invitesSend, GetSocketInvite, DisconnectSocketInvite }
 })
 

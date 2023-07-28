@@ -1,29 +1,67 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Player from './components/Player.vue'
-import Login from './components/Login.vue'
-import QrVerificate from './components/QrVerificate.vue'
-import Settings from './components/Settings.vue'
-import Players from './components/Players.vue'
-import FriendList from './components/FriendList.vue'
-import Chat from './components/Chat.vue'
-import Game from './components/Game.vue'
-import PathNotFound from './components/PathNotFound.vue'
 import axios from "axios";
 
 const router = createRouter({
 	routes: [
-		{ path: '/player', component: Player, name: 'Player'},
-		{ path: '/player/:id', component: Player, name: 'PlayerOther'},
-		{ path: '/login', component: Login, name: 'Login'},
-		{ path: '/qrverificate', component: QrVerificate, name: 'QrVerificate'},
-		{ path: '/settings', component: Settings, name: 'Settings' },
-		{ path: '/players', component: Players, name: 'Players' },
-		{ path: '/friendlist', component: FriendList, name: 'FriendList' },
-		{ path: '/chat', component: Chat, name: 'Chat' },
-		{ path: '/chat/:id', component: Chat, name: 'ChatDir' },
-		{ path: '/game', component: Game, name: 'Game' },
-		{ path: '/', redirect: '/player' },
-		{ path: '/:pathMatch(.*)*', component: PathNotFound, name: 'PathNotFound' },
+		{
+			path: '/player',
+			component: () => import('./components/Player.vue'),
+			name: 'Player'
+		},
+		{
+			path: '/player/:id',
+			component: () => import('./components/Player.vue'),
+			name: 'PlayerOther'
+		},
+		{
+			path: '/login',
+			component: () => import('./components/Login.vue'),
+			name: 'Login'
+		},
+		{
+			path: '/qrverificate',
+			component: () => import('./components/QrVerificate.vue'),
+			name: 'QrVerificate'
+		},
+		{
+			path: '/settings',
+			component: () => import('./components/Settings.vue'),
+			name: 'Settings'
+		},
+		{
+			path: '/players',
+			component: () => import('./components/Players.vue'),
+			name: 'Players'
+		},
+		{
+			path: '/friendlist',
+			component: () => import('./components/FriendList.vue'),
+			name: 'FriendList'
+		},
+		{
+			path: '/chat',
+			component: () => import('./components/Chat.vue'),
+			name: 'Chat'
+		},
+		{
+			path: '/chat/:id',
+			component: () => import('./components/Chat.vue'),
+			name: 'ChatDir'
+		},
+		{
+			path: '/game',
+			component: () => import('./components/Game.vue'),
+			name: 'Game'
+		},
+		{
+			path: '/',
+			redirect: '/player'
+		},
+		{
+			path: '/:pathMatch(.*)*',
+			component: () => import('./components/PathNotFound.vue'),
+			name: 'PathNotFound'
+		},
 	],
 	history: createWebHistory()
 })
@@ -40,7 +78,7 @@ router.beforeEach(async (to, from) => {
 	})
 	if (status === 0){
 		if (to.name === 'Login' || to.name === 'QrVerificate'){
-			return Player
+			return '/player'
 		}
 	}
 	else if (status === 2){
@@ -55,7 +93,7 @@ router.beforeEach(async (to, from) => {
 		else if (to.name === 'Login' && to.query.code !== undefined && to.query.code !== null){
 			localStorage.setItem('token', to.query.code);
 			axios.defaults.headers.common['Authorization'] = 'Bearer ' + to.query.code
-			return Player
+			return '/player'
 		}
 	}
 })
