@@ -95,14 +95,22 @@ export class RoomService {
   addSock(socket: Socket): void {
     // ensure the player isn't already in the queue
     for (const sock of this.queue)
+    {
+      console.log(sock.data.player)
+      console.log(socket.data.player)
       if (sock.data.player.id == socket.data.player.id) return;
+    }
 
     if (this.findPlayer(socket.data.player.id)) return;
 
     // add to the queue
+    console.log("QUEUE:")
+    console.log(this.queue);
     this.queue.push(socket);
 
     // emit queue length
+    console.log("QUEUE_LENGTH:")
+    console.log(this.queue.length);
     socket.emit('add', this.queue.length);
     // if not enough players, leave
     if (this.queue.length < 2) return;
