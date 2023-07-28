@@ -166,7 +166,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       this.roomService.joinRoom(client, room);
 
-    } catch {}
+    } catch (e) { this.errorMessage(e.response, client); }
   }
 
   @SubscribeMessage('ready')
