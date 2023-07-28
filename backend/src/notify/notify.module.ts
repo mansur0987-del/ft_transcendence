@@ -6,10 +6,10 @@ import { notifyGateway } from "./notify.gateway";
 import { Notify } from "./notify.entity";
 import { NotifyService } from "./notify.services";
 import { NotifyConroller } from "./notify.controller";
-import { RoomService } from "src/game/services/room.service";
+import { GameModule } from "src/game/game.module";
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, RoomService],
+	imports: [TypeOrmModule.forFeature([Notify]), PlayerModule, JwtModule, GameModule],
 	controllers: [NotifyConroller],
 	providers: [NotifyService, NotifyConroller, notifyGateway]
 })
