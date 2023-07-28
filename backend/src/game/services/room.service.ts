@@ -253,4 +253,21 @@ export class RoomService {
       if (!room.players.length) return this.rooms.delete(room.code);
     }
   }
+
+  getRoomInfo(code?: string): any
+  {
+    const thisRoom = this.findRoom(code);
+    thisRoom.players[0].player.id;
+
+    return ({
+      id: code,
+      firstPlayerId: thisRoom.players[0].player.id,
+      firstPlayerName: thisRoom.players[0].player.name,
+      firstPlSock: thisRoom.players[0].socket,
+      secondPlayerId: thisRoom.players[1].player.id,
+      secondPlayerName: thisRoom.players[1].player.name,
+      secondPlSock: thisRoom.players[1].socket,
+      mode: thisRoom.options.mode
+    })
+  }
 }

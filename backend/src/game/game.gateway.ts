@@ -106,9 +106,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('NoCode')
       return ;
     }
-    const thisRoom = (this.roomService.findRoom(code));
-    for (let i = 0; i < thisRoom.players.length; i++)
-      thisRoom.players[i].socket.emit('roomInfoServer', thisRoom);
+    const roomInfo = this.roomService.getRoomInfo(code);
+    const toSend = {
+      id: roomInfo.id,
+      firstPlayerId: roomInfo.firstPlayerId,
+      firstPlayerName: roomInfo.firstPlayerName,
+      secondPlayerId: roomInfo.secondPlayerId,
+      secondPlayerName: roomInfo.secondPlayerName,
+      mode: roomInfo.mode
+    }
+    roomInfo.firstPlSock.emit('roomInfoServer', toSend);
+    roomInfo.secondPlSock.emit('roomInfoServer', toSend);
   }
 
   @SubscribeMessage('join-room')
