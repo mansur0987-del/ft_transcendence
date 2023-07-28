@@ -83,20 +83,49 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // if (this.roomService.findPlayer(Socket.data.player.id) == ) return;
       this.roomService.addSock(client);
       console.log('add_back');
-      console.log(client);
+      console.log(client.data);
+      console.log('client.data.PLAYER');
+      console.log(client.data.player);
+      console.log('client.data.player.ID');
+      console.log(client.data.player.id);
 
     } catch (e){console.log("EXEPTION_88:\n", e)}
+  }
+
+  @SubscribeMessage('roomInfo')
+  roomInfo(@ConnectedSocket()client: Socket, code?: string)
+  {
+    if (!Socket)
+    {
+      console.log('NoSocket')
+      return ;
+    }
+    if (!code)
+    {
+      console.log('NoCode')
+      return ;
+    }
+    const thisRoom = (this.roomService.findRoom(code));
+    for (let i = 0; i < thisRoom.players.length; i++)
+      thisRoom.players[i].socket.emit('roomInfoServer')
   }
 
   @SubscribeMessage('join-room')
   joinRoom(client: Socket, code?: string): void {
     try {
+      console.log('START_JOIN-ROOM');
       if (!client.data.player) return;
 
       let room: Room = this.roomService.findRoom(code);
+      console.log('findRoom');
+      console.log(room);
+      
       if (!room) room = this.roomService.createRoom(code);
+      console.log('createRoom');
+      console.log(room);
 
       this.roomService.joinRoom(client, room);
+
     } catch {}
   }
 

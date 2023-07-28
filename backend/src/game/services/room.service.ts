@@ -66,7 +66,7 @@ export class RoomService {
 
   joinRoom(socket: Socket, room: Room): void {
     console.log("-------joinRoom started!--------")
-    console.log(socket.data.player.uid)
+    console.log(socket.data.player.id)
     if (room.state == State.WAITING) {
       // create player instance
       const player: Player = {
@@ -93,14 +93,14 @@ export class RoomService {
   }
 
   addSock(socket: Socket): void {
-    console.log('STARTED_SOCK')
-    console.log(socket)
-    console.log(socket.data)
+    // console.log('STARTED_SOCK')
+    // console.log(socket)
+    // console.log(socket.data)
     // ensure the player isn't already in the queue
     for (const sock of this.queue)
     {
-      console.log('FOR_')
-      console.log(sock.data.player)
+      // console.log('FOR_')
+      // console.log(sock.data.player)
       
       if (sock.data.player.id == socket.data.player.id) return;
     }
@@ -123,7 +123,12 @@ export class RoomService {
     const room: Room = this.createRoom();
     // iterate over queue and join players
     while (this.queue.length && room.players.length < 2)
+    {
+      console.log('ROOMSERVICE: JoinRoom');
       this.joinRoom(this.queue.shift(), room);
+      console.log('ROOMSERVICE: JoinRoom DONE!!');
+    }
+    
   }
 
   /**
