@@ -63,11 +63,11 @@ export class MatchService {
        COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0)) as wins_to_all
         from (Select "loserId"  as user_id, count (distinct match_entity.id) as loses
         from match_entity
-        group by loser) as t1
+        group by "loserId") as t1
         full join
-        (Select winner as user_id, count (distinct id) as wins
+        (Select "winnerId" as user_id, count (distinct id) as wins
         from match_entity
-        group by winner) as t2
+        group by "winnerId") as t2
         on t1.user_id = t2.user_id
     `)
     console.log(allUsersStats);
