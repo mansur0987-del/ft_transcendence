@@ -94,7 +94,7 @@ export class MatchService {
   async getMatchHistory(id: number): Promise<toReturn[]> {
     const matches: any[] = await this.matchRepo.find({where: [{ loserId: id}, {winnerId: id}]})
     let result: toReturn[] = [];
-    for (let i = 0; i < matches.length; i++) {
+    for (let i = matches.length - 1; i >= 0; i--) {
       const tmp: toReturn = {
         winnerId: matches[i].winner.id,
         winnerName: matches[i].winner.name,
