@@ -105,10 +105,17 @@ const formatter = (row: MathHistory, column: TableColumnCtx<MathHistory>) => {
 }
 
 const Length = (length: number) => {
-	if (length > 20) {
-		return 350
+	if (length >= 5) {
+		return 300
 	}
-	return (length * 20)
+	else if (length === 0) {
+		return 100
+	}
+	return (length * 40)
+}
+
+const filterTag = (value: string, row: MathHistory) => {
+	return row.mode === Number(value)
 }
 
 </script>
@@ -151,14 +158,19 @@ const Length = (length: number) => {
 			<h1>
 				Match History:
 			</h1>
-			<el-table :data="mathHistory" :default-sort="{ prop: 'date', order: 'descending' }"
-				:height="Length(mathHistory.length)" style="width: 750px" v-if="mathHistory">
-				<el-table-column prop="date" label="Date" width="100" />
-				<el-table-column prop="winnerName" label="Winner" width="100" />
-				<el-table-column prop="winnerScore" width="50" />
-				<el-table-column prop="loserScore" width="50" />
-				<el-table-column prop="loserName" label="Loser" width="100" />
-				<el-table-column label="Mode" width="100" :formatter="formatter" />
+			<el-table :data="mathHistory" :border="true" :default-sort="{ prop: 'date', order: 'descending' }"
+				:height="Length(mathHistory.length)" style="width: 750px">
+				<el-table-column prop="date" sortable label="Date" width="150" />
+				<el-table-column prop="winnerName" label="Winner" width="150" />
+				<el-table-column label="Score" width="100">
+					<el-table-column prop="winnerScore" width="50" />
+					<el-table-column prop="loserScore" width="50" />
+				</el-table-column>
+				<el-table-column prop="loserName" label="Loser" width="150" />
+				<el-table-column label="Mode" width="150" :formatter="formatter" :filters="[
+					{ text: 'default', value: '0' },
+					{ text: 'fast', value: '1' },
+					{ text: 'hardcore', value: '2' }]" :filter-method="filterTag" />
 			</el-table>
 		</div>
 
