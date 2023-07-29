@@ -2,7 +2,8 @@
 import { onMounted, ref, watch } from "vue";
 import gameSocket from '../socketGame'
 //import { watch } from "vue";
-//import Multiplayer from "./Multiplayer.vue"
+import Multiplayer from "./Multiplayer.vue"
+import Engine from "./Engine.vue"
 import Menu from './Menu.vue'
 //import Pong from './Pong.vue'
 import ExitGame from './ExitGame.vue'
@@ -15,6 +16,7 @@ const myUser = ref<{
 	id: number,
 	name: string
 }>()
+
 const RoomInfo = ref<{
 	id: string,
 	firstPlayerId: number,
@@ -23,6 +25,8 @@ const RoomInfo = ref<{
 	secondPlayerName: string,
 	mode: number
 }>()
+
+const hasStarted = ref<boolean>(false);
 
 async function EmitSearchingPlayer() {
 	gameSocket.emit('add')
@@ -101,8 +105,12 @@ onMounted(async () => {
 
 })
 
-async function LetsPlay() {
-	console.log('start game')
+async function letsplay() {
+	console.log('lets play in game.vue');
+	// gameSocket.emit('letsplay', room.value);
+	hasStarted.value = true;
+	gameSocket.emit('ready', { mode: RoomInfo.value?.mode });
+	gameSocket.emit('start');
 }
 
 watch(room, async (newRoom) => {
@@ -147,9 +155,11 @@ watch(room, async (newRoom) => {
 		</div>
 		<div class="canvas-container">
 			<canvas ref="canvas" width="800" height="600"></canvas>
-			<Menu @LetsPlay="LetsPlay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id"
-				v-if="RoomInfo" />
+			<Menu @letsplay="letsplay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id"
+				v-if="RoomInfo && !hasStarted" />
+			<!-- <Engine v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :isPreview="true" /> -->
 		</div>
+		<Multiplayer v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :roomInfo="RoomInfo" />
 
 		<!--<div class="canvas-container">
 			<canvas ref="canvas" width="800" height="600"></canvas>

@@ -11,8 +11,8 @@ import { io, Socket } from "socket.io-client";
 import Menu from "./Menu.vue";
 
 const props = defineProps<{
-    isPreview: boolean,
     gameSocket: Socket
+    isPreview: boolean,
 }>()
 
 const canvasRef = ref<HTMLCanvasElement>()
@@ -196,6 +196,5 @@ onMounted(() => {
     }
 
 })
-
 
 </script>

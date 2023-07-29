@@ -144,6 +144,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     catch (e) {console.log("EXEPTION:\n", e)}
   }
 
+  @SubscribeMessage('letsplay')
+  letsplay(@ConnectedSocket() client: Socket, @MessageBody() code?: string): void {
+    try {
+      client.emit('letsplay', code);
+    } catch (e) {console.log("EXCEPTION:\n", e)}
+  }
+
   @SubscribeMessage('join-room')
   joinRoom(@ConnectedSocket() client: Socket, @MessageBody() code?: string): void {
     try {

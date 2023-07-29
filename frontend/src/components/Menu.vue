@@ -1,11 +1,6 @@
-
-
-
-
-
 <script setup lang="ts">
 import { Socket } from "socket.io-client";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { ElButton } from "element-plus"
 
 const props = defineProps<{
@@ -15,10 +10,18 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    (e: 'LetsPlay'): void
+    (e: 'letsplay'): void
 }>()
 
 const isHardcore = ref<number>(props.mode);
+
+onMounted(() => {
+    props.gameSocket.on('letsplay', (data) => {
+        emit("letsplay");
+        console.log("emited letsplay in letsplay .on Menu.vue")
+    })
+}
+)
 
 async function toggleMode() {
     if (isHardcore.value === 2) {
@@ -31,7 +34,7 @@ async function toggleMode() {
 }
 
 async function letsplay() {
-    emit("LetsPlay");
+    props.gameSocket.emit('letsplay', props.code);
 }
 
 watch(props, (newProps) => {
