@@ -218,12 +218,13 @@ export class RoomService {
       const score = room.players.map((player) => player.score);
 
       room.players.forEach((player) => this.deleteSock(player.socket));
-
+      const mode = room.options.mode;
       // SAVE THE DATA IN MATCH ENTITY
       await this.matchService.create({
         score,
         winner,
         loser,
+        mode
       } as MatchEntity);
     }
   }
