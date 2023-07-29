@@ -4,7 +4,6 @@ import gameSocket from '../socketGame'
 //import { watch } from "vue";
 import Multiplayer from "./Multiplayer.vue"
 import Menu from './Menu.vue'
-import Master from "./pages/Master";
 //import Pong from './Pong.vue'
 import ExitGame from './ExitGame.vue'
 import axios from "axios";
@@ -73,7 +72,7 @@ async function EmitJoinRoom() {
 	gameSocket.emit('join-room', room.value)
 }
 async function EmitStartGame() {
-	gameSocket.emit('ready', { mode: RoomInfo.value.mode });
+	gameSocket.emit('ready', { mode: RoomInfo.value?.mode });
 	gameSocket.emit('start');
 }
 
@@ -91,8 +90,7 @@ onMounted(async () => {
 		}
 	})
 
-
-	if (gameSocket) {
+	setTimeout(async () => {
 		if (route.params.id) {
 			console.log('route.params.room')
 			console.log(route.params.id)
@@ -103,8 +101,8 @@ onMounted(async () => {
 			await EmitSearchingPlayer()
 			await GetRoom()
 		}
-	}
 
+	}, 100);
 })
 
 const hasStarted = ref<boolean>(false);
