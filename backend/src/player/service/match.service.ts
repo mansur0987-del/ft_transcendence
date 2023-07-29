@@ -105,6 +105,7 @@ export class MatchService {
     matches[0].loser
     let result: toReturn[] = [];
     for (let i = matches.length - 1; i >= 0; i--) {
+      console.log('match raw=', matches[i]);
       const tmp: toReturn = {
         winnerId: matches[i].winner.id,
         winnerName: matches[i].winner.name,
