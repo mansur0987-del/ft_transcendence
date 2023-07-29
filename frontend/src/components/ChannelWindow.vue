@@ -69,8 +69,14 @@ async function Submit() {
 		if (!data.value.chat_name) {
 			error.value = 'Input channel name!!!\n'
 		}
+		else if (data.value.chat_name.length > 30) {
+			error.value = 'Enter a name of less than 30 characters\n'
+		}
 		if (data.value.have_password && !data.value.password) {
 			error.value = error.value + 'Input channel password!!!\n'
+		}
+		else if (data.value.password && data.value.password.length > 30) {
+			error.value = error.value + 'Enter a password of less than 30 characters\n'
 		}
 	}
 	else if (props.type === 'checkPassword' && !data.value.password) {
@@ -150,7 +156,6 @@ async function Submit() {
 					if (data.value.chat_id) {
 						Close(data.value.chat_id.toString())
 					}
-
 				}
 			})
 		}

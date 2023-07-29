@@ -124,7 +124,7 @@ watch(props, async (newProps) => {
 	<ChannelWindow :type=WindowForChannel.type :msg=errorMsg v-if="WindowForChannel.isOpen"
 		@ChannelWindowIsClose='EmitCloseWindow' />
 	<div class="Chat" v-if="channelId">
-		<h2>Msg in the channel {{ channelId }}</h2>
+		<h2>Msgs in the channel {{ channelId }}</h2>
 		<div class="Msgs" v-for="msg in msgs">
 			<p style="width: 75%; word-wrap: break-word;">
 				<span style="color: blue;">
