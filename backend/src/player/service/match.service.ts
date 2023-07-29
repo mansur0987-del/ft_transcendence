@@ -69,7 +69,7 @@ export class MatchService {
     let allUsersStats = await this.matchRepo.query(`
       Select
        CAST(COALESCE(t1.user_id, t2.user_id) as int) as user_id,
-       CAST(COALESCE(t1.loses, 0) as int) as loses,
+       CAST(COALESCE(t1.loses, 0) as int) as losses,
        CAST(COALESCE(t2.wins, 0) as int) as wins,
        CAST(COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as int) as all_m,
        CAST(COALESCE(t2.wins, 0) as float) / CAST(COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as float) as wins_to_all
