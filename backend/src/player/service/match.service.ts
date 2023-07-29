@@ -71,7 +71,7 @@ export class MatchService {
         group by "winnerId") as t2
         on t1.user_id = t2.user_id
         ORDER BY wins_to_all, wins, all desc
-    `).getRawMany()
+    `)
     for (let i = 0; i < allUsersStats.length; i++) {
       if (id == allUsersStats[i].user_id) {
         return ({rank: i + 1, wins: allUsersStats[i].wins, losses: allUsersStats[i].losses});
@@ -93,7 +93,8 @@ export class MatchService {
     //   where ("loserId" = $(id) or "winnerId" = $(id))
     //   order by date desc
     // `).getRawMany()
-    // let result = await this.matchRepo.queryBul
+    // let result = await this.matchRepo.createQueryBuilder().
+    //     select('score, date, winner')
     // for (let i = 0; i < result.length; i++) {
 
     // }
