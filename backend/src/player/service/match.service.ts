@@ -92,6 +92,16 @@ export class MatchService {
     return ({rank: allUsersStats.length + 1, wins: 0, losses: 0});
   }
 
+  async toNormalString(date: Date): Promise<string> {
+    let res: string = '';
+    date.setHours(date.getHours() + 4);
+    res += date.getDate().toString() + '.';
+    res += date.getMonth().toString() + '.';
+    res += date.getFullYear().toString() + ' ';
+    res += date.getTime().toString();
+    return res;
+  }
+
   async getMatchHistory(id: number): Promise<toReturn[]> {
     const matches: MatchEntity[] = await this.matchRepo.find({
       where: [
@@ -113,7 +123,7 @@ export class MatchService {
         loserName: matches[i].loser.name,
         winnerScore: matches[i].score[0] > matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
         loserScore: matches[i].score[0] < matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
-        date: new Date(matches[i].date).toLocaleDateString(),
+        date: await this.toNormalString(matches[i].date),
         mode: matches[i].mode
       }
       result.push(tmp);
