@@ -81,11 +81,11 @@ export class MatchService {
         from match_entity
         group by "winnerId") as t2
         on t1.user_id = t2.user_id
-        ORDER BY wins_to_all, wins, all_m desc
+        ORDER BY wins_to_all desc, wins desc, all_m desc
     `)
+    console.log('\nraws: ', allUsersStats, '\n');
     for (let i = 0; i < allUsersStats.length; i++) {
       if (id == allUsersStats[i].user_id) {
-        console.log('\nraw: ', allUsersStats[i], '\n');
         return ({rank: i + 1, wins: allUsersStats[i].wins, losses: allUsersStats[i].losses});
       }
     }
@@ -96,9 +96,11 @@ export class MatchService {
     let res: string = '';
     date.setHours(date.getHours() + 4);
     res += date.getDate().toString() + '.';
-    res += date.getMonth().toString() + '.';
+    res += (date.getMonth() + 1).toString() + '.';
     res += date.getFullYear().toString() + ' ';
-    res += date.getTime().toString();
+    res += date.getHours().toString() + ':';
+    res += date.getMinutes().toString() + ':';
+    res += date.getSeconds().toString();
     return res;
   }
 
