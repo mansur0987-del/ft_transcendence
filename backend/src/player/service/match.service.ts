@@ -64,10 +64,11 @@ export class MatchService {
         from (Select "loserId"  as user_id, count (distinct match_entity.id) as loses
         from match_entity
         group by loser) as t1
-        full join where t1.user_id == t2.user_id
+        full join
         (Select winner as user_id, count (distinct id) as wins
         from match_entity
         group by winner) as t2
+        on t1.user_id = t2.user_id
     `)
     console.log(allUsersStats);
     return ({rank: 0, wins: 0, loses: 0});
