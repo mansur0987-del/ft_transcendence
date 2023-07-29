@@ -222,6 +222,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     
+    this.roomService.saveExitPushed(client, code);
+
     for (let i = 0; i < thisRoom.players.length; i++) {
       thisRoom.players[i].socket.emit('exit');
     }

@@ -28,4 +28,5 @@ export interface Room {
   options: GameOptions;
   ball: Ball;
   speed: number;
+  exitPushed: number;
 }

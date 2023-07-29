@@ -11,6 +11,8 @@ import { MatchService } from 'src/player/service/match.service';
 import { PlayerService } from 'src/player/service/player.service';
 import { GameOptions, Mode, Room, State, Player } from '../interfaces';
 import { GameService } from './game.service';
+import e from "express";
+import { PlayerEntity } from "src/player/entities/player.entity";
 
 @Injectable()
 export class RoomService {
@@ -78,6 +80,7 @@ export class RoomService {
       options: JSON.parse(JSON.stringify(RoomService.settings)),
       ball: { position: { x: 0, y: 0 }, velocity: { x: 0, y: 0 } },
       speed: 0,
+      exitPushed: null
     };
     // associate hex code with new room
     this.rooms.set(code, room);
@@ -209,14 +212,24 @@ export class RoomService {
     room.state = State.END;
 
     if (room.players.length == 2) {
-      const loser = room.players.find(
-        (player1) => player1.player.id != player.player.id,
-      ).player;
-      // THE ARG PASSED IS ALWAYS THE WINNER
-      const winner = player.player;
+      //if game is not complete(no score with value 3)
+      let loser: PlayerEntity;
+      let winner: PlayerEntity;
+      if (room.exitPushed != null) {
+        loser = room.players[0].player.id == room.exitPushed ? room.players[0].player : room.players[1].player;
+        winner = room.players[0].player.id != room.exitPushed ? room.players[0].player : room.players[1].player;
+      }
+      else {
+        loser = room.players.find(
+          (player1) => player1.player.id != player.player.id,
+        ).player;
+        // THE ARG PASSED IS ALWAYS THE WINNER
+        winner = player.player;
+      }
+      
       // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES
       const score = room.players.map((player) => player.score);
-
+      
       room.players.forEach((player) => this.deleteSock(player.socket));
       const mode = room.options.mode;
       // SAVE THE DATA IN MATCH ENTITY
@@ -276,8 +289,7 @@ export class RoomService {
     }
   }
 
-  getRoomInfo(code?: string): any
-  {
+  getRoomInfo(code?: string): any {
     const thisRoom = this.findRoom(code);
     if (!thisRoom || thisRoom.players.length != 2)
       return null;
@@ -291,5 +303,9 @@ export class RoomService {
       secondPlSock: thisRoom.players[1].socket,
       mode: thisRoom.options.mode
     })
+  }
+
+  saveExitPushed(client: Socket, code: string) {
+    this.rooms.get(code).exitPushed = client.data.player.id;
   }
 }
