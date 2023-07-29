@@ -5,14 +5,34 @@ import LeftBar from './LeftBar.vue'
 import Logout from './Logout.vue'
 import { Buffer } from "buffer";
 import { useRoute } from 'vue-router';
-import { ElButton } from 'element-plus'
+import { ElButton, ElTable, ElTableColumn, type TableColumnCtx } from 'element-plus'
 
 const route = useRoute();
+const id = ref<number>()
 const name = ref<string>()
 const isFirstGame = ref<boolean>(false)
 const isFirstWin = ref<boolean>(false)
 const avatar = ref<any>()
 const players = ref<any[]>([])
+
+interface MathHistory {
+	winnerId: number,
+	winnerName: string,
+	loserId: string,
+	loserName: string,
+	winnerScore: number,
+	loserScore: number,
+	date: Date,
+	mode: number
+}
+const mathHistory = ref<MathHistory[]>([])
+
+interface State {
+	rank: number,
+	wins: number,
+	losses: number
+}
+const stats = ref<State>()
 
 async function GetUser() {
 	let url = 'player/profile/'
@@ -23,6 +43,7 @@ async function GetUser() {
 		if (!res.data.name) {
 			window.location.assign('http://' + window.location.host + '/pathnotfound')
 		}
+		id.value = res.data.id
 		name.value = res.data.name
 		isFirstGame.value = res.data.isFirstGame
 		isFirstWin.value = res.data.isFirstWin
@@ -44,6 +65,18 @@ async function GetUser() {
 		})
 	}
 
+	await axios.get('player/' + id.value + '/stats').then((res) => {
+		console.log('stats')
+		console.log(res.data)
+		stats.value = res.data
+	})
+
+	await axios.get('').then((res) => {
+		console.log('match history')
+		console.log(res.data)
+		mathHistory.value = res.data
+	})
+
 }
 
 async function PostApplication(player: any) {
@@ -59,6 +92,25 @@ onMounted(() => {
 	GetUser()
 })
 
+const formatter = (row: MathHistory, column: TableColumnCtx<MathHistory>) => {
+	if (row.mode === 0) {
+		return ('default')
+	}
+	else if (row.mode === 1) {
+		return ('fast')
+	}
+	else {
+		return ('hardcore')
+	}
+}
+
+const Length = (length: number) => {
+	if (length > 20) {
+		return 350
+	}
+	return (length * 20)
+}
+
 </script>
 
 <template>
@@ -66,7 +118,7 @@ onMounted(() => {
 	<Logout />
 	<img class="Avatar" :src="avatar" />
 	<div class="Player">
-		<div class=""></div>
+
 		<h1>Username: {{ name }}</h1>
 		<h1>Achievements:
 			<p v-show="isFirstGame === true" style="color: blue;"> You played one or more games</p>
@@ -83,8 +135,32 @@ onMounted(() => {
 				</li>
 			</template>
 		</h1>
-		<h1>stats: </h1>
-		<h1>rank: </h1>
+		<div class="Stats">
+			<h1>stats: </h1>
+			<h2 style="padding-left: 15px;">
+				rank: {{ stats?.rank }}
+			</h2>
+			<h2 style="padding-left: 15px;">
+				wins: {{ stats?.wins }}
+			</h2>
+			<h2 style="padding-left: 15px;">
+				losses: {{ stats?.losses }}
+			</h2>
+		</div>
+		<div class="MatchHistory">
+			<h1>
+				Match History:
+			</h1>
+			<el-table :data="mathHistory" :default-sort="{ prop: 'date', order: 'descending' }"
+				:height="Length(mathHistory.length)" style="width: 750px" v-if="mathHistory">
+				<el-table-column prop="date" label="Date" width="100" />
+				<el-table-column prop="winnerName" label="Winner" width="100" />
+				<el-table-column prop="winnerScore" width="50" />
+				<el-table-column prop="loserScore" width="50" />
+				<el-table-column prop="loserName" label="Loser" width="100" />
+				<el-table-column label="Mode" width="100" :formatter="formatter" />
+			</el-table>
+		</div>
 
 	</div>
 </template>
