@@ -26,4 +26,7 @@ export class MatchEntity {
   @ManyToOne(() => PlayerEntity, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn()
   loser: PlayerEntity;
+
+  @Column({nullable: false})
+  mode: number;
 }

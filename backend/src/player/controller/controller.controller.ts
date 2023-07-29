@@ -186,4 +186,9 @@ export class ControllerController {
   async getStatsPlayer(@Param('id', ParseIntPipe) id: number) {
     return (await this.matchService.getStats(id));
   }
+
+  @Get('/:id/matchHist')
+  async getMatchHistory(@Param('id', ParseIntPipe) id: number) {
+    return (await this.matchService.getMatchHistory(id));
+  }
 }

@@ -79,4 +79,22 @@ export class MatchService {
     }
     return ({rank: allUsersStats.length, wins: 0, losses: 0});
   }
+
+  // async getMatchHistory(id: number) {
+  //   let result: any[] = await this.matchRepo.query(`
+  //     Select
+  //       "id",
+  //       "score",
+  //       "date",
+  //       "winnerId",
+  //       "loserId",
+  //       "mode"
+  //     from match_entity
+  //     where ("loserId" = $(id) or "winnerId" = $(id))
+  //     order by date desc
+  //   `).getRawMany()
+  //   for (let i = 0; i < result.length; i++) {
+
+  //   }
+  // }
 }
