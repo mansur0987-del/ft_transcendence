@@ -10,7 +10,7 @@ interface toReturn {
     loserName: string,
     winnerScore: number,
     loserScore: number,
-    date: Date,
+    date: string,
     mode: number
   }
 
@@ -113,7 +113,7 @@ export class MatchService {
         loserName: matches[i].loser.name,
         winnerScore: matches[i].score[0] > matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
         loserScore: matches[i].score[0] < matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
-        date: matches[i].date,
+        date: new Date(matches[i].date).toLocaleDateString(),
         mode: matches[i].mode
       }
       result.push(tmp);
