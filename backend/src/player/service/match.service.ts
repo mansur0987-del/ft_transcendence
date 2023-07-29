@@ -54,7 +54,7 @@ export class MatchService {
     }
   }
 
-  async getStats(id: number): Promise<{rank: number, wins: number, loses: number}> {
+  async getStats(id: number): Promise<{rank: number, wins: number, losses: number}> {
     let allUsersStats = await this.matchRepo.query(`
       Select
        COALESCE(t1.user_id, t2.user_id),
@@ -71,6 +71,6 @@ export class MatchService {
         on t1.user_id = t2.user_id
     `)
     console.log(allUsersStats);
-    return ({rank: 0, wins: 0, loses: 0});
+    return ({rank: 0, wins: 0, losses: 0});
   }
 }
