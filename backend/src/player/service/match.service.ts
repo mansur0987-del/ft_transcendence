@@ -57,11 +57,11 @@ export class MatchService {
   async getStats(id: number): Promise<{rank: number, wins: number, loses: number}> {
     let allUsersStats = await this.matchRepo.query(`
       Select
-	      COALESCE(t1.user_id, t2.user_id),
-	      COALESCE(t1.loses, 0) as loses,
-	      COALESCE(t2.wins, 0) as wins,
-	      COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t2.loses, 0)) as wins_to_all
-        from (Select loser as user_id, count (distinct id) as loses
+       COALESCE(t1.user_id, t2.user_id),
+       COALESCE(t1.loses, 0) as loses,
+       COALESCE(t2.wins, 0) as wins,
+       COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0)) as wins_to_all
+        from (Select "loserId"  as user_id, count (distinct match_entity.id) as loses
         from match_entity
         group by loser) as t1
         full join where t1.user_id == t2.user_id
