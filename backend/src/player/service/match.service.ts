@@ -6,7 +6,7 @@ import { MatchEntity } from '../entities/match.entity';
 interface toReturn {
     winnerId: number,
     winnerName: string,
-    loserId: string,
+    loserId: number,
     loserName: string,
     winnerScore: number,
     loserScore: number,
@@ -92,7 +92,16 @@ export class MatchService {
   }
 
   async getMatchHistory(id: number): Promise<toReturn[]> {
-    const matches: any[] = await this.matchRepo.find({where: [{ loserId: id}, {winnerId: id}]})
+    const matches: MatchEntity[] = await this.matchRepo.find({
+      where: [
+        { loser: {
+          id: id
+        }},
+        {winner: {
+          id: id
+        }}
+      ]})
+    matches[0].loser
     let result: toReturn[] = [];
     for (let i = matches.length - 1; i >= 0; i--) {
       const tmp: toReturn = {

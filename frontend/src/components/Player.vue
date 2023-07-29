@@ -18,7 +18,7 @@ const players = ref<any[]>([])
 interface MathHistory {
 	winnerId: number,
 	winnerName: string,
-	loserId: string,
+	loserId: number,
 	loserName: string,
 	winnerScore: number,
 	loserScore: number,
@@ -71,7 +71,7 @@ async function GetUser() {
 		stats.value = res.data
 	})
 
-	await axios.get('').then((res) => {
+	await axios.get('player/' + id.value + '/matchHist').then((res) => {
 		console.log('match history')
 		console.log(res.data)
 		mathHistory.value = res.data
