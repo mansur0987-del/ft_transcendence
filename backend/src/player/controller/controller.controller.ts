@@ -188,7 +188,7 @@ export class ControllerController {
   }
 
   @Get('/:id/matchHist')
-  async getMatchHistory(@Param('id', ParseIntPipe) id: number) {
+  async getMatchHistory(@Param('id', ParseIntPipe) id: number): Promise<any[]> {
     return (await this.matchService.getMatchHistory(id));
   }
 }
