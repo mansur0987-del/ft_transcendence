@@ -53,4 +53,23 @@ export class MatchService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async getStats(id: number): Promise<{rank: number, wins: number, loses: number}> {
+    let allUsersStats = await this.matchRepo.query(`
+      Select 
+	      COALESCE(t1.user_id, t2.user_id),
+	      COALESCE(t1.loses, 0) as loses,
+	      COALESCE(t2.wins, 0) as wins,
+	      COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t2.loses, 0)) as wins_to_all
+        from (Select loser as user_id, count (distinct id) as loses
+        from match_entity
+        group by loser) as t1
+        full join where t1.user_id == t2.user_id
+        (Select winner as user_id, count (distinct id) as wins
+        from match_entity
+        group by winner) as t2
+    `)
+    console.log(allUsersStats);
+    return ({rank: 0, wins: 0, loses: 0});
+  }
 }

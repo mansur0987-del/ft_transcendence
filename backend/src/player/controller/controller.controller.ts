@@ -21,10 +21,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { Readable } from 'stream';
 import { PlayerApplicationEntity } from '../entities/playerApplication.entity';
+import { MatchService } from "../service/match.service";
 
 @Controller('player')
 export class ControllerController {
-  constructor(private readonly player_service: PlayerService) {}
+  constructor(
+    private readonly player_service: PlayerService,
+    private readonly matchService: MatchService 
+    ) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/')
@@ -176,5 +180,10 @@ export class ControllerController {
   @Post('/:id/removeapplycation/')
   async removePlayerSendApplication(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     return await this.player_service.removeApplication(id, body.id)
+  }
+
+  @Get('/:id/stats')
+  async getStatsPlayer(@Param('id', ParseIntPipe) id: number) {
+    return (await this.matchService.getStats(id));
   }
 }
