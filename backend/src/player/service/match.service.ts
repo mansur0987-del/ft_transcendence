@@ -68,11 +68,11 @@ export class MatchService {
   async getStats(id: number): Promise<{rank: number, wins: number, losses: number}> {
     let allUsersStats = await this.matchRepo.query(`
       Select
-       COALESCE(t1.user_id, t2.user_id) as user_id,
-       COALESCE(t1.loses, 0) as loses,
-       COALESCE(t2.wins, 0) as wins,
-       COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as all_m,
-       COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0)) as wins_to_all
+       CAST(COALESCE(t1.user_id, t2.user_id) as int) as user_id,
+       CAST(COALESCE(t1.loses, 0) as int) as loses,
+       CAST(COALESCE(t2.wins, 0) as int) as wins,
+       CAST(COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as int) as all_m,
+       CAST(COALESCE(t2.wins, 0) as float) / CAST(COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as float) as wins_to_all
         from (Select "loserId"  as user_id, count (distinct match_entity.id) as loses
         from match_entity
         group by "loserId") as t1
@@ -85,6 +85,7 @@ export class MatchService {
     `)
     for (let i = 0; i < allUsersStats.length; i++) {
       if (id == allUsersStats[i].user_id) {
+        console.log('\nraw: ', allUsersStats[i], '\n');
         return ({rank: i + 1, wins: allUsersStats[i].wins, losses: allUsersStats[i].losses});
       }
     }
