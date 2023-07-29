@@ -3,6 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MatchEntity } from '../entities/match.entity';
 
+interface toReturn {
+    winnerId: number,
+    winnerName: string,
+    loserId: string,
+    loserName: string,
+    winnerScore: number,
+    loserScore: number,
+    date: Date,
+    mode: number
+  }
+
 @Injectable()
 export class MatchService {
   constructor(
@@ -60,7 +71,7 @@ export class MatchService {
        COALESCE(t1.user_id, t2.user_id) as user_id,
        COALESCE(t1.loses, 0) as loses,
        COALESCE(t2.wins, 0) as wins,
-       COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as all,
+       COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0) as all_m,
        COALESCE(t2.wins, 0) / (COALESCE(t2.wins, 0) + COALESCE(t1.loses, 0)) as wins_to_all
         from (Select "loserId"  as user_id, count (distinct match_entity.id) as loses
         from match_entity
@@ -70,7 +81,7 @@ export class MatchService {
         from match_entity
         group by "winnerId") as t2
         on t1.user_id = t2.user_id
-        ORDER BY wins_to_all, wins, all desc
+        ORDER BY wins_to_all, wins, all_m desc
     `)
     for (let i = 0; i < allUsersStats.length; i++) {
       if (id == allUsersStats[i].user_id) {
@@ -80,33 +91,22 @@ export class MatchService {
     return ({rank: allUsersStats.length, wins: 0, losses: 0});
   }
 
-  async getMatchHistory(id: number): Promise<any> {
-    // let result: any[] = await this.matchRepo.query(`
-    //   Select
-    //     "id",
-    //     "score",
-    //     "date",
-    //     "winnerId",
-    //     "loserId",
-    //     "mode"
-    //   from match_entity
-    //   where ("loserId" = $(id) or "winnerId" = $(id))
-    //   order by date desc
-    // `).getRawMany()
-    // let result = await this.matchRepo.createQueryBuilder().
-    //     select('score, date, winner')
-    // for (let i = 0; i < result.length; i++) {
-
-    // }
-    return ({
-      winnerId: 0,
-      winnerName: 'string',
-      loserId: 'string',
-      loserName: 'string',
-      winnerScore: 0,
-      loserScore: 0,
-      date: new Date(),
-      mode: 0
-    })
+  async getMatchHistory(id: number): Promise<toReturn[]> {
+    const matches: any[] = await this.matchRepo.find({where: [{ loserId: id}, {winnerId: id}]})
+    let result: toReturn[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      const tmp: toReturn = {
+        winnerId: matches[i].winner.id,
+        winnerName: matches[i].winner.name,
+        loserId: matches[i].loser.id,
+        loserName: matches[i].loser.name,
+        winnerScore: matches[i].score[0] > matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
+        loserScore: matches[i].score[0] < matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
+        date: matches[i].date,
+        mode: matches[i].mode
+      }
+      result.push(tmp);
+    }
+    return (result);
   }
 }
