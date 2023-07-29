@@ -88,7 +88,7 @@ export class MatchService {
         return ({rank: i + 1, wins: allUsersStats[i].wins, losses: allUsersStats[i].losses});
       }
     }
-    return ({rank: allUsersStats.length, wins: 0, losses: 0});
+    return ({rank: allUsersStats.length + 1, wins: 0, losses: 0});
   }
 
   async getMatchHistory(id: number): Promise<toReturn[]> {
