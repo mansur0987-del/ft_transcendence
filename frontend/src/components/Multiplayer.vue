@@ -7,13 +7,7 @@ import type { Socket } from "socket.io-client";
 
 const props = defineProps<{
 	gameSocket: Socket,
-	mode: number,
-
-	// have to be shared.... probably need to be turned into
-	// refs and modified with emits
-	hasStarted: boolean,
-	invited: boolean,
-	playerId: number
+	roomInfo: Object
 }>()
 
 const canvasId = ref('myCanvas');
@@ -57,12 +51,12 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 		fillColor: 'green'
 	});
 	var currRadius = ballRadius * view.size.height;
-	
+
 	props.gameSocket.on('ball', (data) => {
 		ball.position = normalize(data);
 	});
 
-	 // Create text
+	// Create text
 	var pingpong = new PointText({
 		point: [view.center.x, pH * 0.75],
 		content: `PING PONG`,
@@ -73,7 +67,7 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 		justification: 'center'
 	});
 
-	 var scoreText = new PointText({
+	var scoreText = new PointText({
 		point: [view.center.x, pH * 1.25],
 		content: `0 : 0`,
 		fillColor: 'white',
@@ -83,46 +77,11 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 		justification: 'center'
 	});
 
-	var readyText = new PointText({
-		point: view.center,
-		content: props.hasStarted ? "" : `Are you Ready?\nPress Space...`,
-		fillColor: 'white',
-		fontFamily: 'Arial',
-		fontWeight: 'bold',
-		fontSize: pH / 2,
-		justification: 'center'
-	});
-
-	async function timer() {
-		let counter = 3;
-
-		const interval = setInterval(() => {
-			counter--;
-			readyText.content = `Game start in ${counter}...`;
-		}, 1000);
-
-		await new Promise((resolve) => setTimeout(resolve, 3000));
-		props.gameSocket.emit('start');
-		readyText.remove();
-		clearInterval(interval);
-	}
-
-	props.gameSocket.on('ready', (data) => {
-		console.log("Ready: ", data);
-		// // make invited TRUE
-		// props.invited = true;
-		timer();
-		// // make hasStarted TRUE
-		// props.hasStarted = true
-	});
 
 	props.gameSocket.on('score', (data) => {
 		scoreText.content = `${data[0]} : ${data[1]}`;
 		if (data[0] == 10 || data[1] == 10) {
-			// // make invited FALSE
-			// props.invited = false;
-			// // make hasStarted FALSE
-			// props.hasStarted = false;
+			// cleanup code? reset vars
 			router.push("/player");
 		}
 	});
@@ -132,11 +91,11 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 		pW = view.size.width * paddleWidth;
 		pH = view.size.height * paddleHeight;
 		ball.position = new paper.Point([(ballPosition[0] * view.size.width) - ballRadius, (ballPosition[1] * view.size.height) - ballRadius]);
-		
+
 		var newRadius = ballRadius * view.size.height;
 		ball.scale(newRadius / currRadius);
 		currRadius = newRadius;
-		
+
 		scoreText.position = new paper.Point([view.center.x, pH * 1.25]);
 		scoreText.fontSize = pH / 2;
 		pingpong.position = new paper.Point([view.center.x, pH * 0.75]);
@@ -145,9 +104,9 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 		paddleR.position = new paper.Point([view.size.width - pW / 2, (paddlePos[1][1]) * view.size.height]);
 	}
 
-	 paper.view.onFrame = (_event: any) => {
-		 if (ball.fillColor)
-			ball.fillColor.hue += 1; 
+	paper.view.onFrame = (_event: any) => {
+		if (ball.fillColor)
+			ball.fillColor.hue += 1;
 		paddleL.position = new paper.Point([pW, (paddlePos[0][1]) * view.size.height]);
 		paddleR.position = new paper.Point([view.size.width - pW, (paddlePos[1][1]) * view.size.height]);
 
@@ -160,11 +119,6 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 
 		if (event.key == 's' && paddlePos[props.playerId][1] + paddleHeight / 2 < 1) {
 			props.gameSocket.emit('update-tray', (paddlePos[props.playerId][1] + 0.04));
-		}
-
-		if (event.key == 'space' && !props.hasStarted) {
-			props.gameSocket.emit('ready', { plan: 0, mode: props.mode });
-			readyText.content = props.hasStarted ? "" : `Wait another player...`;
 		}
 	}
 

@@ -1,8 +1,3 @@
-
-
-
-
-
 <script setup lang="ts">
 import { Socket } from "socket.io-client";
 import { ref, watch } from "vue";
@@ -43,6 +38,9 @@ watch(props, (newProps) => {
 
 
 <template>
+    <!-- <div>
+        <Engine :isPreview="true" :gameSocket="props.gameSocket" />
+    </div> -->
     <div class="button">
         <h1 class="button-text">Welcome to the Mighty Pong game! </h1>
         <el-button size="large" color="red" @click="toggleMode">
