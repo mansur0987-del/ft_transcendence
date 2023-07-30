@@ -26,6 +26,8 @@ const RoomInfo = ref<{
 	mode: number
 }>()
 
+const currentPlayerIndex = ref<number>(0);
+
 const hasStarted = ref<boolean>(false);
 
 async function EmitSearchingPlayer() {
@@ -107,6 +109,12 @@ onMounted(async () => {
 
 async function letsplay() {
 	console.log('lets play in game.vue');
+	if (RoomInfo.value?.firstPlayerId === myUser.value?.id) {
+		currentPlayerIndex.value = 0;
+	}
+	else {
+		currentPlayerIndex.value = 1;
+	}
 	// gameSocket.emit('letsplay', room.value);
 	hasStarted.value = true;
 	gameSocket.emit('ready', { mode: RoomInfo.value?.mode });
@@ -157,7 +165,7 @@ watch(room, async (newRoom) => {
 			<!-- <Engine v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :isPreview="true" /> -->
 		</div>
 		<div class="canvas-container" v-if="RoomInfo && hasStarted">
-			<Multiplayer :gameSocket="gameSocket" :roomInfo="RoomInfo" />
+			<Multiplayer :gameSocket="gameSocket" :roomInfo="RoomInfo" :currentPlayerIndex="currentPlayerIndex" />
 		</div>
 
 		<!--<div class="canvas-container">
