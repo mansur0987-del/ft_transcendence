@@ -190,7 +190,9 @@ export class RoomService {
       room.options.ball.speed = 30;
     } else if (room.options.mode == Mode.SMALL_PADDLE) {
       console.log('SMALL_PADDLE');
-      room.options.paddle.height = 10;}
+      room.options.paddle.height = 50;
+      RoomService.emit(room, 'paddleHeight', room.options.paddle.height);
+    }
 
   }
 
@@ -238,7 +240,7 @@ export class RoomService {
 
   @Interval(1000 / 30)
   loop(): void {
-    // console.log('loop');
+    console.log('loop');
     for (const room of this.rooms.values()) {
       // console.log('room state: ' + room.state);
       if (room.state == State.INGAME) this.game.updateGame(room);

@@ -25,7 +25,7 @@ const props = defineProps<{
 }>()
 
 const paddleWidth = 20 / 1080;
-const paddleHeight = 200 / 1920;
+var paddleHeight = 200 / 1920;
 var ballPosition = [0.5, 0.5];
 var ballRadius = 20 / 1920;
 var paddlePos = [[0, 0.5], [1 - paddleWidth, 0.5]];
@@ -60,6 +60,10 @@ onMounted(() => {
 	console.log(scope.view);
 	while (scope.view == null) { }
 	isViewSetup = true;
+	props.gameSocket.on('paddleHeight', (data) => {
+		// console.log('backend updates under playerindex ' + playedIndex + ' to ' + pos);
+		paddleHeight = data / 1920;
+	})
 });
 
 // the one who clicks Let's Play controls the left paddle,
