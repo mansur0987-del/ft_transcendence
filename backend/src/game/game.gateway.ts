@@ -200,17 +200,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('update-paddle')
-  updatePaddle(@ConnectedSocket() client: Socket, paddle: number): void {
+  updatePaddle(@ConnectedSocket() client: Socket, @MessageBody() paddle: any): void {
     try {
       if (!client.data.player) return;
+      // console.log('player object:');
+      // console.log(client.data.player);
+      // console.log('received paddle number is: ' + paddle);
 
       const player: Player = this.roomService.findPlayer(client.data.player.id);
       if (!player) return;
 
+      // console.log('old player.paddlee is: ' + player.paddle);
       player.paddle = paddle * player.room.options.playground.height;
+      // console.log('updated player.paddlee is: ' + player.paddle);
       const playerIndex = player.room.players.indexOf(player);
+      // console.log('player.room.players:');
+      // console.log(player.room.players);
+      console.log('playerIndex:' + playerIndex);
+      console.log('received paddle number is: ' + paddle);
       RoomService.emit(player.room, 'paddle', playerIndex, paddle);
-    } catch (e) {console.log("EXEPTION:\n", e)}
+    } catch (e) {
+      console.log('EXEPTION:\n', e);
+    }
   }
 
    @SubscribeMessage('exitGame')

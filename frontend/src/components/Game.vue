@@ -151,15 +151,14 @@ watch(room, async (newRoom) => {
 					{{ RoomInfo.secondPlayerId }} {{ RoomInfo.secondPlayerName }}
 				</h2>
 			</div>
-
 		</div>
-		<div class="canvas-container">
-			<canvas ref="canvas" width="800" height="600"></canvas>
-			<Menu @letsplay="letsplay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id"
-				v-if="RoomInfo && !hasStarted" />
+		<div v-if="RoomInfo && !hasStarted">
+			<Menu @letsplay="letsplay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id" />
 			<!-- <Engine v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :isPreview="true" /> -->
 		</div>
-		<Multiplayer v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :roomInfo="RoomInfo" />
+		<div class="canvas-container" v-if="RoomInfo && hasStarted">
+			<Multiplayer :gameSocket="gameSocket" :roomInfo="RoomInfo" />
+		</div>
 
 		<!--<div class="canvas-container">
 			<canvas ref="canvas" width="800" height="600"></canvas>
@@ -206,23 +205,5 @@ watch(room, async (newRoom) => {
 
 .canvas-container {
 	position: relative;
-}
-
-canvas {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-</style>
-
-<style>
-.canvas-container {
-	position: relative;
-}
-
-canvas {
-	position: absolute;
-	top: 0;
-	left: 0;
 }
 </style>
