@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import gameSocket from '../socketGame'
-//import { watch } from "vue";
 import Multiplayer from "./Multiplayer.vue"
-import Engine from "./Engine.vue"
 import Menu from './Menu.vue'
-//import Pong from './Pong.vue'
 import ExitGame from './ExitGame.vue'
 import axios from "axios";
 import { ElProgress } from 'element-plus'

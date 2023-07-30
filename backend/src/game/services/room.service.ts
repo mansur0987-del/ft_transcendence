@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
-	BadRequestException,
-	ForbiddenException,
-	NotFoundException
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Socket } from 'socket.io';
@@ -18,7 +18,9 @@ export class RoomService {
     private readonly game: GameService,
     private readonly playerService: PlayerService,
     private readonly matchService: MatchService,
-  ) {}
+  ) {
+    console.log('ROOM SERVICE STARTED');
+  }
 
   /**
    * game settings
@@ -45,17 +47,19 @@ export class RoomService {
   }
 
   changeRoomMode(client: Socket, code: string, newMode: number): Room {
-    let thisRoom = this.findRoom(code);
-    if (!thisRoom)
-      throw new NotFoundException('room not found');
+    console.log('changeRoomMode UPPPPPPPPPPPPPPPP');
+    const thisRoom = this.findRoom(code);
+    if (!thisRoom) throw new NotFoundException('room not found');
     let accessFlg = false;
     for (let i = 0; i < thisRoom.players.length; i++) {
       if (client.data.player.id == thisRoom.players[i].socket.data.player.id)
         accessFlg = true;
     }
-    if (!accessFlg)
-      throw new ForbiddenException('player not in this room');
+    if (!accessFlg) throw new ForbiddenException('player not in this room');
     thisRoom.options.mode = newMode;
+    for (let i = 0; i < thisRoom.players.length; i++) {
+      thisRoom.players[i].mode = newMode;
+    }
     this.rooms.set(code, thisRoom);
     return thisRoom;
   }
@@ -107,7 +111,6 @@ export class RoomService {
         room.options,
         room.players.map((player) => player.player) /* player entity array */,
       );
-
     }
 
     socket.emit('room', room.code);
@@ -118,23 +121,22 @@ export class RoomService {
     // console.log(socket)
     // console.log(socket.data)
     // ensure the player isn't already in the queue
-    for (const sock of this.queue)
-    {
+    for (const sock of this.queue) {
       // console.log('FOR_')
       // console.log(sock.data.player)
-      
+
       if (sock.data.player.id == socket.data.player.id) return;
     }
 
     if (this.findPlayer(socket.data.player.id)) return;
 
     // add to the queue
-    console.log("QUEUE:")
+    console.log('QUEUE:');
     console.log(this.queue);
     this.queue.push(socket);
 
     // emit queue length
-    console.log("QUEUE_LENGTH:")
+    console.log('QUEUE_LENGTH:');
     console.log(this.queue.length);
     socket.emit('add', this.queue.length);
     // if not enough players, leave
@@ -143,13 +145,11 @@ export class RoomService {
     // create a room
     const room: Room = this.createRoom();
     // iterate over queue and join players
-    while (this.queue.length && room.players.length < 2)
-    {
+    while (this.queue.length && room.players.length < 2) {
       console.log('ROOMSERVICE: JoinRoom');
       this.joinRoom(this.queue.shift(), room);
       console.log('ROOMSERVICE: JoinRoom DONE!!');
     }
-    
   }
 
   /**
@@ -179,31 +179,23 @@ export class RoomService {
   //..
 
   startGame(room: Room): void {
+    console.log('startGame');
     if (room.state != State.STARTING) return;
-
-    // make sure everyone selected a playmode?
-    for (const player of room.players) if (!player.mode) return;
-
     room.state = State.WAITING;
 
-    // at random select one of 2 players' game mode
-    room.options.mode = room.players[Math.round(Math.random())].mode;
 
     if (room.options.mode == Mode.FAST_BALL) {
+      console.log('FAST_BALL');
       room.options.ball.radius = 25;
       room.options.ball.speed = 30;
-    } else if (room.options.mode == Mode.SMALL_PADDLE)
-      room.options.paddle.height = 100;
+    } else if (room.options.mode == Mode.SMALL_PADDLE) {
+      console.log('SMALL_PADDLE');
+      room.options.paddle.height = 10;}
 
-    RoomService.emit(
-      room,
-      'ready',
-      room.options,
-      room.players.map((player) => player.player),
-    );
   }
 
   async stopGame(room: Room, player: Player): Promise<void> {
+    console.log('stopGame');
     if (!player) return;
     if (room.state == State.END) return;
     room.state = State.END;
@@ -229,6 +221,7 @@ export class RoomService {
   }
   // DOES IT WORK FOR BOTH CLIENTS?
   ready(player: Player, mode: Mode): void {
+    console.log('ready');
     player.mode = mode;
     this.startGame(player.room);
   }
@@ -237,15 +230,19 @@ export class RoomService {
    * STARTS THE GAME
    */
   startCalc(room: Room): void {
+    console.log('startCalc');
     // if (room.state != State.COUNTDOWN) return;
     this.game.resetBall(room);
     room.state = State.INGAME;
   }
 
-  @Interval(1000 / 60)
+  @Interval(1000 / 30)
   loop(): void {
-    for (const room of this.rooms.values())
+    // console.log('loop');
+    for (const room of this.rooms.values()) {
+      // console.log('room state: ' + room.state);
       if (room.state == State.INGAME) this.game.updateGame(room);
+    }
   }
 
   async deleteSock(socket: Socket): Promise<any> {
@@ -275,12 +272,10 @@ export class RoomService {
     }
   }
 
-  getRoomInfo(code?: string): any
-  {
+  getRoomInfo(code?: string): any {
     const thisRoom = this.findRoom(code);
-    if (!thisRoom || thisRoom.players.length != 2)
-      return null;
-    return ({
+    if (!thisRoom || thisRoom.players.length != 2) return null;
+    return {
       id: code,
       firstPlayerId: thisRoom.players[0].player.id,
       firstPlayerName: thisRoom.players[0].player.name,
@@ -288,7 +283,7 @@ export class RoomService {
       secondPlayerId: thisRoom.players[1].player.id,
       secondPlayerName: thisRoom.players[1].player.name,
       secondPlSock: thisRoom.players[1].socket,
-      mode: thisRoom.options.mode
-    })
+      mode: thisRoom.options.mode,
+    };
   }
 }

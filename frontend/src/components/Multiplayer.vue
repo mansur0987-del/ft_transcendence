@@ -69,11 +69,11 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 	setTimeout(() => {
 		if (props) {
 			if (scope.view != null) {
-				console.log("assigned props.currentPlayerIndex is " + props.currentPlayerIndex);
+				// console.log("assigned props.currentPlayerIndex is " + props.currentPlayerIndex);
 				initialTimeout = 0;
 
 				props.gameSocket.on('paddle', (playedIndex, pos) => {
-					console.log('backend updates under playerindex ' + playedIndex + ' to ' + pos);
+					// console.log('backend updates under playerindex ' + playedIndex + ' to ' + pos);
 					paddlePos[playedIndex][1] = pos;
 				})
 
@@ -93,6 +93,13 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 					size: [pW, pH],
 					fillColor: 'white'
 				});
+
+				if (props.currentPlayerIndex == 0) {
+					paddleL.fillColor?.set('green');
+				}
+				else {
+					paddleR.fillColor?.set('green');
+				}
 
 				// Create ball
 				var ball = new Path.Circle({
@@ -165,23 +172,23 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 				scope.view.onKeyDown = (event: any) => {
 					// console.log("a key is down")
 					if (event.key == 'w' && paddlePos[props.currentPlayerIndex][1] - paddleHeight / 2 > 0) {
-						console.log("(w) before update-paddle emit:");
-						console.log(paddlePos);
-						console.log('about to substract 0.04 from ' + paddlePos[props.currentPlayerIndex][1]);
-						console.log('the result is ' + (paddlePos[props.currentPlayerIndex][1] - 0.04));
+						// console.log("(w) before update-paddle emit:");
+						// console.log(paddlePos);
+						// console.log('about to substract 0.04 from ' + paddlePos[props.currentPlayerIndex][1]);
+						// console.log('the result is ' + (paddlePos[props.currentPlayerIndex][1] - 0.04));
 						props.gameSocket.emit('update-paddle', (paddlePos[props.currentPlayerIndex][1] - 0.04));
-						console.log("after update-paddle emit:");
-						console.log(paddlePos);
+						// console.log("after update-paddle emit:");
+						// console.log(paddlePos);
 					}
 
 					if (event.key == 's' && paddlePos[props.currentPlayerIndex][1] + paddleHeight / 2 < 1) {
-						console.log("(s)before update-paddle emit:");
-						console.log(paddlePos);
-						console.log('about to add 0.04 to ' + paddlePos[props.currentPlayerIndex][1]);
-						console.log('the result is ' + (paddlePos[props.currentPlayerIndex][1] + 0.04));
+						// console.log("(s)before update-paddle emit:");
+						// console.log(paddlePos);
+						// console.log('about to add 0.04 to ' + paddlePos[props.currentPlayerIndex][1]);
+						// console.log('the result is ' + (paddlePos[props.currentPlayerIndex][1] + 0.04));
 						props.gameSocket.emit('update-paddle', (paddlePos[props.currentPlayerIndex][1] + 0.04));
-						console.log("after update-paddle emit:");
-						console.log(paddlePos);
+						// console.log("after update-paddle emit:");
+						// console.log(paddlePos);
 					}
 				}
 

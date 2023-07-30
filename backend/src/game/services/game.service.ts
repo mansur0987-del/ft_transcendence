@@ -7,7 +7,9 @@ export class GameService {
   constructor(
     // FORWARD REF RESOLVES CIRCULAR DEPENDENCY
     @Inject(forwardRef(() => RoomService)) private roomService: RoomService,
-  ) {}
+  ) {
+    console.log('GAME SERVICE STARTED');
+  }
 
   static velocity = (speed: number, radian: number): Position => {
     // CONVERT CARTESIAN TO POLAR
@@ -40,6 +42,7 @@ export class GameService {
   }
 
   updateGame(room: Room): any {
+    // console.log('updateGame !!!!!!!');
     const next = {
       x: room.ball.position.x + room.ball.velocity.x,
       y: room.ball.position.y + room.ball.velocity.y,
@@ -75,7 +78,7 @@ export class GameService {
 
     // player 1
     if (
-      next.y >= room.players[0].paddle - room.options.playground.height / 2 &&
+      next.y >= room.players[0].paddle - room.options.paddle.height / 2 &&
       next.y <= room.players[0].paddle + room.options.paddle.height / 2
     )
       if (next.x - room.options.ball.radius < room.options.paddle.x)
