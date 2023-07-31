@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
-  BadRequestException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,17 +7,14 @@ import { Interval } from '@nestjs/schedule';
 import { Socket } from 'socket.io';
 import { MatchEntity } from 'src/player/entities/match.entity';
 import { MatchService } from 'src/player/service/match.service';
-import { PlayerService } from 'src/player/service/player.service';
 import { GameOptions, Mode, Room, State, Player } from '../interfaces';
 import { GameService } from './game.service';
-import e from "express";
 import { PlayerEntity } from "src/player/entities/player.entity";
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly game: GameService,
-    private readonly playerService: PlayerService,
     private readonly matchService: MatchService,
   ) {
     console.log('ROOM SERVICE STARTED');

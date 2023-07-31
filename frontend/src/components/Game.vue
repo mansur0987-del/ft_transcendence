@@ -139,7 +139,7 @@ watch(room, async (newRoom) => {
 <template>
 	<div>
 		<ExitGame v-if="gameSocket" :gameSocket='gameSocket' :code="RoomInfo?.id" />
-		<div class="Users">
+		<div class="Users" v-if="!hasStarted">
 			<h1>
 				Users:
 			</h1>
