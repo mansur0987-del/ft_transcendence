@@ -304,7 +304,7 @@ export class RoomService {
   }
 
   saveExitPushed(client: Socket, code: string) {
-    console.log('saveExitPushed =', client.data.player.id);
-    this.rooms.get(code).exitPushed = client.data.player.id;
+    if (this.rooms.get(code).exitPushed == null)
+      this.rooms.get(code).exitPushed = client.data.player.id;
   }
 }
