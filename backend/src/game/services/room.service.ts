@@ -205,6 +205,7 @@ export class RoomService {
       //if game is not complete(no score with value 3)
       let loser: PlayerEntity;
       let winner: PlayerEntity;
+      console.log('stopGame exit pushed=', room.exitPushed)
       if (room.exitPushed != null) {
         loser = room.players[0].player.id == room.exitPushed ? room.players[0].player : room.players[1].player;
         winner = room.players[0].player.id != room.exitPushed ? room.players[0].player : room.players[1].player;
@@ -299,6 +300,7 @@ export class RoomService {
   }
 
   saveExitPushed(client: Socket, code: string) {
+    console.log('saveExitPushed =', client.data.player.id);
     this.rooms.get(code).exitPushed = client.data.player.id;
   }
 }
