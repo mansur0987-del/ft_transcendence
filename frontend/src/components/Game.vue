@@ -6,7 +6,7 @@ import Menu from './Menu.vue'
 import ExitGame from './ExitGame.vue'
 import axios from "axios";
 import { ElProgress } from 'element-plus'
-import { stringifyQuery, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 
 
 const myUser = ref<{
@@ -162,18 +162,10 @@ watch(room, async (newRoom) => {
 		</div>
 		<div v-if="RoomInfo && !hasStarted">
 			<Menu @letsplay="letsplay" :gameSocket="gameSocket" :mode="RoomInfo?.mode" :code="RoomInfo?.id" />
-			<!-- <Engine v-if="RoomInfo && hasStarted" :gameSocket="gameSocket" :isPreview="true" /> -->
 		</div>
 		<div class="canvas-container" v-if="RoomInfo && hasStarted">
 			<Multiplayer :gameSocket="gameSocket" :roomInfo="RoomInfo" :currentPlayerIndex="currentPlayerIndex" />
 		</div>
-
-		<!--<div class="canvas-container">
-			<canvas ref="canvas" width="800" height="600"></canvas>
-			<Multiplayer v-if="isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
-			<Menu v-if="!isReady" :gameSocket="gameSocket" :id="id" :mode="mode" />
-			<Pong v-if="isReady" :gameSocket="gameSocket" :id="id" :playerId="playerId" :mode="mode" />
-		</div>-->
 	</div>
 </template>
 

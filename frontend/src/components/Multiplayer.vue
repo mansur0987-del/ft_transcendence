@@ -11,10 +11,10 @@ canvas {
 </style>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, watchEffect } from "vue";
-import { useRouter, type PathParserOptions } from "vue-router";
+import { onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import paper from 'paper';
-import { Path, view, PointText } from 'paper';
+import { Path, PointText } from 'paper';
 import type { Socket } from "socket.io-client";
 
 
@@ -31,16 +31,8 @@ var ballRadius = 20 / 1920;
 var paddlePos = [[0, 0.5], [1 - paddleWidth, 0.5]];
 console.log("initial paddlePos");
 console.log(paddlePos);
-var score = [0, 0];
 const router = useRouter();
 
-// console.log("scope before setup");
-// console.log(scope);
-// scope.setup(canvasId);
-// console.log("scope after setup");
-// console.log(scope);
-// console.log("canvasId is " + canvasId);
-// paper.install(doc);
 var scope = new paper.PaperScope();
 var canvasId;
 var initialTimeout = 100;
