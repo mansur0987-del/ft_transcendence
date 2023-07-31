@@ -78,8 +78,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('add')
   joinQueue(@ConnectedSocket() client: Socket): void {
     try {
-      console.log('client.data.player');
-      console.log(client.data.player);
+      // console.log('client.data.player');
+      // console.log(client.data.player);
       if (!client.data.player) {
         console.log("CHECK_IF_DADA_USER")
         return;
@@ -138,10 +138,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         secondPlayerName: newRoom.players[1].player.name,
         mode: newRoom.options.mode
       }
+      newRoom.players[0].mode = body.newMode;
+      newRoom.players[1].mode = body.newMode;
+      console.log('now modes are ' + newRoom.players[0].mode + ' and ' + newRoom.players[1].mode);
       newRoom.players[0].socket.emit('roomInfoServer', toSend);
       newRoom.players[1].socket.emit('roomInfoServer', toSend);
     }
     catch (e) {console.log("EXEPTION:\n", e)}
+  }
+
+  @SubscribeMessage('letsplay')
+  letsplay(@ConnectedSocket() client: Socket, @MessageBody() code?: string): void {
+    try {
+      console.log('letsplay on backend invoked for player ' + client.data.player.id);
+      // client.emit('letsplay', code);
+      this.roomService.findRoom(code).players[0].socket.emit('letsplay', code);
+      this.roomService.findRoom(code).players[1].socket.emit('letsplay', code);
+    } catch (e) {console.log("EXCEPTION:\n", e)}
   }
 
   @SubscribeMessage('join-room')
@@ -193,17 +206,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('update-paddle')
-  updatePaddle(@ConnectedSocket() client: Socket, paddle: number): void {
+  updatePaddle(@ConnectedSocket() client: Socket, @MessageBody() paddle: any): void {
     try {
       if (!client.data.player) return;
+      // console.log('player object:');
+      // console.log(client.data.player);
+      // console.log('received paddle number is: ' + paddle);
 
       const player: Player = this.roomService.findPlayer(client.data.player.id);
       if (!player) return;
 
+      // console.log('old player.paddlee is: ' + player.paddle);
       player.paddle = paddle * player.room.options.playground.height;
+      // console.log('updated player.paddlee is: ' + player.paddle);
       const playerIndex = player.room.players.indexOf(player);
+      // console.log('player.room.players:');
+      // console.log(player.room.players);
+      // console.log('playerIndex:' + playerIndex);
+      // console.log('received paddle number is: ' + paddle);
       RoomService.emit(player.room, 'paddle', playerIndex, paddle);
-    } catch (e) {console.log("EXEPTION:\n", e)}
+    } catch (e) {
+      console.log('EXEPTION:\n', e);
+    }
   }
 
    @SubscribeMessage('exitGame')
