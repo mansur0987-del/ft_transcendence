@@ -113,7 +113,6 @@ export class MatchService {
           id: id
         }}
       ]})
-    matches[0].loser
     let result: toReturn[] = [];
     for (let i = matches.length - 1; i >= 0; i--) {
       const tmp: toReturn = {
@@ -121,8 +120,8 @@ export class MatchService {
         winnerName: matches[i].winner.name,
         loserId: matches[i].loser.id,
         loserName: matches[i].loser.name,
-        winnerScore: matches[i].score[0] > matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
-        loserScore: matches[i].score[0] < matches[i].score[1] ? matches[i].score[0] : matches[i].score[1],
+        winnerScore: matches[i].score[0],
+        loserScore: matches[i].score[1],
         date: await this.toNormalString(matches[i].date),
         mode: matches[i].mode
       }

@@ -96,7 +96,6 @@ async function DelChannel(channelId: number) {
 		console.log(e.response.data.message)
 	})
 	window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
-	//await GetAllAccessChannels()
 	props.socket.emit('signal')
 	emit("GetChannelId", undefined)
 }
@@ -109,6 +108,7 @@ async function ChannelSettings(channelId: number, channelName: string, isPrivate
 onMounted(async () => {
 	await GetAllAccessChannels()
 	if (route.params.id) {
+
 		const channel = channels.value?.find((channel) => channel.id === Number(route.params.id))
 		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)
 	}

@@ -53,8 +53,11 @@ async function Chat(player: any) {
 		<h1 style="text-align: center;">FriendList</h1>
 		<template v-for="friend in friends">
 			<p v-if="friend.name !== ''" style="height: max-content; position: relative;">
-				<span v-if="new Date(friend.update_at) > currentDateMinus15Min && friend.status"
+				<span v-if="new Date(friend.update_at) > currentDateMinus15Min && friend.status === 1"
 					style="color: green; font-size: 30px;">
+					{{ friend.name }}
+				</span>
+				<span v-else-if="friend.status === 2" style="color:orange; font-size: 30px;">
 					{{ friend.name }}
 				</span>
 				<span v-else style="color:firebrick; font-size: 30px;">

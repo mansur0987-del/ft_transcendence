@@ -94,8 +94,11 @@ async function Chat(player: any) {
 
 		<div class="buttonAddFriend" v-for="player in players" style="list-style-type:square; width: 60%; ">
 			<p>
-				<span v-if="new Date(player.update_at) > currentDateMinus15Min && player.status"
+				<span v-if="new Date(player.update_at) > currentDateMinus15Min && player.status === 1"
 					style="color: green; font-size: 30px;">
+					{{ player.name }}
+				</span>
+				<span v-else-if="player.status === 2" style="color:orange; font-size: 30px;">
 					{{ player.name }}
 				</span>
 				<span v-else style="color:firebrick; font-size: 30px;">

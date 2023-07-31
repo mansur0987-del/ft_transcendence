@@ -44,7 +44,7 @@ const router = createRouter({
 			name: 'Chat'
 		},
 		{
-			path: '/chat/:room',
+			path: '/chat/:id',
 			component: () => import('./components/Chat.vue'),
 			name: 'ChatDir'
 		},

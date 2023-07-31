@@ -219,7 +219,15 @@ export class RoomService {
       }
 
       // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES
-      const score = room.players.map((player) => player.score);
+      const score: number[] = [0,0]
+      if (room.players[0].player.id === winner.id) {
+        score[0]= room.players[0].score
+        score[1]= room.players[1].score
+      }
+      else {
+        score[0]= room.players[1].score
+        score[1]= room.players[0].score
+      }
 
       room.players.forEach((player) => this.deleteSock(player.socket));
       const mode = room.options.mode;
