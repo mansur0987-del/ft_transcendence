@@ -64,11 +64,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		try {
 			const toSend = this.clients.get(chat_id);
 			toSend.forEach(async client => {
-				console.log('user in db', client.user_id_in_db);
-				console.log('sender_id', sender_id);
 				if (!await this.plBlocks.isBlocked(client.user_id_in_db, sender_id)) {
-					let res = await client.emit('msgFromServer', {sender_name: sender_name, message: msg});
-					console.log('resEmit =', res);
+					await client.emit('msgFromServer', {sender_name: sender_name, message: msg});
 				}
 			});
 		}
@@ -89,9 +86,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	@SubscribeMessage('signal')
 	async signalToReload(@ConnectedSocket() client: Socket, @MessageBody() body: any){
 		try {
-			console.log('\this.connectedClients size =', this.connectedClients.size);
 			this.connectedClients.forEach(element => {
-				console.log('res signal emit =', element.emit('callBack', body));
+				element.emit('callBack', body);
 			});
 		}
 		catch (e) { this.errorMessage(e, client); }
@@ -100,9 +96,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	@SubscribeMessage('signalUsers')
 	async signalToReloadUsers(@ConnectedSocket() client: Socket, @MessageBody() body: any){
 		try {
-			console.log('\this.connectedClients size in signal USers =', this.connectedClients.size);
 			this.connectedClients.forEach(element => {
-				console.log('res signal users emit =', element.emit('callBackUsers', body));
+				element.emit('callBackUsers', body);
 			});
 		}
 		catch (e) { this.errorMessage(e, client); }
@@ -138,7 +133,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			if (this.clients.get(body.chat_id).has(client.id))
 				return;
 			this.clients.get(body.chat_id).set(client.id, who);
-			console.log('\nclient ' + (who ? who.user_name42_in_db : 'unknown') + ' has been connected to chat\n');
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -160,7 +154,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			if (!chatClients.has(client.id))
 				throw new BadRequestException('client ' + who ? who.user_name42_in_db : 'unknown' + ' not in this channel')
 			chatClients.delete(client.id);
-			console.log('\nclient ' + (who ? who.user_name42_in_db : 'unknown') + ' has been disconnected\n');
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}
@@ -178,7 +171,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				client.disconnect();
 				throw new ForbiddenException('user ' + name42 + ' not in DB');
 			}
-			console.log('\n' + name42 + ' connected\n');
 			client.user_id_in_db = user.id;
 			client.user_name42_in_db = name42;
 			client.user_name_in_db = user.name;
@@ -195,7 +187,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 					chat.delete(client.id);
 			})
 			this.connectedClients.delete(client.id);
-			console.log('\nclient ' + (userInConnected ? userInConnected.name42 : 'unknown') + ' disconnected\n');
 		}
 		catch (e) { this.errorMessage(e, client); }
 	}

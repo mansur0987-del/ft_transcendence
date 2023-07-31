@@ -2,8 +2,6 @@
 import axios from "axios";
 import { onMounted } from "vue";
 
-
-
 function checkVisible() {
 	if (document.visibilityState !== "visible") {
 		axios.post('player/profile', { updateData: { status: 0 } })

@@ -16,7 +16,7 @@ async function ChangeName(newName?: string) {
 	else if (newName.length > 15) {
 		errorInputName.value = 'Enter a name of less than 15 characters'
 	}
-	else if (newName.includes('guest_', 0)) {
+	else if (newName.substring(0, 6) === 'guest_') {
 		errorInputName.value = "You cannot choose a 'guest_...' name"
 	}
 	else {

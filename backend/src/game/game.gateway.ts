@@ -7,20 +7,13 @@ import {
   ConnectedSocket,
   MessageBody
 } from '@nestjs/websockets';
-import {
-	BadRequestException,
-	ForbiddenException,
-	NotFoundException
-} from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '../auth/service/auth.service';
 import { Mode } from './interfaces/mode.interface';
 import { RoomService } from './services/room.service';
 import { Player } from './interfaces/player.interface';
 import { Room } from './interfaces/room.interface';
 import { PlayerService } from 'src/player/service/player.service';
-import { PlayerStatus } from 'src/player/enums/playerStatus.enum';
 
 @WebSocketGateway({
   cors: {
@@ -30,9 +23,7 @@ import { PlayerStatus } from 'src/player/enums/playerStatus.enum';
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
-    private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly userService: PlayerService,
     private readonly roomService: RoomService,
     private readonly MatchService: PlayerService,
   ) {}
@@ -46,8 +37,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const token = client.request.headers.authorization && client.request.headers.authorization.split(' ')[1];
       if (!token) {
         return client.disconnect();
-      } else {
-        console.log('Token found!', token);
       }
       let user: any;
       // THIS IS A RISK ZONE
@@ -78,10 +67,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('add')
   joinQueue(@ConnectedSocket() client: Socket): void {
     try {
-      // console.log('client.data.player');
-      // console.log(client.data.player);
       if (!client.data.player) {
-        console.log("CHECK_IF_DADA_USER")
         return;
 
       }
@@ -96,12 +82,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       if (!client)
       {
-        console.log('NoSocket')
         return ;
       }
       if (!code)
       {
-        console.log('NoCode')
         return ;
       }
       const roomInfo = this.roomService.getRoomInfo(code);
@@ -140,7 +124,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       newRoom.players[0].mode = body.newMode;
       newRoom.players[1].mode = body.newMode;
-      console.log('now modes are ' + newRoom.players[0].mode + ' and ' + newRoom.players[1].mode);
       newRoom.players[0].socket.emit('roomInfoServer', toSend);
       newRoom.players[1].socket.emit('roomInfoServer', toSend);
     }
@@ -150,7 +133,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('letsplay')
   letsplay(@ConnectedSocket() client: Socket, @MessageBody() code?: string): void {
     try {
-      console.log('letsplay on backend invoked for player ' + client.data.player.id);
       // client.emit('letsplay', code);
       this.roomService.findRoom(code).players[0].socket.emit('letsplay', code);
       this.roomService.findRoom(code).players[1].socket.emit('letsplay', code);
@@ -166,9 +148,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       let room: Room = this.roomService.findRoom(code);
-      console.log('findRoom');
-      console.log(room);
-      
+
       if (!room) {
         client.emit('roomInfoServer', {error: 'room not found'});
         return;
@@ -209,21 +189,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   updatePaddle(@ConnectedSocket() client: Socket, @MessageBody() paddle: any): void {
     try {
       if (!client.data.player) return;
-      // console.log('player object:');
-      // console.log(client.data.player);
-      // console.log('received paddle number is: ' + paddle);
 
       const player: Player = this.roomService.findPlayer(client.data.player.id);
       if (!player) return;
-
-      // console.log('old player.paddlee is: ' + player.paddle);
       player.paddle = paddle * player.room.options.playground.height;
-      // console.log('updated player.paddlee is: ' + player.paddle);
       const playerIndex = player.room.players.indexOf(player);
-      // console.log('player.room.players:');
-      // console.log(player.room.players);
-      // console.log('playerIndex:' + playerIndex);
-      // console.log('received paddle number is: ' + paddle);
       RoomService.emit(player.room, 'paddle', playerIndex, paddle);
     } catch (e) {
       console.log('EXEPTION:\n', e);
@@ -233,19 +203,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
    @SubscribeMessage('exitGame')
    exitGame(@ConnectedSocket() client: Socket, @MessageBody() code: string) {
     if (!client.data.player) {
-      console.log('no such client');
       return;
     }
     if (!code) {
-      console.log('NULL code');
       return;
     }
     const thisRoom = this.roomService.findRoom(code);
     if (!thisRoom) {
-      console.log('no such room');
       return;
     }
-    
+
     this.roomService.saveExitPushed(client, code);
 
     for (let i = 0; i < thisRoom.players.length; i++) {

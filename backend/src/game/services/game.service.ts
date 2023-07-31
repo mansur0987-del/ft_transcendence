@@ -7,9 +7,7 @@ export class GameService {
   constructor(
     // FORWARD REF RESOLVES CIRCULAR DEPENDENCY
     @Inject(forwardRef(() => RoomService)) private roomService: RoomService,
-  ) {
-    console.log('GAME SERVICE STARTED');
-  }
+  ) {}
 
   static velocity = (speed: number, radian: number): Position => {
     // CONVERT CARTESIAN TO POLAR
@@ -31,7 +29,7 @@ export class GameService {
 
     // SETTING ROOM SPEED TO THE VALUE OF BALL SPEED
     room.speed = room.options.ball.speed;
-    
+
     // PUTS THE BALL IN THE MIDDLE OF THE PLAYGROUND
     this.updateBall(
       room.options.playground.width / 2,
@@ -42,7 +40,6 @@ export class GameService {
   }
 
   updateGame(room: Room): any {
-    // console.log('updateGame !!!!!!!');
     const next = {
       x: room.ball.position.x + room.ball.velocity.x,
       y: room.ball.position.y + room.ball.velocity.y,

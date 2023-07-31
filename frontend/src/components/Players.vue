@@ -83,7 +83,6 @@ async function Chat(player: any) {
 
 }
 
-
 </script>
 
 <template>

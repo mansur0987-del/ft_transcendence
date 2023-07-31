@@ -43,7 +43,7 @@ onMounted(() => {
 
 <style scoped>
 .button {
-	position: absolute;
+	position: fixed;
 	right: 5px;
 	top: 5px;
 	border: none;
@@ -53,6 +53,7 @@ onMounted(() => {
 	text-decoration: none;
 	display: inline-block;
 	font-size: 14px;
+	z-index: 50;
 }
 
 .button button {

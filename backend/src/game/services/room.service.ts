@@ -18,9 +18,7 @@ export class RoomService {
     private readonly game: GameService,
     private readonly plService: PlayerService,
     private readonly matchService: MatchService,
-  ) {
-    console.log('ROOM SERVICE STARTED');
-  }
+  ) {}
 
   /**
    * game settings
@@ -47,7 +45,6 @@ export class RoomService {
   }
 
   changeRoomMode(client: Socket, code: string, newMode: number): Room {
-    console.log('changeRoomMode UPPPPPPPPPPPPPPPP');
     const thisRoom = this.findRoom(code);
     if (!thisRoom) throw new NotFoundException('room not found');
     let accessFlg = false;
@@ -91,8 +88,6 @@ export class RoomService {
   }
 
   joinRoom(socket: Socket, room: Room): void {
-    // console.log("-------joinRoom started!--------")
-    // console.log(socket.data.player.id)
     if (room.state == State.WAITING) {
       // create player instance
       const player: Player = {
@@ -118,27 +113,17 @@ export class RoomService {
   }
 
   addSock(socket: Socket): void {
-    // console.log('STARTED_SOCK')
-    // console.log(socket)
-    // console.log(socket.data)
     // ensure the player isn't already in the queue
     for (const sock of this.queue) {
-      // console.log('FOR_')
-      // console.log(sock.data.player)
-
       if (sock.data.player.id == socket.data.player.id) return;
     }
 
     if (this.findPlayer(socket.data.player.id)) return;
 
     // add to the queue
-    console.log('QUEUE:');
-    console.log(this.queue);
     this.queue.push(socket);
 
     // emit queue length
-    console.log('QUEUE_LENGTH:');
-    console.log(this.queue.length);
     socket.emit('add', this.queue.length);
     // if not enough players, leave
     if (this.queue.length < 2) return;
@@ -147,9 +132,7 @@ export class RoomService {
     const room: Room = this.createRoom();
     // iterate over queue and join players
     while (this.queue.length && room.players.length < 2) {
-      console.log('ROOMSERVICE: JoinRoom');
       this.joinRoom(this.queue.shift(), room);
-      console.log('ROOMSERVICE: JoinRoom DONE!!');
     }
   }
 
@@ -180,17 +163,14 @@ export class RoomService {
   //..
 
   startGame(room: Room): void {
-    console.log('startGame');
     if (room.state != State.STARTING) return;
     room.state = State.WAITING;
 
 
     if (room.options.mode == Mode.FAST_BALL) {
-      console.log('FAST_BALL');
       room.options.ball.radius = 25;
       room.options.ball.speed = 30;
     } else if (room.options.mode == Mode.SMALL_PADDLE) {
-      console.log('SMALL_PADDLE');
       room.options.paddle.height = 50;
       RoomService.emit(room, 'paddleHeight', room.options.paddle.height);
     }
@@ -198,7 +178,6 @@ export class RoomService {
   }
 
   async stopGame(room: Room, player: Player): Promise<void> {
-    console.log('stopGame');
     if (!player) return;
     if (room.state == State.END) return;
     room.state = State.END;
@@ -207,7 +186,6 @@ export class RoomService {
       //if game is not complete(no score with value 3)
       let loser: PlayerEntity;
       let winner: PlayerEntity;
-      console.log('stopGame exit pushed=', room.exitPushed)
       if (room.exitPushed != null) {
         loser = room.players[0].player.id == room.exitPushed ? room.players[0].player : room.players[1].player;
         winner = room.players[0].player.id != room.exitPushed ? room.players[0].player : room.players[1].player;
@@ -252,7 +230,6 @@ export class RoomService {
   }
   // DOES IT WORK FOR BOTH CLIENTS?
   ready(player: Player, mode: Mode): void {
-    console.log('ready');
     player.mode = mode;
     this.startGame(player.room);
   }
@@ -261,8 +238,6 @@ export class RoomService {
    * STARTS THE GAME
    */
   startCalc(room: Room): void {
-    console.log('startCalc');
-    // if (room.state != State.COUNTDOWN) return;
     this.game.resetBall(room);
     room.state = State.INGAME;
   }
@@ -270,7 +245,6 @@ export class RoomService {
   @Interval(1000 / 30)
   loop(): void {
     for (const room of this.rooms.values()) {
-      // console.log('room state: ' + room.state);
       if (room.state == State.INGAME) this.game.updateGame(room);
     }
   }
@@ -281,8 +255,6 @@ export class RoomService {
 
     // AS LONG AS WE DO NOT HAVE SPECTATORS, WE REMOVE THEESE 3 LINES
     for (const room of this.rooms.values()) {
-      //   if (room.spectators && room.spectators.indexOf(socket) != -1)
-      //     return room.spectators.splice(room.spectators.indexOf(socket), 1);
 
       // TRAVERSE ALL THE PLAYERS IN THE ROOM AND REMOVE THE PLAYER THAT IS CONNECTED TO THE SOCKET (ARGUMENT)
       for (const player of room.players)

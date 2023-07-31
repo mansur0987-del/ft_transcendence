@@ -53,6 +53,12 @@ watch(props, (newProps) => {
         <el-button size="large" color="red" @click="letsplay">
             Let's play
         </el-button>
+        <p>
+            button 'W' - move up baddle
+        </p>
+        <p>
+            button 'S' - move down baddle
+        </p>
     </div>
 </template>
 

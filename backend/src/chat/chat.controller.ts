@@ -123,7 +123,6 @@ export class ChatController {
     //add private chats
     let allPrivate: any[] = await this.chatService.findAllByType(true);
     for (let i: number = 0; allPrivate[i]; i++) {
-      console.log('allPrivate:\n', allPrivate[i].id);
       const selfR = await this.chatMembersService.findOneByIds(allPrivate[i].id, req.user.id);
       if (selfR && selfR.member_flg) {
         allPrivate[i].chat_name = await this.defineChatName(allPrivate[i], req.user.id);

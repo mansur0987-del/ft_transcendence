@@ -25,24 +25,22 @@ const props = defineProps<{
 }>()
 
 const paddleWidth = 20 / 1080;
-let paddleHeight = 200 / 1800;
+let paddleHeight = 200 / 1920;
 let ballPosition = [0.5, 0.5];
-let ballRadius = 20 / 1800;
+let ballRadius = 20 / 1920;
 let paddlePos = [[0, 0.5], [1 - paddleWidth, 0.5]];
 const router = useRouter();
 
 let scope = new paper.PaperScope();
 let canvasId;
 let initialTimeout = 100;
-let isViewSetup = false;
 
 onMounted(() => {
 	canvasId = document.getElementById('canvasId') as HTMLCanvasElement;
 	scope.setup(canvasId);
 	while (scope.view == null) { }
-	isViewSetup = true;
 	props.gameSocket.on('paddleHeight', (data) => {
-		paddleHeight = data / 1800;
+		paddleHeight = data / 1920;
 	})
 });
 
@@ -121,18 +119,18 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 				}
 
 				scope.view.onKeyDown = (event: any) => {
-					if (event.key == 'w' && paddlePos[props.currentPlayerIndex][1] - paddleHeight / 2 > 0) {
+					if (event.key == 'w' && (paddlePos[props.currentPlayerIndex][1] - paddleHeight / 2) - 0.04 > 0) {
 						props.gameSocket.emit('update-paddle', (paddlePos[props.currentPlayerIndex][1] - 0.04));
 					}
 
-					if (event.key == 's' && paddlePos[props.currentPlayerIndex][1] + paddleHeight / 2 < 1) {
+					if (event.key == 's' && (paddlePos[props.currentPlayerIndex][1] + paddleHeight / 2) + 0.04 < 1) {
 						props.gameSocket.emit('update-paddle', (paddlePos[props.currentPlayerIndex][1] + 0.04));
 					}
 				}
 
 				const normalize = (coordinate: paper.Point): paper.Point => {
 					var pos = [0, 0];
-					pos[0] = coordinate.x / 1800 * scope.view.size.width;
+					pos[0] = coordinate.x / 1920 * scope.view.size.width;
 					pos[1] = coordinate.y / 1080 * scope.view.size.height;
 					return new scope.Point(pos);
 				}
