@@ -1,6 +1,3 @@
-import { GameEntity } from './entities/game.entity';
-import { PlayerEntity } from '../player/entities/player.entity';
-import { PlayerService } from '../player/service/player.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameGateway } from './game.gateway';
