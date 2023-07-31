@@ -25,9 +25,9 @@ const props = defineProps<{
 }>()
 
 const paddleWidth = 20 / 1080;
-let paddleHeight = 200 / 1920;
+let paddleHeight = 200 / 1800;
 let ballPosition = [0.5, 0.5];
-let ballRadius = 20 / 1920;
+let ballRadius = 20 / 1800;
 let paddlePos = [[0, 0.5], [1 - paddleWidth, 0.5]];
 const router = useRouter();
 
@@ -42,7 +42,7 @@ onMounted(() => {
 	while (scope.view == null) { }
 	isViewSetup = true;
 	props.gameSocket.on('paddleHeight', (data) => {
-		paddleHeight = data / 1920;
+		paddleHeight = data / 1800;
 	})
 });
 
@@ -132,7 +132,7 @@ watch(props, async (_oldProps, _newProps, cleanUp) => {
 
 				const normalize = (coordinate: paper.Point): paper.Point => {
 					var pos = [0, 0];
-					pos[0] = coordinate.x / 1920 * scope.view.size.width;
+					pos[0] = coordinate.x / 1800 * scope.view.size.width;
 					pos[1] = coordinate.y / 1080 * scope.view.size.height;
 					return new scope.Point(pos);
 				}
