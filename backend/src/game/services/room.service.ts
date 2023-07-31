@@ -10,11 +10,13 @@ import { MatchService } from 'src/player/service/match.service';
 import { GameOptions, Mode, Room, State, Player } from '../interfaces';
 import { GameService } from './game.service';
 import { PlayerEntity } from "src/player/entities/player.entity";
+import { PlayerService } from "src/player/service/player.service";
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly game: GameService,
+    private readonly plService: PlayerService,
     private readonly matchService: MatchService,
   ) {
     console.log('ROOM SERVICE STARTED');
@@ -217,7 +219,15 @@ export class RoomService {
         // THE ARG PASSED IS ALWAYS THE WINNER
         winner = player.player;
       }
-
+      if (loser.isFirstGame == false) {
+        loser.isFirstGame = true;
+        this.plService.update(loser, loser);
+      }
+      if (winner.isFirstGame == false || winner.isFirstWin == false) {
+        winner.isFirstGame = true;
+        winner.isFirstWin = true;
+        this.plService.update(winner, winner);
+      }
       // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES
       const score: number[] = [0,0]
       if (room.players[0].player.id === winner.id) {
