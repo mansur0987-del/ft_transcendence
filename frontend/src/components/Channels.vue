@@ -14,18 +14,10 @@ const emit = defineEmits<{
 }>()
 
 watch(props, async (newProps) => {
-	console.log('newProps.Channels')
-	console.log(newProps.socket)
 	if (newProps.leave === true) {
 		window.history.pushState('http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/', 'http://' + window.location.host + '/chat/')
 		await GetAllAccessChannels()
 	}
-	//if (props.socket) {
-	//	console.log('newProps.socket')
-	//	console.log(newProps.socket)
-	//	await GetAllAccessChannels()
-
-	//}
 })
 
 const WindowForChannel = ref<{
@@ -121,9 +113,6 @@ onMounted(async () => {
 		GetChannelIdFromClick(Number(route.params.id), channel?.isMember ? channel?.isMember : false, false)
 	}
 	props.socket.on('callBack', async (res) => {
-		console.log('get signal')
-		console.log('SocketRes')
-		console.log(res)
 		await GetAllAccessChannels()
 	})
 })

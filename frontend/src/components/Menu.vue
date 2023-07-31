@@ -18,7 +18,6 @@ const isHardcore = ref<number>(props.mode);
 onMounted(() => {
     props.gameSocket.on('letsplay', (data) => {
         emit("letsplay");
-        console.log("emited letsplay in letsplay .on Menu.vue")
     })
 }
 )
@@ -46,9 +45,6 @@ watch(props, (newProps) => {
 
 
 <template>
-    <!-- <div>
-        <Engine :isPreview="true" :gameSocket="props.gameSocket" />
-    </div> -->
     <div class="button">
         <h1 class="button-text">Welcome to the Mighty Pong game! </h1>
         <el-button size="large" color="red" @click="toggleMode">

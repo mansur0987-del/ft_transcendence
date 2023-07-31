@@ -83,7 +83,6 @@ export class MatchService {
         on t1.user_id = t2.user_id
         ORDER BY wins_to_all desc, wins desc, all_m desc
     `)
-    console.log('\nraws: ', allUsersStats, '\n');
     for (let i = 0; i < allUsersStats.length; i++) {
       if (id == allUsersStats[i].user_id) {
         return ({rank: i + 1, wins: allUsersStats[i].wins, losses: allUsersStats[i].losses});
@@ -117,7 +116,6 @@ export class MatchService {
     matches[0].loser
     let result: toReturn[] = [];
     for (let i = matches.length - 1; i >= 0; i--) {
-      console.log('match raw=', matches[i]);
       const tmp: toReturn = {
         winnerId: matches[i].winner.id,
         winnerName: matches[i].winner.name,

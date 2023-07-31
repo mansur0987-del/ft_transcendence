@@ -35,8 +35,6 @@ const room = ref<string>('')
 async function GetRoom() {
 	gameSocket.on('room', (data) => {
 		room.value = data
-		console.log('room')
-		console.log(room.value)
 		window.history.pushState(
 			'http://' + window.location.host + '/game/' + room.value,
 			'http://' + window.location.host + '/game/',
@@ -46,16 +44,11 @@ async function GetRoom() {
 }
 
 async function EmitGetRoomInfo() {
-	console.log('room.value')
-	console.log(room.value)
-	console.log('roomInfo')
 	gameSocket.emit('roomInfo', room.value)
 }
 
 async function OnGetRoomInfo() {
 	gameSocket.on('roomInfoServer', (data) => {
-		console.log('roomInfoServer')
-		console.log(data)
 		if (data.error) {
 			room.value = ''
 			window.history.pushState(
@@ -73,16 +66,9 @@ async function OnGetRoomInfo() {
 async function EmitJoinRoom() {
 	gameSocket.emit('join-room', room.value)
 }
-async function EmitStartGame() {
-	gameSocket.emit('ready', { mode: RoomInfo.value?.mode });
-	gameSocket.emit('start');
-}
 
 const route = useRoute();
 onMounted(async () => {
-	console.log('gameSocket')
-	console.log(gameSocket)
-
 	await axios.post('player/profile', { updateData: { status: 2 } })
 	await axios.get('player/profile').catch((e) => {
 		console.log(e)
@@ -94,8 +80,6 @@ onMounted(async () => {
 
 	setTimeout(async () => {
 		if (route.params.id) {
-			console.log('route.params.room')
-			console.log(route.params.id)
 			room.value = route.params.id.toString()
 			await EmitJoinRoom()
 		}
@@ -108,14 +92,12 @@ onMounted(async () => {
 })
 
 async function letsplay() {
-	console.log('lets play in game.vue');
 	if (RoomInfo.value?.firstPlayerId === myUser.value?.id) {
 		currentPlayerIndex.value = 0;
 	}
 	else {
 		currentPlayerIndex.value = 1;
 	}
-	// gameSocket.emit('letsplay', room.value);
 	hasStarted.value = true;
 	gameSocket.emit('ready', { mode: RoomInfo.value?.mode });
 	gameSocket.emit('start');

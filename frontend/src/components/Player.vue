@@ -66,14 +66,10 @@ async function GetUser() {
 	}
 
 	await axios.get('player/' + id.value + '/stats').then((res) => {
-		console.log('stats')
-		console.log(res.data)
 		stats.value = res.data
 	})
 
 	await axios.get('player/' + id.value + '/matchHist').then((res) => {
-		console.log('match history')
-		console.log(res.data)
 		mathHistory.value = res.data
 	})
 

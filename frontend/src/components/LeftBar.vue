@@ -16,7 +16,6 @@ async function GetInvitesLeftBar() {
 	}).then((res) => {
 		if (res) {
 			invitesGet.value = res.data
-			console.log(invitesGet.value)
 		}
 	})
 }
@@ -46,8 +45,6 @@ onMounted(async () => {
 		setTimeout(async () => {
 			await GetInvitesLeftBar()
 		}, 100)
-		console.log('startGame')
-		console.log(data)
 		window.location.assign('http://' + window.location.host + '/game/' + data.code)
 	})
 })

@@ -63,7 +63,6 @@ async function Close(str: string) {
 }
 
 async function Submit() {
-	console.log(props.type)
 	error.value = ''
 	if (props.type === 'create' || props.type === 'settings') {
 		if (!data.value.chat_name) {
@@ -83,8 +82,6 @@ async function Submit() {
 		error.value = 'Input channel password!!!\n'
 	}
 	else if (props.type === 'change') {
-		console.log('data.value.role')
-		console.log(data.value.role)
 		if (data.value.role === 'Owner') {
 			await axios.post('chat/setOwner', { chat_id: data.value.chat_id, player_id: data.value.player_id }).catch((e) => {
 				error.value = e.response.data.message

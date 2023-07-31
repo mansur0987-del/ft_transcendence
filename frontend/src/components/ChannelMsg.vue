@@ -67,8 +67,6 @@ async function GetMsg(channelId: number) {
 	elemet_chat.scrollTop = elemet_chat.scrollHeight
 	socket?.on('msgFromServer', (res: GetMsgSocket) => {
 		error.value = ''
-		console.log('res')
-		console.log(res.error)
 		if (res.error) {
 			error.value = res.error
 		}

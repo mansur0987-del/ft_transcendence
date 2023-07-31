@@ -25,8 +25,6 @@ onMounted(async () => {
 	if (socketChat) {
 		flag.value = true
 	}
-	console.log('socketChat')
-	console.log(socketChat)
 })
 
 </script>
@@ -39,4 +37,5 @@ onMounted(async () => {
 	<ChannelUsers @LeaveChannel="FunctionForEmitLeave" :channelId=channelId :socket=socketChat v-if="flag" />
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

@@ -48,8 +48,6 @@ async function GetUsers() {
 		}
 		validatePlayer.push(newPlayer);
 	}
-	console.log('validatePlayer')
-	console.log(validatePlayer)
 	players.value = validatePlayer
 
 	currentDateMinus15Min.value.setMinutes(currentDate.value.getMinutes() - 15)
