@@ -220,10 +220,10 @@ export class RoomService {
         // THE ARG PASSED IS ALWAYS THE WINNER
         winner = player.player;
       }
-      
+
       // SCORE IS AN ARRAY OF BOTH PLAYERS SCORES
       const score = room.players.map((player) => player.score);
-      
+
       room.players.forEach((player) => this.deleteSock(player.socket));
       const mode = room.options.mode;
       // SAVE THE DATA IN MATCH ENTITY
@@ -254,7 +254,6 @@ export class RoomService {
 
   @Interval(1000 / 30)
   loop(): void {
-    console.log('loop');
     for (const room of this.rooms.values()) {
       // console.log('room state: ' + room.state);
       if (room.state == State.INGAME) this.game.updateGame(room);
