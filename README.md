@@ -6,21 +6,26 @@
 **Детальное описание:**
 Пользователь авторизуется и регистрируется на сайте через API школы 42.
 При первом входе пользователю выдается уникальный nickname - guest_<id>.
+
 Player:
+
   ![pl1](https://github.com/mansur0987-del/ft_transcendence/assets/91384519/27a012ad-5006-4b64-825a-461070930022)
   
 Settings:
   1. Возможность устанавливать уникальный nickname
   2. Изменять аватарку в форматах jpg и png
   3. Включать/отключать двух-факторную аутентификацию с использованием google authenticator.
+
   <img width="2035" alt="Settings" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/f9144a1c-6937-4743-8614-44389ad6e85f">
 
 Players:
   Видим всех пользователей с текущим статусом(online/offline/in game). Статус обозначается цветом никнейма зеленый/красный/оранжевый соответственно.
+  
   <img width="2048" alt="Players" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/266a5eb4-f43b-454b-ad8d-edeff2083f85">
 
 Friendlist:
   Видим всех друзей и их статус, по аналогии с Players.
+  
   <img width="2048" alt="FriendList" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/0f0a8524-7af9-4e9e-81ac-f05667261c97">
 
 
