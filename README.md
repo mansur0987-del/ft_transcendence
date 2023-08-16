@@ -6,12 +6,24 @@
 **Детальное описание:**
 Пользователь авторизуется и регистрируется на сайте через API школы 42.
 При первом входе пользователю выдается уникальный nickname - guest_<id>.
-
+Player:
+  ![pl1](https://github.com/mansur0987-del/ft_transcendence/assets/91384519/27a012ad-5006-4b64-825a-461070930022)
+  
 Settings:
-  1. Устанавливать уникальный nickname
+  1. Возможность устанавливать уникальный nickname
   2. Изменять аватарку в форматах jpg и png
   3. Включать/отключать двух-факторную аутентификацию с использованием google authenticator.
-     
+  <img width="2035" alt="Settings" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/f9144a1c-6937-4743-8614-44389ad6e85f">
+
+Players:
+  Видим всех пользователей с текущим статусом(online/offline/in game). Статус обозначается цветом никнейма зеленый/красный/оранжевый соответственно.
+  <img width="2048" alt="Players" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/266a5eb4-f43b-454b-ad8d-edeff2083f85">
+
+Friendlist:
+  Видим всех друзей и их статус, по аналогии с Players.
+  <img width="2048" alt="FriendList" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/0f0a8524-7af9-4e9e-81ac-f05667261c97">
+
+
 Chat:
   1. Видим уже созданные публичные чаты, к которым можем присоединиться.
   2. Можно создавать/удалять/настраивать свой чат.
@@ -19,12 +31,18 @@ Chat:
   4. Администратор чата может мьютить/банить/кикать обычных пользователей чата, также может делать обратные действия и добавлять новых пользователей.
   5. Владелец чата может менять настройки приватности чата, устанавливать/удалять/изменять пароль чата, менять имя чата, выдавать/забирать права администратора, мьютить/банить/кикать обычных пользователей и        администраторов.
      Также может передать права владельца другому пользователю чата.
+<img width="1696" alt="chatCreate" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/4e5c296c-11ed-45dc-b961-6b26d6d952a2">
+<img width="1693" alt="chatUserSet" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/118d1a48-f904-48ed-a4f0-8223516829a8">
+<img width="1697" alt="chatBan" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/e366744d-0174-4da0-9fcd-ba666884c900">
+<img width="1701" alt="chatBanned" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/12a351a7-a202-4576-a3d7-40369c11d523">
 
 Game:
   1. Можно участвовать в игре через matchmaking или по приглашению от другого игрока.
   2. Перед стартом игры пользователи попадают в лобби, где выбирают сложность игры default/fast ball/small paddle, после чего начинают играть.
   3. После игры запиывается ее результат в базу данных.
   4. Игрокам выдаются ранки, в зависимости от соотношения побед к поражениям и количества игр.
+  <img width="1698" alt="Game1" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/a37cb53a-a999-44ef-9164-ac26fd538d94">
+  <img width="1683" alt="Game2" src="https://github.com/mansur0987-del/ft_transcendence/assets/91384519/db66c3c6-bb43-428e-adbc-e4ca20b100f0">
 
 **Как работает, на чем написано:**
 Для запуска достаточно настроить файл .env в корне проекта после чего ввести команду docker-compose up --build.
